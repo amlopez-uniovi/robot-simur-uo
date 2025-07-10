@@ -14,3 +14,15 @@ except PackageNotFoundError:  # pragma: no cover
     __version__ = "unknown"
 finally:
     del version, PackageNotFoundError
+
+from .controllers import *
+from .sensors import *
+from .utils import *
+from .webots import *
+
+__all__ = [
+    "controllers",
+    "sensors",
+    "utils",
+    "webots",
+]
