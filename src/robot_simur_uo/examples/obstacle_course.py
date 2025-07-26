@@ -2,14 +2,15 @@
 Ejemplo de navegación en un curso con obstáculos.
 """
 
-from ..controllers.obstacle_avoidance import ObstacleAvoidanceController
-from ..controllers.navigation import NavigationController
-from ..sensors.distance_sensors import DistanceSensorProcessor
-from ..utils.coordinates import RobotPose
-from ..utils.visualization import create_simple_map
-from ..utils.simulated_robot import SimulatedDifferentialRobot
 import random
 import math
+
+from robot_simur_uo.controllers.obstacle_avoidance import ObstacleAvoidanceController
+from robot_simur_uo.controllers.navigation import NavigationController
+from robot_simur_uo.sensors.distance_sensors import DistanceSensorProcessor
+from robot_simur_uo.utils.coordinates import RobotPose
+from robot_simur_uo.utils.visualization import create_simple_map
+from robot_simur_uo.utils.simulated_robot import SimulatedDifferentialRobot
 
 
 class ObstacleCourseExample:
@@ -26,10 +27,10 @@ class ObstacleCourseExample:
         if robot_type.lower() == 'simulated':
             self.robot = SimulatedDifferentialRobot()
         elif robot_type.lower() == 'epuck':
-            from ..webots import EPuck
+            from robot_simur_uo.webots import EPuck
             self.robot = EPuck()
         elif robot_type.lower() == 'rosbot':
-            from ..webots import RosBot
+            from robot_simur_uo.webots import RosBot
             self.robot = RosBot()
         else:
             raise ValueError(f"Tipo de robot no soportado: {robot_type}. Use 'simulated', 'epuck' o 'rosbot'")

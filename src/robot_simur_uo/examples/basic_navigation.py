@@ -2,11 +2,11 @@
 Ejemplo básico de navegación para un robot.
 """
 
-from ..controllers.navigation import NavigationController
-from ..utils.coordinates import RobotPose
-from ..utils.simulated_robot import SimulatedDifferentialRobot
-from ..utils.visualization import DataVisualizer
-from ..interfaces.irobot import IRobot
+from robot_simur_uo.controllers.navigation import NavigationController
+from robot_simur_uo.utils.coordinates import RobotPose
+from robot_simur_uo.utils.simulated_robot import SimulatedDifferentialRobot
+from robot_simur_uo.utils.visualization import DataVisualizer
+from robot_simur_uo.interfaces.irobot import IRobot
 
 
 class BasicNavigationExample:

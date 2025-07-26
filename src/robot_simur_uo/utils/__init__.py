@@ -1,13 +1,13 @@
 """Módulo de utilidades para robot-simur-uo."""
 
-from .config import Config
+from .config import RobotConfig
 from .coordinates import RobotPose, CoordinateSystem
 from .math_utils import MathUtils
 from .simulated_robot import SimulatedDifferentialRobot
 from .visualization import DataVisualizer
 
 __all__ = [
-    'Config',
+    'RobotConfig',
     'RobotPose',
     'CoordinateSystem', 
     'MathUtils',
