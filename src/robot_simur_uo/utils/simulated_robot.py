@@ -8,11 +8,11 @@ from .coordinates import RobotPose
 from ..interfaces.irobot import IRobot
 
 
-class SimulatedRobot(IRobot):
+class SimulatedDifferentialRobot(IRobot):
     """
-    Robot simulado para ejemplos y testing sin dependencia de Webots.
+    Robot diferencial simulado para ejemplos y testing sin dependencia de Webots.
     
-    Simula un robot diferencial con dos ruedas.
+    Simula un robot diferencial con dos ruedas independientes.
     """
     
     def __init__(self, wheel_radius: float = 0.025, wheel_base: float = 0.053):
@@ -146,4 +146,4 @@ class SimulatedRobot(IRobot):
     
     def __str__(self) -> str:
         """Representación en string del robot."""
-        return f"SimulatedRobot(pose={self.pose}, motors=({self.left_motor_speed:.2f}, {self.right_motor_speed:.2f}))"
+        return f"SimulatedDifferentialRobot(pose={self.pose}, motors=({self.left_motor_speed:.2f}, {self.right_motor_speed:.2f}))"

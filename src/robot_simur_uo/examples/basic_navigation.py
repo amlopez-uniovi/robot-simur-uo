@@ -1,10 +1,12 @@
 """
-Ejemplo básico de navegación con robot.
+Ejemplo básico de navegación para un robot.
 """
 
-from robot_simur_uo.controllers import NavigationController
-from robot_simur_uo.utils import DataVisualizer, SimulatedRobot
-from robot_simur_uo.interfaces import IRobot
+from ..controllers.navigation import NavigationController
+from ..utils.coordinates import RobotPose
+from ..utils.simulated_robot import SimulatedDifferentialRobot
+from ..utils.visualization import DataVisualizer
+from ..interfaces.irobot import IRobot
 
 
 class BasicNavigationExample:
@@ -121,7 +123,7 @@ def run_basic_navigation_demo():
     print("Iniciando demo de navegación básica...")
     
     # Crear robot simulado
-    robot = SimulatedRobot()
+    robot = SimulatedDifferentialRobot()
     
     # Crear y ejecutar ejemplo con el robot
     example = BasicNavigationExample(robot)
@@ -142,7 +144,7 @@ def run_demo_with_robot_type(robot_type: str = 'simulated'):
     
     # Crear robot según el tipo especificado
     if robot_type.lower() == 'simulated':
-        robot = SimulatedRobot()
+        robot = SimulatedDifferentialRobot()
     elif robot_type.lower() == 'epuck':
         from robot_simur_uo.webots import EPuck
         robot = EPuck()
@@ -177,7 +179,7 @@ if __name__ == "__main__":
         print("="*50)
         
         # Crear robot con parámetros personalizados
-        custom_robot = SimulatedRobot(wheel_radius=0.03, wheel_base=0.06)
+        custom_robot = SimulatedDifferentialRobot(wheel_radius=0.03, wheel_base=0.06)
         
         # Usar el robot con el ejemplo
         custom_example = BasicNavigationExample(custom_robot)

@@ -1,13 +1,19 @@
 """
-Ejemplo de demostración de sensores.
+Demonstración de uso de sensores.
 """
+
+import time
+import numpy as np
+
+from ..sensors.distance_sensors import DistanceSensorProcessor
+from ..utils.simulated_robot import SimulatedDifferentialRobot
 
 from ..sensors.distance_sensors import DistanceSensorProcessor
 from ..sensors.lidar_processor import LidarProcessor
 from ..sensors.camera_processor import CameraProcessor
 from ..sensors.sensor_fusion import SensorFusion
 from ..utils.visualization import DataVisualizer
-from ..utils.simulated_robot import SimulatedRobot
+from ..utils.simulated_robot import SimulatedDifferentialRobot
 import random
 import math
 
@@ -24,7 +30,7 @@ class SensorDemoExample:
         """
         # Crear robot explícitamente según el tipo
         if robot_type.lower() == 'simulated':
-            self.robot = SimulatedRobot()
+            self.robot = SimulatedDifferentialRobot()
         elif robot_type.lower() == 'epuck':
             from ..webots import EPuck
             self.robot = EPuck()

@@ -7,7 +7,7 @@ from ..controllers.navigation import NavigationController
 from ..sensors.distance_sensors import DistanceSensorProcessor
 from ..utils.coordinates import RobotPose
 from ..utils.visualization import create_simple_map
-from ..utils.simulated_robot import SimulatedRobot
+from ..utils.simulated_robot import SimulatedDifferentialRobot
 import random
 import math
 
@@ -24,7 +24,7 @@ class ObstacleCourseExample:
         """
         # Crear robot explícitamente según el tipo
         if robot_type.lower() == 'simulated':
-            self.robot = SimulatedRobot()
+            self.robot = SimulatedDifferentialRobot()
         elif robot_type.lower() == 'epuck':
             from ..webots import EPuck
             self.robot = EPuck()
