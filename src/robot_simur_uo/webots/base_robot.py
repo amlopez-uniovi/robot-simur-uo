@@ -7,8 +7,11 @@ except ImportError:
             raise RuntimeError("El módulo `controller` solo está disponible en el entorno de Webots.")
 
 import math
+from typing import Tuple
+from ..interfaces.irobot import IRobot
+from ..utils.coordinates import RobotPose
 
-class BaseRobot:
+class BaseRobot(IRobot):
     """Clase base para encapsular funcionalidades comunes de robots en Webots"""
     
     def __init__(self, time_step=64):
@@ -188,6 +191,49 @@ class BaseRobot:
     def cleanup(self):
         """Limpiar recursos al finalizar"""
         self.robot.cleanup()
+    
+    # Implementación de la interfaz IRobot
+    def set_motor_speeds(self, left_speed: float, right_speed: float) -> None:
+        """
+        Establece las velocidades de los motores.
+        
+        Args:
+            left_speed: Velocidad del motor izquierdo (rad/s)
+            right_speed: Velocidad del motor derecho (rad/s)
+        """
+        # Debe ser implementado por subclases específicas
+        raise NotImplementedError("Subclases deben implementar set_motor_speeds")
+    
+    def get_pose(self) -> RobotPose:
+        """
+        Obtiene la pose actual del robot.
+        
+        Returns:
+            Pose actual del robot
+        """
+        gps_position = self.get_gps_position()
+        compass_direction, angle = self.get_compass_orientation()
+        
+        return RobotPose(gps_position[0], gps_position[1], angle)
+    
+    def set_pose(self, x: float, y: float, theta: float) -> None:
+        """
+        Establece la pose del robot.
+        
+        Nota: En Webots esto normalmente no es posible durante la simulación.
+        Este método existe para compatibilidad con la interfaz.
+        """
+        print(f"Advertencia: set_pose no está soportado en robots de Webots durante la simulación")
+    
+    def get_motor_speeds(self) -> Tuple[float, float]:
+        """
+        Obtiene las velocidades actuales de los motores.
+        
+        Returns:
+            Tupla (velocidad_izquierda, velocidad_derecha) en rad/s
+        """
+        # Debe ser implementado por subclases específicas
+        raise NotImplementedError("Subclases deben implementar get_motor_speeds")
     
     # Métodos abstractos que deben ser implementados por subclases
     def _init_motors(self):

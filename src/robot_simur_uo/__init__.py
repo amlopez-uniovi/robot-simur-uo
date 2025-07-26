@@ -19,10 +19,12 @@ from .controllers import *
 from .sensors import *
 from .utils import *
 from .webots import *
+from .interfaces import *
 
 __all__ = [
     "controllers",
-    "sensors",
+    "sensors", 
     "utils",
     "webots",
+    "interfaces",
 ]

@@ -2,25 +2,23 @@
 Ejemplo básico de navegación con robot.
 """
 
-from ..webots.robot_factory import create_robot
-from ..controllers.navigation import NavigationController
-from ..utils.coordinates import RobotPose
-from ..utils.visualization import DataVisualizer
+from robot_simur_uo.controllers import NavigationController
+from robot_simur_uo.utils import DataVisualizer, SimulatedRobot
+from robot_simur_uo.interfaces import IRobot
 
 
 class BasicNavigationExample:
     """Ejemplo de navegación básica punto a punto."""
     
-    def __init__(self, robot_type: str = 'epuck'):
+    def __init__(self, robot: IRobot):
         """
         Inicializa el ejemplo.
         
         Args:
-            robot_type: Tipo de robot a usar
+            robot: Instancia del robot que implementa IRobot
         """
-        self.robot = create_robot(robot_type)
+        self.robot = robot
         self.navigator = NavigationController(max_speed=0.5)
-        self.current_pose = RobotPose(0.0, 0.0, 0.0)
         self.visualizer = DataVisualizer(80, 24)
         
         # Lista de objetivos a visitar
@@ -51,16 +49,18 @@ class BasicNavigationExample:
                 target = self.waypoints[self.current_waypoint_index]
                 self.navigator.set_target(target[0], target[1])
                 
-                # Simular obtención de pose actual (en Webots sería del robot)
-                current_x, current_y, current_theta = self.current_pose.to_tuple()
+                # Obtener pose actual del robot
+                current_pose = self.robot.get_pose()
+                current_x, current_y, current_theta = current_pose.to_tuple()
                 
                 # Calcular velocidades de motores
                 left_speed, right_speed = self.navigator.calculate_motor_speeds(
                     current_x, current_y, current_theta
                 )
                 
-                # Simular movimiento del robot
-                self._simulate_robot_movement(left_speed, right_speed, time_step)
+                # Establecer velocidades en el robot y simular movimiento
+                self.robot.set_motor_speeds(left_speed, right_speed)
+                self.robot.step(time_step)
                 
                 # Verificar si llegamos al objetivo
                 if self.navigator.is_target_reached(current_x, current_y):
@@ -81,41 +81,10 @@ class BasicNavigationExample:
         print(f"\nEjemplo completado en {iteration + 1} iteraciones")
         self._show_final_visualization()
     
-    def _simulate_robot_movement(self, left_speed: float, right_speed: float, dt: float):
-        """
-        Simula el movimiento del robot basado en velocidades de motores.
-        
-        Args:
-            left_speed: Velocidad motor izquierdo
-            right_speed: Velocidad motor derecho
-            dt: Paso de tiempo
-        """
-        # Parámetros del robot (simplificados)
-        wheel_radius = 0.025  # metros
-        wheel_base = 0.053    # metros
-        
-        # Calcular velocidades lineales de las ruedas
-        v_left = left_speed * wheel_radius
-        v_right = right_speed * wheel_radius
-        
-        # Calcular velocidad lineal y angular del robot
-        v_linear = (v_left + v_right) / 2
-        v_angular = (v_right - v_left) / wheel_base
-        
-        # Actualizar pose
-        import math
-        current_theta = self.current_pose.theta
-        
-        # Integración simple
-        dx = v_linear * math.cos(current_theta) * dt
-        dy = v_linear * math.sin(current_theta) * dt
-        dtheta = v_angular * dt
-        
-        self.current_pose.update(dx, dy, dtheta)
-    
     def _show_progress(self):
         """Muestra el progreso actual."""
-        current_x, current_y, current_theta = self.current_pose.to_tuple()
+        current_pose = self.robot.get_pose()
+        current_x, current_y, current_theta = current_pose.to_tuple()
         
         if self.current_waypoint_index < len(self.waypoints):
             target = self.waypoints[self.current_waypoint_index]
@@ -137,7 +106,8 @@ class BasicNavigationExample:
             self.visualizer.draw_point(x, y, str(i+1))
         
         # Dibujar posición final del robot
-        final_x, final_y, final_theta = self.current_pose.to_tuple()
+        final_pose = self.robot.get_pose()
+        final_x, final_y, final_theta = final_pose.to_tuple()
         self.visualizer.draw_robot(final_x, final_y, final_theta)
         
         # Dibujar trayectoria (simplificada)
@@ -150,8 +120,40 @@ def run_basic_navigation_demo():
     """Función conveniente para ejecutar el demo."""
     print("Iniciando demo de navegación básica...")
     
-    # Crear y ejecutar ejemplo con E-puck
-    example = BasicNavigationExample('epuck')
+    # Crear robot simulado
+    robot = SimulatedRobot()
+    
+    # Crear y ejecutar ejemplo con el robot
+    example = BasicNavigationExample(robot)
+    example.run_example()
+    
+    print("\n" + "="*50)
+    input("Presiona Enter para continuar...")
+
+
+def run_demo_with_robot_type(robot_type: str = 'simulated'):
+    """
+    Ejecuta el demo con un tipo específico de robot.
+    
+    Args:
+        robot_type: Tipo de robot ('simulated', 'epuck', 'rosbot')
+    """
+    print(f"Iniciando demo de navegación básica con robot {robot_type}...")
+    
+    # Crear robot según el tipo especificado
+    if robot_type.lower() == 'simulated':
+        robot = SimulatedRobot()
+    elif robot_type.lower() == 'epuck':
+        from robot_simur_uo.webots import EPuck
+        robot = EPuck()
+    elif robot_type.lower() == 'rosbot':
+        from robot_simur_uo.webots import RosBot
+        robot = RosBot()
+    else:
+        raise ValueError(f"Tipo de robot no soportado: {robot_type}. Use 'simulated', 'epuck' o 'rosbot'")
+    
+    # Crear y ejecutar ejemplo con el robot
+    example = BasicNavigationExample(robot)
     example.run_example()
     
     print("\n" + "="*50)
@@ -159,4 +161,30 @@ def run_basic_navigation_demo():
 
 
 if __name__ == "__main__":
-    run_basic_navigation_demo()
+    import sys
+    
+    # Permitir especificar el tipo de robot como argumento
+    if len(sys.argv) > 1:
+        robot_type = sys.argv[1]
+        run_demo_with_robot_type(robot_type)
+    else:
+        # Ejecutar demo por defecto con robot simulado
+        run_basic_navigation_demo()
+        
+        # Ejemplo adicional mostrando flexibilidad
+        print("\n" + "="*50)
+        print("Ejemplo adicional: Creación manual del robot")
+        print("="*50)
+        
+        # Crear robot con parámetros personalizados
+        custom_robot = SimulatedRobot(wheel_radius=0.03, wheel_base=0.06)
+        
+        # Usar el robot con el ejemplo
+        custom_example = BasicNavigationExample(custom_robot)
+        
+        # Configurar waypoints diferentes
+        custom_example.waypoints = [(0.5, 0.5), (0.0, 0.0)]
+        custom_example.current_waypoint_index = 0
+        
+        print("Ejecutando con robot personalizado y waypoints diferentes...")
+        custom_example.run_example(max_iterations=500)

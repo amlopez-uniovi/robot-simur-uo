@@ -2,12 +2,12 @@
 Ejemplo de demostración de sensores.
 """
 
-from ..webots.robot_factory import create_robot
 from ..sensors.distance_sensors import DistanceSensorProcessor
 from ..sensors.lidar_processor import LidarProcessor
 from ..sensors.camera_processor import CameraProcessor
 from ..sensors.sensor_fusion import SensorFusion
 from ..utils.visualization import DataVisualizer
+from ..utils.simulated_robot import SimulatedRobot
 import random
 import math
 
@@ -15,14 +15,24 @@ import math
 class SensorDemoExample:
     """Ejemplo de demostración de capacidades de sensores."""
     
-    def __init__(self, robot_type: str = 'rosbot'):
+    def __init__(self, robot_type: str = 'simulated'):
         """
         Inicializa el ejemplo.
         
         Args:
-            robot_type: Tipo de robot a usar
+            robot_type: Tipo de robot a usar ('simulated', 'epuck', 'rosbot')
         """
-        self.robot = create_robot(robot_type)
+        # Crear robot explícitamente según el tipo
+        if robot_type.lower() == 'simulated':
+            self.robot = SimulatedRobot()
+        elif robot_type.lower() == 'epuck':
+            from ..webots import EPuck
+            self.robot = EPuck()
+        elif robot_type.lower() == 'rosbot':
+            from ..webots import RosBot
+            self.robot = RosBot()
+        else:
+            raise ValueError(f"Tipo de robot no soportado: {robot_type}. Use 'simulated', 'epuck' o 'rosbot'")
         
         # Inicializar procesadores de sensores
         self.distance_processor = DistanceSensorProcessor(num_sensors=8)
