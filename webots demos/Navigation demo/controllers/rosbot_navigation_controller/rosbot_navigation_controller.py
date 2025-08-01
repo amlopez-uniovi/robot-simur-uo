@@ -28,17 +28,21 @@ def main():
         
         if controller.is_target_reached(current_x, current_y):
             print("¡Objetivo alcanzado!")
-            robot.set_motor_velocities(0, 0)  # Detener el robot
+            robot.set_drive_speed(0.0)      # Usar interfaz Ackermann unificada
+            robot.set_steering_angle(0.0)   # Detener el robot
             break
         
-        left_speed, right_speed = controller.calculate_motor_speeds(
+        # Usar comandos Ackermann unificados
+        drive_speed, steering_angle = controller.calculate_control_commands(
             current_x, current_y, current_angle
         )
         print(f"Posición: ({current_x:.2f}, {current_y:.2f}), "
-                f"Ángulo: {current_angle:.2f}, "
-                f"Velocidades: Izq={left_speed:.2f}, Der={right_speed:.2f}")
+              f"Ángulo: {current_angle:.2f}, "
+              f"Comandos: Velocidad={drive_speed:.2f}, Dirección={steering_angle:.2f}")
 
-        robot.set_motor_velocities(left_speed, right_speed)
+        # Aplicar comandos usando interfaz Ackermann
+        robot.set_drive_speed(drive_speed)
+        robot.set_steering_angle(steering_angle)
             
         # Mostrar información cada cierto tiempo
         if robot.step(0) % 1000 == 0:

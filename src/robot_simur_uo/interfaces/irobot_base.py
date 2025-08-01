@@ -12,19 +12,18 @@ class IRobotBase(ABC):
     
     Define los métodos comunes que deben implementar todas las clases de robot
     independientemente de su tipo de locomoción.
+    
+    Implementa directamente la gestión de pose que es común para todos los robots.
     """
     
-    @abstractmethod
-    def step(self, dt: float) -> None:
-        """
-        Ejecuta un paso de simulación.
-        
-        Args:
-            dt: Paso de tiempo en segundos
-        """
-        pass
+    def __init__(self):
+        """Inicializa el robot con pose y estado básico."""
+        self.pose = RobotPose(0.0, 0.0, 0.0)
+        # Estado básico del robot (común para todos los tipos)
+        self.drive_speed = 0.0      # Velocidad de avance (m/s)
+        self.steering_angle = 0.0   # Ángulo de dirección (radianes)
     
-    @abstractmethod
+    # Métodos implementados (comunes para todos los robots)
     def get_pose(self) -> RobotPose:
         """
         Obtiene la pose actual del robot.
@@ -32,9 +31,8 @@ class IRobotBase(ABC):
         Returns:
             Pose actual del robot
         """
-        pass
+        return self.pose.copy()
     
-    @abstractmethod
     def set_pose(self, x: float, y: float, theta: float) -> None:
         """
         Establece la pose del robot.
@@ -44,14 +42,8 @@ class IRobotBase(ABC):
             y: Coordenada y  
             theta: Ángulo de orientación
         """
-        pass
+        self.pose = RobotPose(x, y, theta)
     
-    @abstractmethod
-    def stop(self) -> None:
-        """Detiene el robot."""
-        pass
-    
-    @abstractmethod
     def set_drive_speed(self, speed: float) -> None:
         """
         Establece la velocidad de avance del robot.
@@ -59,9 +51,8 @@ class IRobotBase(ABC):
         Args:
             speed: Velocidad lineal (m/s)
         """
-        pass
+        self.drive_speed = speed
     
-    @abstractmethod
     def set_steering_angle(self, angle: float) -> None:
         """
         Establece el ángulo de dirección del robot.
@@ -69,9 +60,8 @@ class IRobotBase(ABC):
         Args:
             angle: Ángulo de dirección en radianes
         """
-        pass
+        self.steering_angle = angle
     
-    @abstractmethod
     def get_drive_speed(self) -> float:
         """
         Obtiene la velocidad de avance actual.
@@ -79,9 +69,8 @@ class IRobotBase(ABC):
         Returns:
             Velocidad lineal actual (m/s)
         """
-        pass
+        return self.drive_speed
     
-    @abstractmethod
     def get_steering_angle(self) -> float:
         """
         Obtiene el ángulo de dirección actual.
@@ -89,9 +78,24 @@ class IRobotBase(ABC):
         Returns:
             Ángulo de dirección actual en radianes
         """
-        pass
+        return self.steering_angle
     
-    @abstractmethod
+    def stop(self) -> None:
+        """Detiene el robot."""
+        self.drive_speed = 0.0
+        self.steering_angle = 0.0
+    
     def cleanup(self) -> None:
         """Limpieza del robot."""
+        self.stop()
+    
+    # Métodos abstractos (deben ser implementados por las subclases)
+    @abstractmethod
+    def step(self, dt: float) -> None:
+        """
+        Ejecuta un paso de simulación.
+        
+        Args:
+            dt: Paso de tiempo en segundos
+        """
         pass

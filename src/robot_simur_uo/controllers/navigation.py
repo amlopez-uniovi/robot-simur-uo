@@ -67,19 +67,20 @@ class NavigationController:
         
         return angle_diff, distance
     
-    def calculate_motor_speeds(self, current_x: float, current_y: float, 
-                             current_angle: float, wheel_base: float = 0.1) -> Tuple[float, float]:
+    def calculate_control_commands(self, current_x: float, current_y: float, 
+                                 current_angle: float) -> Tuple[float, float]:
         """
-        Calcula las velocidades de los motores para dirigirse al objetivo.
+        Calcula comandos de control Ackermann (velocidad + ángulo) para dirigirse al objetivo.
+        
+        Esta es la interfaz principal que funciona con cualquier tipo de robot.
         
         Args:
             current_x: Posición X actual
             current_y: Posición Y actual  
             current_angle: Ángulo actual del robot
-            wheel_base: Distancia entre ruedas
             
         Returns:
-            Tuple con (velocidad_motor_izquierdo, velocidad_motor_derecho)
+            Tuple con (velocidad_lineal, ángulo_de_dirección)
         """
         angle_diff, distance = self.calculate_direction_to_target(
             current_x, current_y, current_angle
@@ -88,21 +89,13 @@ class NavigationController:
         if distance < self.tolerance:  # Ya llegamos al objetivo
             return 0.0, 0.0
         
-        # Velocidad base proporcional a la distancia
-        base_speed = min(self.max_speed, distance * self.linear_gain)
+        # Velocidad proporcional a la distancia
+        drive_speed = min(self.max_speed, distance * self.linear_gain)
         
-        # Ajuste angular
-        angular_speed = angle_diff * self.angular_gain
+        # Ángulo de dirección proporcional al error angular (limitado a ±0.5 rad ≈ ±30°)
+        steering_angle = max(-0.5, min(0.5, angle_diff * self.angular_gain))
         
-        # Calcular velocidades de motores
-        left_speed = base_speed - angular_speed
-        right_speed = base_speed + angular_speed
-        
-        # Limitar velocidades
-        left_speed = max(-self.max_speed, min(self.max_speed, left_speed))
-        right_speed = max(-self.max_speed, min(self.max_speed, right_speed))
-        
-        return left_speed, right_speed
+        return drive_speed, steering_angle
     
     def is_target_reached(self, current_x: float, current_y: float) -> bool:
         """
@@ -127,28 +120,28 @@ class NavigationController:
 
 if __name__ == "__main__":
     # Ejemplo de uso del controlador de navegación
-    controller = NavigationController(max_speed=1.0)
-    controller.set_target(5.0, 5.0, tol=0.1)
+    print("=== NavigationController con comandos Ackermann ===")
+    controller = NavigationController(max_speed=1.0, linear_gain=1.5, angular_gain=1.0)
+    controller.set_target(2.0, 2.0, tol=0.1)
 
     # Estado inicial del robot
     current_x, current_y, current_angle = 0.0, 0.0, 0.0
 
-    # Simulación del bucle de control
-    while not controller.is_target_reached(current_x, current_y):
-        left_speed, right_speed = controller.calculate_motor_speeds(
+    # Simulación usando comandos Ackermann unificados
+    for i in range(15):
+        if controller.is_target_reached(current_x, current_y):
+            break
+            
+        drive_speed, steering_angle = controller.calculate_control_commands(
             current_x, current_y, current_angle
         )
-        print(f"Posición: ({current_x:.2f}, {current_y:.2f}), "
-                f"Ángulo: {current_angle:.2f}, "
-                f"Velocidades: Izq={left_speed:.2f}, Der={right_speed:.2f}")
+        print(f"Paso {i+1}: Pos=({current_x:.2f}, {current_y:.2f}), "
+              f"Velocidad={drive_speed:.2f}, Dirección={steering_angle:.2f}")
 
-        # Simulación simple del movimiento (no considera física real)
-        # Avance proporcional a la velocidad media
-        speed = (left_speed + right_speed) / 2.0
-        current_x += speed * math.cos(current_angle) * 0.1  # 0.1 = dt
-        current_y += speed * math.sin(current_angle) * 0.1
+        # Simulación simple usando modelo Ackermann
+        dt = 0.1
+        current_x += drive_speed * math.cos(current_angle) * dt
+        current_y += drive_speed * math.sin(current_angle) * dt
+        current_angle += steering_angle * dt  # Modelo simplificado
 
-        # Giro proporcional a la diferencia de velocidades
-        current_angle += (right_speed - left_speed) / 0.1 * 0.1  # wheel_base=0.1, dt=0.1
-
-    print("¡Objetivo alcanzado!")
+    print("¡Navegación completada!")
