@@ -2,12 +2,11 @@
 Módulo de ejemplos de uso.
 """
 
-from .basic_navigation import BasicNavigationExample
-from .obstacle_course import ObstacleCourseExample
-from .sensor_demo import SensorDemoExample
+# Solo exportar las clases de robots simulados por ahora
+from .simulated_differential_robot import SimulatedDifferentialRobot
+from .simulated_ackermann_robot import SimulatedAckermannRobot
 
 __all__ = [
-    'BasicNavigationExample',
-    'ObstacleCourseExample',
-    'SensorDemoExample'
+    'SimulatedDifferentialRobot',  # Ejemplo de implementación diferencial
+    'SimulatedAckermannRobot'      # Ejemplo de implementación Ackermann
 ]

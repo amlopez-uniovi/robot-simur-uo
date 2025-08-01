@@ -1,18 +1,18 @@
 """
-Robot simulado tipo Ackermann para ejemplos y pruebas.
+Ejemplo de implementación simulada de robot Ackermann.
+Implementación completa con toda la funcionalidad.
 """
 
 import math
-from typing import Tuple
-from .coordinates import RobotPose
-from ..interfaces.irobot import IAckermannRobot
+from ..utils.coordinates import RobotPose
+from ..interfaces.iackermann_robot import IAckermannRobot
 
 
 class SimulatedAckermannRobot(IAckermannRobot):
     """
-    Robot Ackermann simulado para ejemplos y testing sin dependencia de Webots.
+    Implementación simulada completa de robot tipo Ackermann.
     
-    Simula un robot tipo coche con dirección frontal (como un automóvil).
+    Incluye toda la funcionalidad común más la simulación cinemática.
     """
     
     def __init__(self, wheelbase: float = 0.25, max_steering_angle: float = math.pi/6):
@@ -49,48 +49,9 @@ class SimulatedAckermannRobot(IAckermannRobot):
         """Obtiene la velocidad de tracción actual."""
         return self.drive_speed
     
-    def step(self, dt: float) -> None:
-        """
-        Ejecuta un paso de simulación usando el modelo cinemático de Ackermann.
-        
-        Args:
-            dt: Paso de tiempo en segundos
-        """
-        if abs(self.drive_speed) < 1e-6:
-            return  # No hay movimiento
-        
-        # Obtener pose actual
-        x, y, theta = self.pose.to_tuple()
-        
-        # Modelo cinemático de Ackermann
-        if abs(self.steering_angle) < 1e-6:
-            # Movimiento recto
-            dx = self.drive_speed * math.cos(theta) * dt
-            dy = self.drive_speed * math.sin(theta) * dt
-            dtheta = 0.0
-        else:
-            # Movimiento con giro
-            # Radio de giro
-            R = self.wheelbase / math.tan(self.steering_angle)
-            
-            # Velocidad angular
-            omega = self.drive_speed / R
-            
-            # Calcular nuevo estado
-            dtheta = omega * dt
-            dx = R * (math.sin(theta + dtheta) - math.sin(theta))
-            dy = R * (-math.cos(theta + dtheta) + math.cos(theta))
-        
-        # Actualizar pose
-        new_x = x + dx
-        new_y = y + dy
-        new_theta = (theta + dtheta) % (2 * math.pi)
-        
-        self.pose = RobotPose(new_x, new_y, new_theta)
-    
     def get_pose(self) -> RobotPose:
         """Obtiene la pose actual del robot."""
-        return self.pose
+        return self.pose.copy()
     
     def set_pose(self, x: float, y: float, theta: float) -> None:
         """Establece la pose del robot."""
@@ -144,6 +105,49 @@ class SimulatedAckermannRobot(IAckermannRobot):
     def cleanup(self) -> None:
         """Limpieza del robot."""
         self.stop()
+    
+    def step(self, dt: float) -> None:
+        """
+        Implementación simulada del paso de tiempo.
+        
+        Usa el modelo cinemático de Ackermann para actualizar la pose.
+        
+        Args:
+            dt: Paso de tiempo en segundos
+        """
+        if abs(self.drive_speed) < 1e-6:
+            return  # No hay movimiento
+        
+        # Obtener pose actual
+        x, y, theta = self.pose.to_tuple()
+        
+        # Modelo cinemático de Ackermann
+        if abs(self.steering_angle) < 1e-6:
+            # Movimiento recto
+            dx = self.drive_speed * math.cos(theta) * dt
+            dy = self.drive_speed * math.sin(theta) * dt
+            dtheta = 0.0
+        else:
+            # Movimiento con giro
+            # Radio de giro
+            R = self.wheelbase / math.tan(self.steering_angle)
+            
+            # Velocidad angular
+            omega = self.drive_speed / R
+            
+            # Calcular nuevo estado
+            dtheta = omega * dt
+            dx = R * (math.sin(theta + dtheta) - math.sin(theta))
+            dy = R * (-math.cos(theta + dtheta) + math.cos(theta))
+        
+        # Actualizar pose
+        new_x = x + dx
+        new_y = y + dy
+        new_theta = (theta + dtheta) % (2 * math.pi)
+        
+        self.pose.x = new_x
+        self.pose.y = new_y
+        self.pose.theta = new_theta
     
     def __str__(self) -> str:
         """Representación en string del robot."""

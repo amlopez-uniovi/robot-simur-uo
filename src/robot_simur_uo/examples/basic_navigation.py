@@ -2,35 +2,72 @@
 Ejemplo básico de navegación para un robot.
 """
 
-from robot_simur_uo.controllers.navigation import NavigationController
-from robot_simur_uo.utils.coordinates import RobotPose
-from robot_simur_uo.utils.simulated_differential_robot import SimulatedDifferentialRobot
-from robot_simur_uo.utils.visualization import DataVisualizer
-from robot_simur_uo.interfaces.irobot import IRobot
+from ..controllers.navigation import NavigationController
+from ..utils.coordinates import RobotPose
+from .simulated_differential_robot import SimulatedDifferentialRobot
+from .simulated_ackermann_robot import SimulatedAckermannRobot
+from ..utils.visualization import DataVisualizer
+from ..interfaces import IRobotBase, IDifferentialRobot, IAckermannRobot
 
 
 class BasicNavigationExample:
     """Ejemplo de navegación básica punto a punto."""
     
-    def __init__(self, robot: IRobot):
+    def __init__(self, robot: IRobotBase):
         """
         Inicializa el ejemplo.
         
         Args:
-            robot: Instancia del robot que implementa IRobot
+            robot: Instancia del robot que implementa IRobotBase (puede ser diferencial o Ackermann)
         """
         self.robot = robot
         self.navigator = NavigationController(max_speed=0.5)
         self.visualizer = DataVisualizer(80, 24)
         
-        # Lista de objetivos a visitar
+        # Detectar tipo de robot para adaptar el control
+        self.is_differential = isinstance(robot, IDifferentialRobot)
+        self.is_ackermann = isinstance(robot, IAckermannRobot)
+        
+        # Lista de objetivos a visitar (waypoints simples)
         self.waypoints = [
             (1.0, 0.0),
-            (1.0, 1.0),
-            (0.0, 1.0),
             (0.0, 0.0)
         ]
         self.current_waypoint_index = 0
+        
+    def _control_robot(self, left_speed: float, right_speed: float):
+        """
+        Controla el robot de manera polimórfica según su tipo.
+        
+        Args:
+            left_speed: Velocidad calculada para motor izquierdo (robots diferenciales)
+            right_speed: Velocidad calculada para motor derecho (robots diferenciales)
+        """
+        if self.is_differential:
+            # Robot diferencial: usar velocidades de motores directamente
+            self.robot.set_motor_speeds(left_speed, right_speed)
+            
+        elif self.is_ackermann:
+            # Robot Ackermann: convertir velocidades diferenciales a velocidad lineal y ángulo de dirección
+            # Velocidad lineal promedio
+            linear_speed = (left_speed + right_speed) / 2.0
+            
+            # Calcular ángulo de dirección basado en la diferencia de velocidades
+            # Esta es una aproximación simple para navegación básica
+            speed_diff = right_speed - left_speed
+            steering_angle = speed_diff * 0.5  # Factor de escala ajustable
+            
+            # Limitar el ángulo de dirección (típicamente ±30 grados = ±0.52 rad)
+            max_steering = 0.52
+            steering_angle = max(-max_steering, min(max_steering, steering_angle))
+            
+            self.robot.set_drive_speed(linear_speed)
+            self.robot.set_steering_angle(steering_angle)
+            
+        else:
+            # Tipo de robot no soportado
+            raise ValueError(f"Tipo de robot no soportado: {type(self.robot)}")
+    
         
     def run_example(self, time_step: float = 0.032, max_iterations: int = 1000):
         """
@@ -60,8 +97,8 @@ class BasicNavigationExample:
                     current_x, current_y, current_theta
                 )
                 
-                # Establecer velocidades en el robot y simular movimiento
-                self.robot.set_motor_speeds(left_speed, right_speed)
+                # Establecer velocidades en el robot de forma polimórfica
+                self._control_robot(left_speed, right_speed)
                 self.robot.step(time_step)
                 
                 # Verificar si llegamos al objetivo
@@ -120,73 +157,24 @@ class BasicNavigationExample:
 
 def run_basic_navigation_demo():
     """Función conveniente para ejecutar el demo."""
-    print("Iniciando demo de navegación básica...")
+    print("=== Demo de Navegación Básica ===")
     
-    # Crear robot simulado
-    robot = SimulatedDifferentialRobot()
+    # Ejemplo con robot diferencial
+    print("\n1. Robot Diferencial:")
+    diff_robot = SimulatedDifferentialRobot()
+    diff_example = BasicNavigationExample(diff_robot)
+    diff_example.waypoints = [(0.5, 0.0), (0.0, 0.0)]  # Waypoints simples
+    diff_example.current_waypoint_index = 0
+    diff_example.run_example(max_iterations=200)
     
-    # Crear y ejecutar ejemplo con el robot
-    example = BasicNavigationExample(robot)
-    example.run_example()
-    
-    print("\n" + "="*50)
-    input("Presiona Enter para continuar...")
-
-
-def run_demo_with_robot_type(robot_type: str = 'simulated'):
-    """
-    Ejecuta el demo con un tipo específico de robot.
-    
-    Args:
-        robot_type: Tipo de robot ('simulated', 'epuck', 'rosbot')
-    """
-    print(f"Iniciando demo de navegación básica con robot {robot_type}...")
-    
-    # Crear robot según el tipo especificado
-    if robot_type.lower() == 'simulated':
-        robot = SimulatedDifferentialRobot()
-    elif robot_type.lower() == 'epuck':
-        from robot_simur_uo.webots import EPuck
-        robot = EPuck()
-    elif robot_type.lower() == 'rosbot':
-        from robot_simur_uo.webots import RosBot
-        robot = RosBot()
-    else:
-        raise ValueError(f"Tipo de robot no soportado: {robot_type}. Use 'simulated', 'epuck' o 'rosbot'")
-    
-    # Crear y ejecutar ejemplo con el robot
-    example = BasicNavigationExample(robot)
-    example.run_example()
-    
-    print("\n" + "="*50)
-    input("Presiona Enter para continuar...")
+    # Ejemplo con robot Ackermann
+    print("\n2. Robot Ackermann:")
+    ack_robot = SimulatedAckermannRobot()
+    ack_example = BasicNavigationExample(ack_robot)
+    ack_example.waypoints = [(0.5, 0.0), (0.0, 0.0)]  # Waypoints simples
+    ack_example.current_waypoint_index = 0
+    ack_example.run_example(max_iterations=200)
 
 
 if __name__ == "__main__":
-    import sys
-    
-    # Permitir especificar el tipo de robot como argumento
-    if len(sys.argv) > 1:
-        robot_type = sys.argv[1]
-        run_demo_with_robot_type(robot_type)
-    else:
-        # Ejecutar demo por defecto con robot simulado
-        run_basic_navigation_demo()
-        
-        # Ejemplo adicional mostrando flexibilidad
-        print("\n" + "="*50)
-        print("Ejemplo adicional: Creación manual del robot")
-        print("="*50)
-        
-        # Crear robot con parámetros personalizados
-        custom_robot = SimulatedDifferentialRobot(wheel_radius=0.03, wheel_base=0.06)
-        
-        # Usar el robot con el ejemplo
-        custom_example = BasicNavigationExample(custom_robot)
-        
-        # Configurar waypoints diferentes
-        custom_example.waypoints = [(0.5, 0.5), (0.0, 0.0)]
-        custom_example.current_waypoint_index = 0
-        
-        print("Ejecutando con robot personalizado y waypoints diferentes...")
-        custom_example.run_example(max_iterations=500)
+    run_basic_navigation_demo()

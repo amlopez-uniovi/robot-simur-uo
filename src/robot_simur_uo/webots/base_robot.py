@@ -8,7 +8,7 @@ except ImportError:
 
 import math
 from typing import Tuple
-from ..interfaces.irobot import IDifferentialRobot
+from ..interfaces.idifferential_robot import IDifferentialRobot
 from ..utils.coordinates import RobotPose
 
 class BaseRobot(IDifferentialRobot):

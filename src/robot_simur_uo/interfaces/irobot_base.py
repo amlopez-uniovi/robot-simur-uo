@@ -1,9 +1,8 @@
 """
-Interfaces comunes para todos los tipos de robots.
+Interfaz base para todos los tipos de robots.
 """
 
 from abc import ABC, abstractmethod
-from typing import Tuple
 from ..utils.coordinates import RobotPose
 
 
@@ -91,84 +90,8 @@ class IRobotBase(ABC):
             speed: Velocidad (unidades dependen del tipo de robot)
         """
         pass
-
-
-class IDifferentialRobot(IRobotBase):
-    """
-    Interfaz específica para robots de tracción diferencial.
-    
-    Define métodos específicos para robots con dos ruedas independientes.
-    """
     
     @abstractmethod
-    def set_motor_speeds(self, left_speed: float, right_speed: float) -> None:
-        """
-        Establece las velocidades de los motores.
-        
-        Args:
-            left_speed: Velocidad del motor izquierdo (rad/s)
-            right_speed: Velocidad del motor derecho (rad/s)
-        """
+    def cleanup(self) -> None:
+        """Limpieza del robot."""
         pass
-    
-    @abstractmethod
-    def get_motor_speeds(self) -> Tuple[float, float]:
-        """
-        Obtiene las velocidades actuales de los motores.
-        
-        Returns:
-            Tupla (velocidad_izquierda, velocidad_derecha) en rad/s
-        """
-        pass
-
-
-class IAckermannRobot(IRobotBase):
-    """
-    Interfaz específica para robots con dirección tipo Ackermann.
-    
-    Define métodos específicos para robots como coches con dirección frontal.
-    """
-    
-    @abstractmethod
-    def set_steering_angle(self, angle: float) -> None:
-        """
-        Establece el ángulo de dirección.
-        
-        Args:
-            angle: Ángulo de dirección en radianes
-        """
-        pass
-    
-    @abstractmethod
-    def set_drive_speed(self, speed: float) -> None:
-        """
-        Establece la velocidad de tracción.
-        
-        Args:
-            speed: Velocidad lineal en m/s
-        """
-        pass
-    
-    @abstractmethod
-    def get_steering_angle(self) -> float:
-        """
-        Obtiene el ángulo de dirección actual.
-        
-        Returns:
-            Ángulo de dirección en radianes
-        """
-        pass
-    
-    @abstractmethod
-    def get_drive_speed(self) -> float:
-        """
-        Obtiene la velocidad de tracción actual.
-        
-        Returns:
-            Velocidad lineal en m/s
-        """
-        pass
-
-
-# Mantenemos IRobot como alias por compatibilidad hacia atrás
-IRobot = IDifferentialRobot
