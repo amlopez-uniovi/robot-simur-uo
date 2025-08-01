@@ -54,53 +54,65 @@ class SimulatedDifferentialRobot(IDifferentialRobot):
         self.left_speed = 0.0
         self.right_speed = 0.0
     
-    def move_forward(self, speed: float = 1.0) -> None:
-        """
-        Mueve el robot hacia adelante.
-        
-        Args:
-            speed: Velocidad angular de las ruedas en rad/s
-        """
-        abs_speed = abs(speed)
-        self.left_speed = abs_speed
-        self.right_speed = abs_speed
-    
-    def move_backward(self, speed: float = 1.0) -> None:
-        """
-        Mueve el robot hacia atrás.
-        
-        Args:
-            speed: Velocidad angular de las ruedas en rad/s
-        """
-        abs_speed = abs(speed)
-        self.left_speed = -abs_speed
-        self.right_speed = -abs_speed
-    
-    def turn_left(self, speed: float = 1.0) -> None:
-        """
-        Gira el robot a la izquierda.
-        
-        Args:
-            speed: Velocidad angular de las ruedas en rad/s
-        """
-        abs_speed = abs(speed)
-        self.left_speed = -abs_speed
-        self.right_speed = abs_speed
-    
-    def turn_right(self, speed: float = 1.0) -> None:
-        """
-        Gira el robot a la derecha.
-        
-        Args:
-            speed: Velocidad angular de las ruedas en rad/s
-        """
-        abs_speed = abs(speed)
-        self.left_speed = abs_speed
-        self.right_speed = -abs_speed
-    
     def cleanup(self) -> None:
         """Limpieza del robot."""
         self.stop()
+    
+    # Implementación de la interfaz Ackermann (conversión desde diferencial)
+    def set_drive_speed(self, speed: float) -> None:
+        """
+        Establece la velocidad de avance (interfaz Ackermann).
+        Convierte a velocidades diferenciales manteniendo dirección recta.
+        
+        Args:
+            speed: Velocidad lineal en m/s
+        """
+        # Convertir velocidad lineal a velocidad angular de ruedas
+        angular_speed = speed / self.wheel_radius
+        self.left_speed = angular_speed
+        self.right_speed = angular_speed
+    
+    def set_steering_angle(self, angle: float) -> None:
+        """
+        Establece el ángulo de dirección (interfaz Ackermann).
+        Convierte a diferencia de velocidades entre ruedas.
+        
+        Args:
+            angle: Ángulo de dirección en radianes (positivo = derecha)
+        """
+        # Convertir ángulo de dirección a diferencia de velocidades
+        # Usando un factor de escala para mapear ángulo a diferencia de velocidades
+        base_speed = (self.left_speed + self.right_speed) / 2.0
+        speed_diff = angle * base_speed * 2.0  # Factor ajustable
+        
+        # Aplicar diferencia manteniendo velocidad promedio
+        self.left_speed = base_speed - speed_diff / 2.0
+        self.right_speed = base_speed + speed_diff / 2.0
+    
+    def get_drive_speed(self) -> float:
+        """
+        Obtiene la velocidad de avance actual (interfaz Ackermann).
+        
+        Returns:
+            Velocidad lineal promedio en m/s
+        """
+        avg_angular_speed = (self.left_speed + self.right_speed) / 2.0
+        return avg_angular_speed * self.wheel_radius
+    
+    def get_steering_angle(self) -> float:
+        """
+        Obtiene el ángulo de dirección actual (interfaz Ackermann).
+        
+        Returns:
+            Ángulo de dirección estimado en radianes
+        """
+        # Estimar ángulo basado en diferencia de velocidades
+        speed_diff = self.right_speed - self.left_speed
+        base_speed = (self.left_speed + self.right_speed) / 2.0
+        
+        if abs(base_speed) > 0.001:  # Evitar división por cero
+            return speed_diff / (base_speed * 2.0)
+        return 0.0
     
     def step(self, dt: float) -> None:
         """

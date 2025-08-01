@@ -52,42 +52,42 @@ class IRobotBase(ABC):
         pass
     
     @abstractmethod
-    def move_forward(self, speed: float = 2.0) -> None:
+    def set_drive_speed(self, speed: float) -> None:
         """
-        Mueve el robot hacia adelante.
+        Establece la velocidad de avance del robot.
         
         Args:
-            speed: Velocidad (unidades dependen del tipo de robot)
+            speed: Velocidad lineal (m/s)
         """
         pass
     
     @abstractmethod
-    def move_backward(self, speed: float = 2.0) -> None:
+    def set_steering_angle(self, angle: float) -> None:
         """
-        Mueve el robot hacia atrás.
+        Establece el ángulo de dirección del robot.
         
         Args:
-            speed: Velocidad (unidades dependen del tipo de robot)
+            angle: Ángulo de dirección en radianes
         """
         pass
     
     @abstractmethod
-    def turn_left(self, speed: float = 2.0) -> None:
+    def get_drive_speed(self) -> float:
         """
-        Gira el robot a la izquierda.
+        Obtiene la velocidad de avance actual.
         
-        Args:
-            speed: Velocidad (unidades dependen del tipo de robot)
+        Returns:
+            Velocidad lineal actual (m/s)
         """
         pass
     
     @abstractmethod
-    def turn_right(self, speed: float = 2.0) -> None:
+    def get_steering_angle(self) -> float:
         """
-        Gira el robot a la derecha.
+        Obtiene el ángulo de dirección actual.
         
-        Args:
-            speed: Velocidad (unidades dependen del tipo de robot)
+        Returns:
+            Ángulo de dirección actual en radianes
         """
         pass
     

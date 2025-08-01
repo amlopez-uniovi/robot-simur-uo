@@ -7,7 +7,7 @@ from ..utils.coordinates import RobotPose
 from .simulated_differential_robot import SimulatedDifferentialRobot
 from .simulated_ackermann_robot import SimulatedAckermannRobot
 from ..utils.visualization import DataVisualizer
-from ..interfaces import IRobotBase, IDifferentialRobot, IAckermannRobot
+from ..interfaces import IRobotBase
 
 
 class BasicNavigationExample:
@@ -18,15 +18,11 @@ class BasicNavigationExample:
         Inicializa el ejemplo.
         
         Args:
-            robot: Instancia del robot que implementa IRobotBase (puede ser diferencial o Ackermann)
+            robot: Instancia del robot que implementa IRobotBase (interfaz Ackermann unificada)
         """
         self.robot = robot
         self.navigator = NavigationController(max_speed=0.5)
         self.visualizer = DataVisualizer(80, 24)
-        
-        # Detectar tipo de robot para adaptar el control
-        self.is_differential = isinstance(robot, IDifferentialRobot)
-        self.is_ackermann = isinstance(robot, IAckermannRobot)
         
         # Lista de objetivos a visitar (waypoints simples)
         self.waypoints = [
@@ -37,36 +33,25 @@ class BasicNavigationExample:
         
     def _control_robot(self, left_speed: float, right_speed: float):
         """
-        Controla el robot de manera polimórfica según su tipo.
+        Controla el robot usando la interfaz Ackermann unificada.
+        Convierte velocidades diferenciales a velocidad lineal + ángulo de dirección.
         
         Args:
             left_speed: Velocidad calculada para motor izquierdo (robots diferenciales)
             right_speed: Velocidad calculada para motor derecho (robots diferenciales)
         """
-        if self.is_differential:
-            # Robot diferencial: usar velocidades de motores directamente
-            self.robot.set_motor_speeds(left_speed, right_speed)
-            
-        elif self.is_ackermann:
-            # Robot Ackermann: convertir velocidades diferenciales a velocidad lineal y ángulo de dirección
-            # Velocidad lineal promedio
-            linear_speed = (left_speed + right_speed) / 2.0
-            
-            # Calcular ángulo de dirección basado en la diferencia de velocidades
-            # Esta es una aproximación simple para navegación básica
-            speed_diff = right_speed - left_speed
-            steering_angle = speed_diff * 0.5  # Factor de escala ajustable
-            
-            # Limitar el ángulo de dirección (típicamente ±30 grados = ±0.52 rad)
-            max_steering = 0.52
-            steering_angle = max(-max_steering, min(max_steering, steering_angle))
-            
-            self.robot.set_drive_speed(linear_speed)
-            self.robot.set_steering_angle(steering_angle)
-            
-        else:
-            # Tipo de robot no soportado
-            raise ValueError(f"Tipo de robot no soportado: {type(self.robot)}")
+        # Convertir velocidades diferenciales a modelo Ackermann
+        linear_speed = (left_speed + right_speed) / 2.0
+        speed_diff = right_speed - left_speed
+        steering_angle = speed_diff * 0.5  # Factor de escala ajustable
+        
+        # Limitar el ángulo de dirección (±30 grados = ±0.52 rad)
+        max_steering = 0.52
+        steering_angle = max(-max_steering, min(max_steering, steering_angle))
+        
+        # Usar interfaz Ackermann unificada
+        self.robot.set_drive_speed(linear_speed)
+        self.robot.set_steering_angle(steering_angle)
     
         
     def run_example(self, time_step: float = 0.032, max_iterations: int = 1000):

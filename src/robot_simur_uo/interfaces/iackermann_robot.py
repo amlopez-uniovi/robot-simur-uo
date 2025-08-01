@@ -2,6 +2,21 @@
 Interfaz específica para robots con dirección tipo Ackermann.
 """
 
+from .irobot_base import IRobotBase
+
+
+class IAckermannRobot(IRobotBase):
+    """
+    Interfaz específica para robots con dirección tipo Ackermann.
+    
+    Los robots Ackermann usan directamente los métodos de la interfaz base:
+    - set_drive_speed() / get_drive_speed()
+    - set_steering_angle() / get_steering_angle()
+    
+    No requieren métodos adicionales ya que el modelo Ackermann es la base.
+    """
+    pass
+
 from abc import abstractmethod
 from .irobot_base import IRobotBase
 

@@ -62,46 +62,6 @@ class SimulatedAckermannRobot(IAckermannRobot):
         self.drive_speed = 0.0
         self.steering_angle = 0.0
     
-    def move_forward(self, speed: float = 1.0) -> None:
-        """
-        Mueve el robot hacia adelante.
-        
-        Args:
-            speed: Velocidad lineal en m/s
-        """
-        self.drive_speed = abs(speed)
-        self.steering_angle = 0.0
-    
-    def move_backward(self, speed: float = 1.0) -> None:
-        """
-        Mueve el robot hacia atrás.
-        
-        Args:
-            speed: Velocidad lineal en m/s
-        """
-        self.drive_speed = -abs(speed)
-        self.steering_angle = 0.0
-    
-    def turn_left(self, speed: float = 1.0) -> None:
-        """
-        Gira el robot a la izquierda.
-        
-        Args:
-            speed: Velocidad lineal en m/s
-        """
-        self.drive_speed = abs(speed)
-        self.steering_angle = self.max_steering_angle
-    
-    def turn_right(self, speed: float = 1.0) -> None:
-        """
-        Gira el robot a la derecha.
-        
-        Args:
-            speed: Velocidad lineal en m/s
-        """
-        self.drive_speed = abs(speed)
-        self.steering_angle = -self.max_steering_angle
-    
     def cleanup(self) -> None:
         """Limpieza del robot."""
         self.stop()
