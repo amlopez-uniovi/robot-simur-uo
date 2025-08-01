@@ -36,7 +36,7 @@ def main():
         drive_speed, steering_angle = controller.calculate_control_commands(
             current_x, current_y, current_angle
         )
-        print(f"Posición: ({current_x:.2f}, {current_y:.2f}), "
+        print(f"Posición: ({current_x:.2f}, {current_y:.2f}) → Destino: ({controller.target_x:.2f}, {controller.target_y:.2f}), "
               f"Ángulo: {current_angle:.2f}, "
               f"Comandos: Velocidad={drive_speed:.2f}, Dirección={steering_angle:.2f}")
 

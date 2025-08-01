@@ -30,6 +30,14 @@ class EPuck(BaseRobot):
         # Nombres de los sensores de distancia del e-puck
         self.distance_sensors_names = ["ps0", "ps1", "ps2", "ps3", "ps4", "ps5", "ps6", "ps7"]
         
+        # Parámetros físicos del e-puck
+        wheel_radius = 0.0205  # metros
+        wheel_base = 0.052     # metros
+        
+        # Inicializar primero la interfaz diferencial con parámetros
+        from ..interfaces.idifferential_robot import IDifferentialRobot
+        IDifferentialRobot.__init__(self, wheel_radius, wheel_base)
+            
         super().__init__(time_step)
     
     def _init_specific_components(self):
@@ -87,10 +95,20 @@ class EPuck(BaseRobot):
             left_velocity (float): Velocidad del motor izquierdo
             right_velocity (float): Velocidad del motor derecho
         """
-        # Limitar velocidades al máximo permitido
-        left_velocity = max(-MAX_VELOCITY, min(left_velocity, MAX_VELOCITY))
-        right_velocity = max(-MAX_VELOCITY, min(right_velocity, MAX_VELOCITY))
+        # Calcular la velocidad máxima solicitada
+        max_requested = max(abs(left_velocity), abs(right_velocity))
         
+        # Si alguna velocidad excede el límite, escalar proporcionalmente
+        if max_requested > MAX_VELOCITY:
+            scale_ratio = MAX_VELOCITY / max_requested
+            left_velocity = left_velocity * scale_ratio
+            right_velocity = right_velocity * scale_ratio
+        
+        # Actualizar atributos de la interfaz diferencial
+        self.left_speed = left_velocity
+        self.right_speed = right_velocity
+        
+        # Aplicar velocidades a los motores físicos
         self.left_motor.setVelocity(left_velocity)
         self.right_motor.setVelocity(right_velocity)
     
@@ -113,7 +131,47 @@ class EPuck(BaseRobot):
     
     def stop(self):
         """Detener el robot"""
-        self.set_motor_velocities(0.0, 0.0)
+        # Detener motores físicos directamente
+        self.left_motor.setVelocity(0.0)
+        self.right_motor.setVelocity(0.0)
+        # Actualizar atributos de la interfaz
+        self.left_speed = 0.0
+        self.right_speed = 0.0
+        self.drive_speed = 0.0
+        self.steering_angle = 0.0
+    
+    def step(self, dt: float = None) -> int:
+        """
+        Ejecuta un paso de simulación de Webots.
+        
+        Args:
+            dt: Paso de tiempo (ignorado en Webots, usa time_step interno)
+            
+        Returns:
+            int: -1 si la simulación termina, 0 en caso contrario
+        """
+        return self.robot.step(self.time_step)
+    
+    # Sobrescribir métodos de interfaz Ackermann para usar motores físicos
+    def set_drive_speed(self, speed: float) -> None:
+        """
+        Establece la velocidad de avance (interfaz Ackermann).
+        Sobrescribe para usar motores físicos de Webots.
+        """
+        # Llamar al método padre para mantener conversión Ackermann
+        super().set_drive_speed(speed)
+        # Aplicar velocidades convertidas usando set_motor_velocities para escalado
+        self.set_motor_velocities(self.left_speed, self.right_speed)
+    
+    def set_steering_angle(self, angle: float) -> None:
+        """
+        Establece el ángulo de dirección (interfaz Ackermann).
+        Sobrescribe para usar motores físicos de Webots.
+        """
+        # Llamar al método padre para mantener conversión Ackermann
+        super().set_steering_angle(angle)
+        # Aplicar velocidades convertidas usando set_motor_velocities para escalado
+        self.set_motor_velocities(self.left_speed, self.right_speed)
     
     # Métodos específicos para sensores de distancia del e-puck
     def get_front_sensors_average(self):

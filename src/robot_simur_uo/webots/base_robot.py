@@ -190,7 +190,8 @@ class BaseRobot(IDifferentialRobot):
     
     def cleanup(self):
         """Limpiar recursos al finalizar"""
-        self.robot.cleanup()
+        # Llamar al método de la interfaz base que detiene el robot
+        super().cleanup()
     
     # Implementación de la interfaz IRobot
     def set_motor_speeds(self, left_speed: float, right_speed: float) -> None:
@@ -255,7 +256,3 @@ class BaseRobot(IDifferentialRobot):
     def turn_right(self, speed=2.0):
         """Girar el robot a la derecha (debe ser implementado por subclases)"""
         raise NotImplementedError("Subclases deben implementar turn_right")
-    
-    def stop(self):
-        """Detener el robot (debe ser implementado por subclases)"""
-        raise NotImplementedError("Subclases deben implementar stop")
