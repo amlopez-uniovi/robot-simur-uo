@@ -72,12 +72,13 @@ class IDifferentialRobot(IRobotBase):
         angular_speed = forward_speed / self.wheel_radius
         
         # Calcular diferencia de velocidades basada en la velocidad de dirección
-        # Para robots diferenciales: velocidad_angular = (v_derecha - v_izquierda) / wheel_base
-        angular_velocity = steering_speed * self.wheel_base / (2.0 * self.wheel_radius)
+        # Para robots diferenciales: omega = (v_derecha - v_izquierda) / wheel_base
+        # Por lo tanto: v_diferencial = steering_speed * wheel_base / 2
+        differential_velocity = steering_speed * self.wheel_base / (2.0 * self.wheel_radius)
         
         # Calcular velocidades de cada rueda
-        self.left_speed = angular_speed - angular_velocity
-        self.right_speed = angular_speed + angular_velocity
+        self.left_speed = angular_speed - differential_velocity
+        self.right_speed = angular_speed + differential_velocity
         
         # NO almacenar forward_speed y steering_speed redundantemente
         # Se calculan cuando se necesiten usando get_forward_speed() y get_steering_speed()

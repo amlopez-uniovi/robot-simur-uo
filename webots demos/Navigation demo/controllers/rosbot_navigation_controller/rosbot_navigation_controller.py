@@ -11,7 +11,7 @@ def main():
     robot = RosBot()
     
     # Ejemplo de uso del controlador de navegación con parámetros conservadores
-    controller = NavigationController(linear_gain=2.0, steering_gain=1.0)
+    controller = NavigationController(linear_gain=0.3, steering_gain=0.5)
     controller.set_target(1.0, 0.5, tol=0.1)
         
     # Ejemplo de uso de métodos comunes y específicos

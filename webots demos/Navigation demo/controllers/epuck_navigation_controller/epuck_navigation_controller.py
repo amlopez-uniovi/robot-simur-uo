@@ -10,8 +10,8 @@ def main():
     # Crear instancia del robot e-puck
     robot = EPuck()
     
-    # Ejemplo de uso del controlador de navegación con parámetros conservadores
-    controller = NavigationController(linear_gain=2.0, steering_gain=1.0)
+    # Ejemplo de uso del controlador de navegación con parámetros muy conservadores
+    controller = NavigationController(linear_gain=0.3, steering_gain=0.5)
     controller.set_target(1.0, 0.5, tol=0.1)
         
     # Ejemplo de uso de métodos comunes y específicos
@@ -35,12 +35,16 @@ def main():
         drive_speed, steering_speed = controller.calculate_control_commands(
             current_x, current_y, current_angle
         )
-        print(f"Posición: ({current_x:.2f}, {current_y:.2f}) → Destino: ({controller.target_x:.2f}, {controller.target_y:.2f}), "
-              f"Ángulo: {current_angle:.2f}, "
-              f"Comandos: Velocidad={drive_speed:.2f}, Velocidad giro={steering_speed:.2f}")
-
-        # Aplicar comandos usando interfaz Ackermann unificada
+        
+        # Debug: Mostrar velocidades antes de aplicarlas
+        print(f"Posición: ({current_x:.2f}, {current_y:.2f}) → Destino: ({controller.target_x:.2f}, {controller.target_y:.2f})")
+        print(f"Ángulo actual: {current_angle:.2f}, Comandos: Velocidad={drive_speed:.2f}, Velocidad giro={steering_speed:.2f}")
+        
+        # Obtener velocidades de motores después de la conversión para debug
         robot.set_drive_command(drive_speed, steering_speed)
+        left_speed, right_speed = robot.get_motor_speeds()
+        print(f"Velocidades motores: Izq={left_speed:.2f}, Der={right_speed:.2f}")
+        print("---")
             
         # Mostrar información cada cierto tiempo
         if robot.step(0) % 1000 == 0:

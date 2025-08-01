@@ -6,6 +6,7 @@
 import math
 import sys
 import os
+from typing import Tuple
 
 try:
     from controller import Robot
@@ -234,4 +235,13 @@ class RosBot(WebotsBaseDifferentialRobot):
             self.rear_left_position_sensor.getValue(),
             self.rear_right_position_sensor.getValue()
         ]
+    
+    def get_motor_speeds(self) -> Tuple[float, float]:
+        """
+        Obtiene las velocidades actuales de los motores.
+        
+        Returns:
+            Tupla (velocidad_izquierda, velocidad_derecha) en rad/s
+        """
+        return (self.left_speed, self.right_speed)
 

@@ -89,11 +89,13 @@ class NavigationController:
         if distance < self.tolerance:  # Ya llegamos al objetivo
             return 0.0, 0.0
         
-        # Velocidad proporcional a la distancia
+        # Velocidad proporcional a la distancia con límite máximo muy conservador
         drive_speed = distance * self.linear_gain
+        drive_speed = max(-0.1, min(0.1, drive_speed))  # Limitar a ±0.1 m/s para EPuck (muy lento)
         
-        # Velocidad de giro proporcional al error angular
+        # Velocidad de giro proporcional al error angular con límite máximo muy conservador
         steering_speed = angle_diff * self.steering_gain
+        steering_speed = max(-0.5, min(0.5, steering_speed))  # Limitar a ±0.5 rad/s para EPuck
         
         return drive_speed, steering_speed
     
