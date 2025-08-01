@@ -12,7 +12,7 @@ from robot_simur_uo.sensors.lidar_processor import LidarProcessor
 from robot_simur_uo.sensors.camera_processor import CameraProcessor
 from robot_simur_uo.sensors.sensor_fusion import SensorFusion
 from robot_simur_uo.utils.visualization import DataVisualizer
-from robot_simur_uo.utils.simulated_robot import SimulatedDifferentialRobot
+from robot_simur_uo.utils.simulated_differential_robot import SimulatedDifferentialRobot
 
 
 class SensorDemoExample:

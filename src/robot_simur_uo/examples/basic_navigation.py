@@ -4,7 +4,7 @@ Ejemplo básico de navegación para un robot.
 
 from robot_simur_uo.controllers.navigation import NavigationController
 from robot_simur_uo.utils.coordinates import RobotPose
-from robot_simur_uo.utils.simulated_robot import SimulatedDifferentialRobot
+from robot_simur_uo.utils.simulated_differential_robot import SimulatedDifferentialRobot
 from robot_simur_uo.utils.visualization import DataVisualizer
 from robot_simur_uo.interfaces.irobot import IRobot
 

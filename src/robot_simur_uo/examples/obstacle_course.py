@@ -10,7 +10,7 @@ from robot_simur_uo.controllers.navigation import NavigationController
 from robot_simur_uo.sensors.distance_sensors import DistanceSensorProcessor
 from robot_simur_uo.utils.coordinates import RobotPose
 from robot_simur_uo.utils.visualization import create_simple_map
-from robot_simur_uo.utils.simulated_robot import SimulatedDifferentialRobot
+from robot_simur_uo.utils.simulated_differential_robot import SimulatedDifferentialRobot
 
 
 class ObstacleCourseExample:
