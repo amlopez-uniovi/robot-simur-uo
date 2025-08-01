@@ -1,10 +1,10 @@
 # Este archivo contiene el controlador principal del robot e-puck
-# Utiliza la clase EPuck refactorizada que hereda de BaseRobot
+# Utiliza la clase EPuck refactorizada que hereda de WebotsBaseDifferentialRobot
 
 import sys
 import os
 
-from robot_simur_uo import BaseRobot, EPuck
+from robot_simur_uo import WebotsBaseDifferentialRobot, EPuck
 
 def main():
     # Crear instancia del robot e-puck
@@ -21,7 +21,7 @@ def main():
         # Obtener sensores de distancia (específico del e-puck)
         distance_sensors = robot.get_distance_sensor_values()
         
-        # Obtener datos del lidar (método común heredado de BaseRobot)
+        # Obtener datos del lidar (método común heredado de WebotsBaseDifferentialRobot)
         lidar_data = robot.get_lidar_data()
         lidar_closest_obstacle = robot.get_lidar_closest_obstacle()
         

@@ -15,14 +15,14 @@ except ImportError:
             raise RuntimeError("El módulo `controller` solo está disponible en el entorno de Webots.")
 
 
-# Importar BaseRobot del mismo paquete
-from .base_robot import BaseRobot
+# Importar WebotsBaseDifferentialRobot del mismo paquete
+from .webots_base_differential_robot import WebotsBaseDifferentialRobot
 
 # Constantes
 TIME_STEP = 64
 MAX_VELOCITY = 6.28  # Velocidad máxima típica para e-puck
 
-class EPuck(BaseRobot):
+class EPuck(WebotsBaseDifferentialRobot):
     """Clase para encapsular la configuración y control del robot e-puck"""
     
     def __init__(self, time_step=TIME_STEP):

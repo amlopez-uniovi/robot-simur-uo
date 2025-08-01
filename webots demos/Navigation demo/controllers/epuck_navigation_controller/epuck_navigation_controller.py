@@ -1,17 +1,17 @@
 # Este archivo contiene el controlador principal del robot e-puck
-# Utiliza la clase EPuck refactorizada que hereda de BaseRobot
+# Utiliza la clase EPuck refactorizada que hereda de WebotsBaseDifferentialRobot
 
 import sys
 import os
 
-from robot_simur_uo import BaseRobot, EPuck, NavigationController
+from robot_simur_uo import WebotsBaseDifferentialRobot, EPuck, NavigationController
 
 def main():
     # Crear instancia del robot e-puck
     robot = EPuck()
     
     # Ejemplo de uso del controlador de navegación con parámetros conservadores
-    controller = NavigationController(max_speed=0.5, linear_gain=2.0, angular_gain=1.0)
+    controller = NavigationController(linear_gain=2.0, steering_gain=1.0)
     controller.set_target(1.0, 0.5, tol=0.1)
         
     # Ejemplo de uso de métodos comunes y específicos

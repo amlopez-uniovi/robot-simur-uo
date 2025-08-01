@@ -11,8 +11,8 @@ from typing import Tuple
 from ..interfaces.idifferential_robot import IDifferentialRobot
 from ..utils.coordinates import RobotPose
 
-class BaseRobot(IDifferentialRobot):
-    """Clase base para encapsular funcionalidades comunes de robots en Webots"""
+class WebotsBaseDifferentialRobot(IDifferentialRobot):
+    """Clase base para robots diferenciales en Webots con funcionalidades comunes"""
     
     def __init__(self, time_step=64):
         """Inicializar el robot base y sus componentes comunes"""

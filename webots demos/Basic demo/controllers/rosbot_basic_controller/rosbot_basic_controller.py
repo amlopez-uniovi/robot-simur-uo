@@ -1,17 +1,17 @@
 # Este archivo contiene el controlador principal del robot RosBot
-# Utiliza la clase RosBot refactorizada que hereda de BaseRobot
+# Utiliza la clase RosBot refactorizada que hereda de WebotsBaseDifferentialRobot
 
 import sys
 import os
 
-from robot_simur_uo import BaseRobot, RosBot
+from robot_simur_uo import WebotsBaseDifferentialRobot, RosBot
 def main():
     # Crear instancia del robot RosBot
     robot = RosBot()
     
     print("Robot RosBot inicializado correctamente")
     print("Funcionalidades disponibles:")
-    print("- Métodos comunes heredados de BaseRobot: step(), get_gps_position(), get_compass_orientation(), move_forward(), etc.")
+    print("- Métodos comunes heredados de WebotsBaseDifferentialRobot: step(), get_gps_position(), get_compass_orientation(), move_forward(), etc.")
     print("- Métodos específicos del RosBot: get_accelerometer_values(), get_camera_rgb_image(), get_imu_compass_values(), etc.")
     print("- Métodos del lidar ahora comunes: get_lidar_fov(), print_lidar_summary(), etc.")
     
@@ -32,7 +32,7 @@ def main():
         # Obtener datos del giroscopio (específico del RosBot)
         gyro_values = robot.get_gyro_values()
         
-        # Obtener datos del LiDAR (método común heredado de BaseRobot)
+        # Obtener datos del LiDAR (método común heredado de WebotsBaseDifferentialRobot)
         lidar_data = robot.get_lidar_data()
         lidar_closest_obstacle = robot.get_lidar_closest_obstacle()
         
