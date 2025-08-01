@@ -5,10 +5,10 @@ Robot simulado para ejemplos y pruebas que no requieren Webots.
 import math
 from typing import Tuple
 from .coordinates import RobotPose
-from ..interfaces.irobot import IRobot
+from ..interfaces.irobot import IDifferentialRobot
 
 
-class SimulatedDifferentialRobot(IRobot):
+class SimulatedDifferentialRobot(IDifferentialRobot):
     """
     Robot diferencial simulado para ejemplos y testing sin dependencia de Webots.
     

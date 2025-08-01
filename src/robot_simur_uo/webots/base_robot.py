@@ -8,10 +8,10 @@ except ImportError:
 
 import math
 from typing import Tuple
-from ..interfaces.irobot import IRobot
+from ..interfaces.irobot import IDifferentialRobot
 from ..utils.coordinates import RobotPose
 
-class BaseRobot(IRobot):
+class BaseRobot(IDifferentialRobot):
     """Clase base para encapsular funcionalidades comunes de robots en Webots"""
     
     def __init__(self, time_step=64):
