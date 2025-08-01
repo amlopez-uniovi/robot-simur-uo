@@ -252,3 +252,147 @@ class RosBot(WebotsBaseDifferentialRobot):
         """
         return (self.left_speed, self.right_speed)
 
+    def log_devices(self, to_terminal: bool = True, to_file: str = None) -> None:
+        """
+        Log de dispositivos del RosBot - solo datos directos de sensores.
+        
+        Args:
+            to_terminal: Si True, imprime a la terminal
+            to_file: Si se especifica, escribe al archivo indicado
+        """
+        import time
+        
+        # Generar timestamp
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Recopilar información de todos los dispositivos
+        log_lines = []
+        log_lines.append(f"=== RosBot Device Log - {timestamp} ===")
+        
+        # 1. GPS Position (datos directos)
+        try:
+            gps_pos = self.get_gps_position()
+            log_lines.append(f"GPS: x={gps_pos[0]:.4f}m, y={gps_pos[1]:.4f}m, z={gps_pos[2]:.4f}m")
+        except Exception as e:
+            log_lines.append(f"GPS: Error - {e}")
+        
+        # 2. Compass orientation (datos directos)
+        try:
+            compass_direction, compass_angle = self.get_compass_orientation()
+            log_lines.append(f"Compass: angle={compass_angle:.4f}rad")
+            log_lines.append(f"  Direction vector: x={compass_direction[0]:.4f}, y={compass_direction[1]:.4f}, z={compass_direction[2]:.4f}")
+        except Exception as e:
+            log_lines.append(f"Compass: Error - {e}")
+        
+        # 3. Motors (velocidades directas - 4 ruedas)
+        try:
+            log_lines.append(f"Motors (4WD):")
+            log_lines.append(f"  Left motors velocity: {self.left_speed:.4f}rad/s")
+            log_lines.append(f"  Right motors velocity: {self.right_speed:.4f}rad/s")
+            
+            # Posición de motores si está disponible
+            try:
+                fl_pos = self.front_left_motor.getTargetPosition()
+                fr_pos = self.front_right_motor.getTargetPosition()
+                rl_pos = self.rear_left_motor.getTargetPosition()
+                rr_pos = self.rear_right_motor.getTargetPosition()
+                log_lines.append(f"  Motor positions: FL={fl_pos:.4f}rad, FR={fr_pos:.4f}rad")
+                log_lines.append(f"                   RL={rl_pos:.4f}rad, RR={rr_pos:.4f}rad")
+            except:
+                log_lines.append(f"  Motor positions: Not available (velocity mode)")
+        except Exception as e:
+            log_lines.append(f"Motors: Error - {e}")
+        
+        # 4. Distance sensors (valores directos - 4 sensores)
+        try:
+            distance_values = self.get_distance_sensor_values()
+            sensor_names = ["fl_range", "rl_range", "fr_range", "rr_range"]
+            log_lines.append("Distance Sensors:")
+            for i, (name, value) in enumerate(zip(sensor_names, distance_values)):
+                log_lines.append(f"  {name}: {value:.4f}m")
+        except Exception as e:
+            log_lines.append(f"Distance Sensors: Error - {e}")
+        
+        # 5. IMU Accelerometer (valores directos)
+        try:
+            accel_values = self.get_accelerometer_values()
+            log_lines.append(f"IMU Accelerometer: x={accel_values[0]:.4f}, y={accel_values[1]:.4f}, z={accel_values[2]:.4f} m/s²")
+        except Exception as e:
+            log_lines.append(f"IMU Accelerometer: Error - {e}")
+        
+        # 6. IMU Gyroscope (valores directos)
+        try:
+            gyro_values = self.get_gyro_values()
+            log_lines.append(f"IMU Gyroscope: x={gyro_values[0]:.4f}, y={gyro_values[1]:.4f}, z={gyro_values[2]:.4f} rad/s")
+        except Exception as e:
+            log_lines.append(f"IMU Gyroscope: Error - {e}")
+        
+        # 7. IMU Compass (valores directos)
+        try:
+            imu_compass_values = self.get_imu_compass_values()
+            log_lines.append(f"IMU Compass: x={imu_compass_values[0]:.4f}, y={imu_compass_values[1]:.4f}, z={imu_compass_values[2]:.4f}")
+        except Exception as e:
+            log_lines.append(f"IMU Compass: Error - {e}")
+        
+        # 8. Position Sensors (encoders de las ruedas)
+        try:
+            position_values = self.get_position_sensor_values()
+            log_lines.append("Wheel Position Sensors:")
+            log_lines.append(f"  Front Left: {position_values[0]:.4f}rad")
+            log_lines.append(f"  Front Right: {position_values[1]:.4f}rad")
+            log_lines.append(f"  Rear Left: {position_values[2]:.4f}rad")
+            log_lines.append(f"  Rear Right: {position_values[3]:.4f}rad")
+        except Exception as e:
+            log_lines.append(f"Position Sensors: Error - {e}")
+        
+        # 9. Cámaras RGB y Depth (propiedades directas)
+        try:
+            log_lines.append(f"Cameras:")
+            # Cámara RGB
+            log_lines.append(f"  RGB Camera:")
+            log_lines.append(f"    Width: {self.camera_rgb.getWidth()}px")
+            log_lines.append(f"    Height: {self.camera_rgb.getHeight()}px")
+            log_lines.append(f"    FOV: {self.camera_rgb.getFov():.4f}rad")
+            log_lines.append(f"    Near: {self.camera_rgb.getNear():.4f}m")
+            log_lines.append(f"    Far: {self.camera_rgb.getFar():.4f}m")
+            
+            # Cámara de profundidad
+            log_lines.append(f"  Depth Camera:")
+            log_lines.append(f"    Width: {self.camera_depth.getWidth()}px")
+            log_lines.append(f"    Height: {self.camera_depth.getHeight()}px")
+            log_lines.append(f"    Min range: {self.camera_depth.getMinRange():.4f}m")
+            log_lines.append(f"    Max range: {self.camera_depth.getMaxRange():.4f}m")
+            
+            # Estado de imágenes
+            try:
+                rgb_image = self.camera_rgb.getImage()
+                depth_image = self.camera_depth.getRangeImage()
+                if rgb_image:
+                    log_lines.append(f"    RGB image data: {len(rgb_image)} bytes available")
+                else:
+                    log_lines.append(f"    RGB image data: Not available")
+                if depth_image:
+                    log_lines.append(f"    Depth image data: {len(depth_image)} values available")
+                else:
+                    log_lines.append(f"    Depth image data: Not available")
+            except:
+                log_lines.append(f"    Image data: Access error")
+        except Exception as e:
+            log_lines.append(f"Cameras: Error - {e}")
+        
+        # 10. Parámetros del robot (configuración)
+        log_lines.append(f"Robot Configuration:")
+        log_lines.append(f"  Time step: {self.time_step}ms")
+        log_lines.append(f"  Wheel radius: {self.wheel_radius:.4f}m")
+        log_lines.append(f"  Wheel base: {self.wheel_base:.4f}m")
+        log_lines.append(f"  Max velocity: {MAX_VELOCITY:.4f}rad/s")
+        log_lines.append(f"  Drive type: 4WD (Four Wheel Drive)")
+        
+        log_lines.append("=" * 70)
+        
+        # Almacenar el mensaje en el atributo de la clase
+        self.log_message = "\n".join(log_lines)
+        
+        # Llamar al método base para manejar la salida
+        super().log_devices(to_terminal, to_file)
+
