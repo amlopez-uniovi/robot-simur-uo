@@ -15,9 +15,9 @@ except ImportError:
         def __init__(self, *args, **kwargs):
             raise RuntimeError("El módulo `controller` solo está disponible en el entorno de Webots.")
 
-
 # Importar WebotsBaseDifferentialRobot del mismo paquete
 from .webots_base_differential_robot import WebotsBaseDifferentialRobot
+from ..interfaces.idifferential_robot import IDifferentialRobot
 
 # Constantes
 TIME_STEP = 64
@@ -36,7 +36,6 @@ class EPuck(WebotsBaseDifferentialRobot):
         wheel_base = 0.052     # metros
         
         # Inicializar primero la interfaz diferencial con parámetros
-        from ..interfaces.idifferential_robot import IDifferentialRobot
         IDifferentialRobot.__init__(self, wheel_radius, wheel_base)
             
         super().__init__(time_step)

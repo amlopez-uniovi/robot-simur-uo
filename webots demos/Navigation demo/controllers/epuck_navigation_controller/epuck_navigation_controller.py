@@ -12,7 +12,7 @@ def main():
     
     # Ejemplo de uso del controlador de navegación (límites aplicados por el robot individual)
     controller = NavigationController(linear_gain=1.0, steering_gain=2.0)
-    controller.set_target(1.0, 0.5, tol=0.1)
+    controller.set_target(-1.0, 0.5, tol=0.1)
         
     # Ejemplo de uso de métodos comunes y específicos
     while robot.step() != -1:
