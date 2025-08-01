@@ -228,3 +228,163 @@ class EPuck(WebotsBaseDifferentialRobot):
             Tupla (velocidad_izquierda, velocidad_derecha) en rad/s
         """
         return (self.left_speed, self.right_speed)
+
+    def log_devices(self, to_terminal: bool = True, to_file: str = None) -> None:
+        """
+        Log de dispositivos del EPuck - solo datos directos de sensores.
+        
+        Args:
+            to_terminal: Si True, imprime a la terminal
+            to_file: Si se especifica, escribe al archivo indicado
+        """
+        import time
+        
+        # Generar timestamp
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Recopilar información de todos los dispositivos
+        log_lines = []
+        log_lines.append(f"=== EPuck Device Log - {timestamp} ===")
+        
+        # 1. GPS Position (datos directos)
+        try:
+            gps_pos = self.get_gps_position()
+            log_lines.append(f"GPS: x={gps_pos[0]:.4f}m, y={gps_pos[1]:.4f}m, z={gps_pos[2]:.4f}m")
+        except Exception as e:
+            log_lines.append(f"GPS: Error - {e}")
+        
+        # 2. Compass orientation (datos directos)
+        try:
+            compass_direction, compass_angle = self.get_compass_orientation()
+            log_lines.append(f"Compass: angle={compass_angle:.4f}rad")
+            log_lines.append(f"  Direction vector: x={compass_direction[0]:.4f}, y={compass_direction[1]:.4f}, z={compass_direction[2]:.4f}")
+        except Exception as e:
+            log_lines.append(f"Compass: Error - {e}")
+        
+        # 3. Motors (velocidades directas)
+        try:
+            log_lines.append(f"Motors:")
+            log_lines.append(f"  Left motor velocity: {self.left_speed:.4f}rad/s")
+            log_lines.append(f"  Right motor velocity: {self.right_speed:.4f}rad/s")
+            
+            # Posición de motores si está disponible
+            try:
+                left_position = self.left_motor.getTargetPosition()
+                right_position = self.right_motor.getTargetPosition()
+                log_lines.append(f"  Motor positions: left={left_position:.4f}rad, right={right_position:.4f}rad")
+            except:
+                log_lines.append(f"  Motor positions: Not available (velocity mode)")
+        except Exception as e:
+            log_lines.append(f"Motors: Error - {e}")
+        
+        # 4. Distance sensors (valores directos)
+        try:
+            distance_values = self.get_distance_sensor_values()
+            log_lines.append("Distance Sensors:")
+            for i, value in enumerate(distance_values):
+                log_lines.append(f"  ps{i}: {value:.2f}")
+        except Exception as e:
+            log_lines.append(f"Distance Sensors: Error - {e}")
+        
+        # 5. Lidar (datos directos)
+        try:
+            lidar_data = self.get_lidar_data()
+            if lidar_data:
+                log_lines.append(f"Lidar:")
+                log_lines.append(f"  Total readings: {len(lidar_data)}")
+                log_lines.append(f"  Configuration:")
+                log_lines.append(f"    Range count: {self.get_lidar_range_count()}")
+                log_lines.append(f"    Min range: {self.get_lidar_min_range():.4f}m")
+                log_lines.append(f"    Max range: {self.get_lidar_max_range():.4f}m")
+                log_lines.append(f"    FOV: {self.get_lidar_fov():.4f}rad")
+                
+                # Muestra de lecturas directas (sin procesar)
+                sample_size = min(10, len(lidar_data))
+                log_lines.append(f"  Sample readings (first {sample_size}):")
+                for i in range(sample_size):
+                    log_lines.append(f"    Reading {i}: {lidar_data[i]}")
+            else:
+                log_lines.append("Lidar: No data available")
+        except Exception as e:
+            log_lines.append(f"Lidar: Error - {e}")
+        
+        # 6. Cámara (propiedades directas)
+        try:
+            camera = self.robot.getDevice("camera")
+            if camera:
+                log_lines.append(f"Camera:")
+                log_lines.append(f"  Width: {camera.getWidth()}px")
+                log_lines.append(f"  Height: {camera.getHeight()}px")
+                log_lines.append(f"  FOV: {camera.getFov():.4f}rad")
+                log_lines.append(f"  Near: {camera.getNear():.4f}m")
+                log_lines.append(f"  Far: {camera.getFar():.4f}m")
+                
+                # Estado de imagen
+                try:
+                    image = camera.getImage()
+                    if image:
+                        log_lines.append(f"  Image data: {len(image)} bytes available")
+                    else:
+                        log_lines.append(f"  Image data: Not available")
+                except:
+                    log_lines.append(f"  Image data: Access error")
+            else:
+                log_lines.append("Camera: Device not found")
+        except Exception as e:
+            log_lines.append(f"Camera: Error - {e}")
+                
+        # 7. Acelerómetro (valores directos)
+        try:
+            accelerometer = self.robot.getDevice("accelerometer")
+            if accelerometer:
+                accelerometer.enable(self.time_step)
+                accel_values = accelerometer.getValues()
+                log_lines.append(f"Accelerometer: x={accel_values[0]:.4f}, y={accel_values[1]:.4f}, z={accel_values[2]:.4f} m/s²")
+            else:
+                log_lines.append("Accelerometer: Not available")
+        except Exception as e:
+            log_lines.append(f"Accelerometer: Error - {e}")
+        
+        # 8. Giroscopio (valores directos)
+        try:
+            gyro = self.robot.getDevice("gyro")
+            if gyro:
+                gyro.enable(self.time_step)
+                gyro_values = gyro.getValues()
+                log_lines.append(f"Gyroscope: x={gyro_values[0]:.4f}, y={gyro_values[1]:.4f}, z={gyro_values[2]:.4f} rad/s")
+            else:
+                log_lines.append("Gyroscope: Not available")
+        except Exception as e:
+            log_lines.append(f"Gyroscope: Error - {e}")
+                
+        # 9. LEDs (conteo directo)
+        try:
+            led_count = 0
+            for i in range(10):
+                try:
+                    led = self.robot.getDevice(f"led{i}")
+                    if led:
+                        led_count += 1
+                except:
+                    break
+            if led_count > 0:
+                log_lines.append(f"LEDs: {led_count} devices available")
+            else:
+                log_lines.append("LEDs: Not available")
+        except Exception as e:
+            log_lines.append(f"LEDs: Error - {e}")
+        
+        # 10. Parámetros del robot (configuración)
+        log_lines.append(f"Robot Configuration:")
+        log_lines.append(f"  Time step: {self.time_step}ms")
+        log_lines.append(f"  Wheel radius: {self.wheel_radius:.4f}m")
+        log_lines.append(f"  Wheel base: {self.wheel_base:.4f}m")
+        log_lines.append(f"  Max velocity: {MAX_VELOCITY:.4f}rad/s")
+        
+        log_lines.append("=" * 70)
+        
+        # Almacenar el mensaje en el atributo de la clase
+        self.log_message = "\n".join(log_lines)
+        
+        # Llamar al método base para manejar la salida
+        super().log_devices(to_terminal, to_file)

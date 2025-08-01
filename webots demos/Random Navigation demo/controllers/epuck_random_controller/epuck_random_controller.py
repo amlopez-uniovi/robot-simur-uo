@@ -25,14 +25,8 @@ def main():
         workspace_bounds=(-1.9, 1.9, -1.9, 1.9),  # Espacio de 3x3 metros
         linear_gain=0.8,     # Ganancia más conservadora para EPuck
         steering_gain=1.5,   # Buena respuesta de giro
-        goal_tolerance=0.1,  # Tolerancia de 10cm
-        sensor_report_interval=50  # Reporte cada 50 iteraciones
+        goal_tolerance=0.1  # Tolerancia de 10cm
     )
-    
-    print(f"📍 Espacio de trabajo: {controller.workspace_bounds}")
-    print(f"🎯 Tolerancia objetivo: {controller.goal_tolerance}m")
-    print(f"📊 Reporte sensores cada: {controller.sensor_report_interval} iteraciones")
-    print("🚀 Comenzando navegación aleatoria...\n")
     
     iteration_count = 0
     
@@ -41,13 +35,8 @@ def main():
         while robot.step() != -1:
             iteration_count += 1
             
-            # Obtener posición y orientación actuales
-            gps_position = robot.get_gps_position()
-            compass_direction, compass_angle = robot.get_compass_orientation()
-            
-            current_x = gps_position[0]
-            current_y = gps_position[1]
-            current_angle = compass_angle
+            # Obtener posición y orientación actuales usando el controlador de navegación
+            current_x, current_y, current_angle = controller.get_robot_state(robot)
             
             # Actualizar controlador y obtener comandos
             drive_speed, steering_speed = controller.update(
@@ -59,6 +48,9 @@ def main():
             
             # Mostrar progreso básico cada 100 iteraciones
             if iteration_count % 100 == 0:
+
+                #######
+                # Mostrar progreso básico cada 100 iteraciones
                 stats = controller.get_statistics()
                 if controller.current_goal:
                     goal_distance = math.sqrt(
@@ -68,7 +60,19 @@ def main():
                     print(f"Iteración {iteration_count}: Pos=({current_x:.2f}, {current_y:.2f}), "
                           f"Objetivo=({controller.current_goal[0]:.2f}, {controller.current_goal[1]:.2f}), "
                           f"Distancia={goal_distance:.2f}m, Objetivos={stats['goals_reached']}")
-            
+                
+                # Añadir log detallado de dispositivos cada 100 iteraciones
+                print(f"\n LOG DETALLADO DE DISPOSITIVOS - Iteración {iteration_count}")
+                robot.log_devices(to_terminal=True)
+                print("=" * 60)                
+                
+                
+                
+                ######
+
+
+
+  
             # Detección simple de obstáculos para evitación
             if hasattr(robot, 'obstacle_detected') and robot.obstacle_detected():
                 # Si hay obstáculo, reducir velocidad y aumentar giro
