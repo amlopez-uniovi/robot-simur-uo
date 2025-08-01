@@ -87,14 +87,8 @@ class SimulatedAckermannRobot(IAckermannRobot):
         """
         super().__init__()
         self.wheelbase = wheelbase
-        self.max_steering_angle = max_steering_angle
+        self.set_max_steering_angle(max_steering_angle)  # Usar método de la interfaz
         
-    def set_steering_angle(self, angle: float) -> None:
-        """Establece el ángulo de dirección con limitación."""
-        # Limitar el ángulo dentro del rango permitido (especialización de Ackermann)
-        self.steering_angle = max(-self.max_steering_angle, 
-                                min(self.max_steering_angle, angle))
-    
     def step(self, dt: float) -> None:
         """
         Implementación simulada del paso de tiempo.
@@ -104,22 +98,23 @@ class SimulatedAckermannRobot(IAckermannRobot):
         Args:
             dt: Paso de tiempo en segundos
         """
-        if abs(self.drive_speed) < 1e-6:
+        if abs(self.forward_speed) < 1e-6:
             return  # No hay movimiento
         
         # Obtener pose actual
         x, y, theta = self.pose.to_tuple()
         
         # Modelo cinemático de Ackermann
-        if abs(self.steering_angle) < 1e-6:
+        current_steering_angle = self.get_steering_angle()
+        if abs(current_steering_angle) < 1e-6:
             # Movimiento recto
-            dx = self.drive_speed * math.cos(theta) * dt
-            dy = self.drive_speed * math.sin(theta) * dt
+            dx = self.forward_speed * math.cos(theta) * dt
+            dy = self.forward_speed * math.sin(theta) * dt
             dtheta = 0.0
         else:
             # Movimiento con giro
-            R = self.wheelbase / math.tan(self.steering_angle)
-            omega = self.drive_speed / R
+            R = self.wheelbase / math.tan(current_steering_angle)
+            omega = self.forward_speed / R
             dtheta = omega * dt
             dx = R * (math.sin(theta + dtheta) - math.sin(theta))
             dy = R * (-math.cos(theta + dtheta) + math.cos(theta))
@@ -131,7 +126,7 @@ class SimulatedAckermannRobot(IAckermannRobot):
     
     def __str__(self) -> str:
         """Representación en string del robot."""
-        return f"SimulatedAckermannRobot(pose={self.pose}, steering={self.steering_angle:.3f}, speed={self.drive_speed:.3f})"
+        return f"SimulatedAckermannRobot(pose={self.pose}, steering={self.get_steering_angle():.3f}, speed={self.forward_speed:.3f})"
 
 
 class BasicNavigationExample:
@@ -145,7 +140,7 @@ class BasicNavigationExample:
             robot: Instancia del robot que implementa IRobotBase (interfaz Ackermann unificada)
         """
         self.robot = robot
-        self.controller = NavigationController(max_speed=0.5, linear_gain=1.5, angular_gain=1.0)
+        self.controller = NavigationController(linear_gain=1.5, steering_gain=1.0)
         self.visualizer = DataVisualizer(80, 24)
         
         # Lista de objetivos a visitar (waypoints simples)
@@ -178,14 +173,14 @@ class BasicNavigationExample:
                 current_pose = self.robot.get_pose()
                 current_x, current_y, current_theta = current_pose.to_tuple()
                 
-                # Usar NavigationController para calcular comandos Ackermann
-                drive_speed, steering_angle = self.controller.calculate_control_commands(
+                # Usar NavigationController para calcular comandos
+                drive_speed, steering_speed = self.controller.calculate_control_commands(
                     current_x, current_y, current_theta
                 )
                 
-                # Aplicar comandos usando interfaz Ackermann unificada
-                self.robot.set_drive_speed(drive_speed)
-                self.robot.set_steering_angle(steering_angle)
+                # Aplicar comandos usando la interfaz unificada
+                self.robot.set_drive_command(drive_speed, steering_speed)
+                
                 self.robot.step(time_step)
                 
                 # Verificar si llegamos al objetivo usando NavigationController

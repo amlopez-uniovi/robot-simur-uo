@@ -11,11 +11,12 @@ class IDifferentialRobot(IRobotBase):
     """
     Interfaz específica para robots de tracción diferencial.
     
-    Los robots diferenciales usan la interfaz Ackermann estándar:
-    - set_drive_speed() / get_drive_speed() - Velocidad lineal
-    - set_steering_angle() / get_steering_angle() - Ángulo de dirección
+    Los robots diferenciales usan la interfaz estándar:
+    - set_drive_command(drive_speed, steering_speed) - Comando unificado principal
+    - set_forward_speed() / get_forward_speed() - Velocidad lineal (mantiene velocidad de dirección)
+    - set_steering_speed() / get_steering_speed() - Velocidad de dirección (mantiene velocidad lineal)
     
-    La implementación debe convertir internamente estas a velocidades de motores.
+    La implementación convierte internamente estas a velocidades de motores.
     
     Métodos adicionales para acceso directo a motores (opcional):
     """
@@ -57,51 +58,51 @@ class IDifferentialRobot(IRobotBase):
         """
         return (self.left_speed, self.right_speed)
     
-    # Métodos de la interfaz Ackermann (sobrescriben IRobotBase con conversiones)
-    def set_drive_speed(self, speed: float) -> None:
+    # Métodos de la interfaz (sobrescriben IRobotBase con conversiones)
+    def set_drive_command(self, forward_speed: float, steering_speed: float) -> None:
         """
-        Establece la velocidad de avance (interfaz Ackermann principal).
-        Convierte a velocidades diferenciales manteniendo dirección actual.
+        Establece velocidad de avance y dirección simultáneamente (interfaz principal).
+        Convierte a velocidades diferenciales optimizadas.
+        
+        Args:
+            forward_speed: Velocidad lineal en m/s
+            steering_speed: Velocidad de dirección en rad/s
+        """
+        # Convertir velocidad lineal a velocidad angular de ruedas
+        angular_speed = forward_speed / self.wheel_radius
+        
+        # Calcular diferencia de velocidades basada en la velocidad de dirección
+        # Para robots diferenciales: velocidad_angular = (v_derecha - v_izquierda) / wheel_base
+        angular_velocity = steering_speed * self.wheel_base / (2.0 * self.wheel_radius)
+        
+        # Calcular velocidades de cada rueda
+        self.left_speed = angular_speed - angular_velocity
+        self.right_speed = angular_speed + angular_velocity
+        
+        # NO almacenar forward_speed y steering_speed redundantemente
+        # Se calculan cuando se necesiten usando get_forward_speed() y get_steering_speed()
+    
+    def set_forward_speed(self, speed: float) -> None:
+        """
+        Establece la velocidad manteniendo la velocidad de dirección actual.
         
         Args:
             speed: Velocidad lineal en m/s
         """
-        # Convertir velocidad lineal a velocidad angular de ruedas
-        angular_speed = speed / self.wheel_radius
-        
-        # Mantener la diferencia de velocidades actual (dirección)
-        speed_diff = self.right_speed - self.left_speed
-        
-        # Establecer velocidades simétricas alrededor de la velocidad objetivo
-        self.left_speed = angular_speed - speed_diff / 2.0
-        self.right_speed = angular_speed + speed_diff / 2.0
-        
-        # Actualizar estado base
-        self.drive_speed = speed
+        self.set_drive_command(speed, self.steering_speed)
     
-    def set_steering_angle(self, angle: float) -> None:
+    def set_steering_speed(self, speed: float) -> None:
         """
-        Establece el ángulo de dirección (interfaz Ackermann principal).
-        Convierte a diferencia de velocidades entre ruedas.
+        Establece la velocidad de dirección manteniendo la velocidad de avance actual.
         
         Args:
-            angle: Ángulo de dirección en radianes
+            speed: Velocidad de dirección en rad/s
         """
-        # Convertir ángulo a diferencia de velocidades
-        # Usar velocidad promedio actual
-        avg_angular_speed = (self.left_speed + self.right_speed) / 2.0
-        speed_diff = angle * abs(avg_angular_speed) * 2.0
-        
-        # Aplicar diferencia de velocidades
-        self.left_speed = avg_angular_speed - speed_diff / 2.0
-        self.right_speed = avg_angular_speed + speed_diff / 2.0
-        
-        # Actualizar estado base
-        self.steering_angle = angle
+        self.set_drive_command(self.forward_speed, speed)
     
-    def get_drive_speed(self) -> float:
+    def get_forward_speed(self) -> float:
         """
-        Obtiene la velocidad de avance actual (interfaz Ackermann).
+        Obtiene la velocidad de avance actual calculada desde las velocidades de ruedas.
         
         Returns:
             Velocidad lineal promedio en m/s
@@ -109,20 +110,16 @@ class IDifferentialRobot(IRobotBase):
         avg_angular_speed = (self.left_speed + self.right_speed) / 2.0
         return avg_angular_speed * self.wheel_radius
     
-    def get_steering_angle(self) -> float:
+    def get_steering_speed(self) -> float:
         """
-        Obtiene el ángulo de dirección actual (interfaz Ackermann).
+        Obtiene la velocidad de dirección actual.
         
         Returns:
-            Ángulo de dirección estimado en radianes
+            Velocidad de dirección estimada en rad/s
         """
-        # Estimar ángulo basado en diferencia de velocidades
+        # Estimar velocidad de dirección basada en diferencia de velocidades
         speed_diff = self.right_speed - self.left_speed
-        avg_speed = (self.left_speed + self.right_speed) / 2.0
-        
-        if abs(avg_speed) > 0.001:  # Evitar división por cero
-            return speed_diff / (abs(avg_speed) * 2.0)
-        return speed_diff / 2.0 if abs(speed_diff) > 0.001 else 0.0
+        return (speed_diff * 2.0 * self.wheel_radius) / self.wheel_base
     
     def stop(self) -> None:
         """Detiene el robot (sobrescribe para incluir motores específicos)."""

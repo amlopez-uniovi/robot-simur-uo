@@ -9,18 +9,18 @@ from typing import Tuple, Optional
 class NavigationController:
     """Controlador para navegación básica de robots."""
     
-    def __init__(self, max_speed: float = 1.0, linear_gain = 2.0, angular_gain = 2.0):
+    def __init__(self, linear_gain: float = 2.0, steering_gain: float = 2.0):
         """
         Inicializa el controlador de navegación.
         
         Args:
-            max_speed: Velocidad máxima del robot
+            linear_gain: Ganancia lineal para velocidad
+            steering_gain: Ganancia angular para velocidad
         """
-        self.max_speed = max_speed
         self.target_x: Optional[float] = None
         self.target_y: Optional[float] = None
         self.linear_gain = linear_gain  # Ganancia lineal para velocidad
-        self.angular_gain = angular_gain  # Ganancia angular para velocidad
+        self.steering_gain = steering_gain  # Ganancia angular para velocidad
         
     def set_target(self, x: float, y: float, tol: float = 0.1):
         """
@@ -70,7 +70,7 @@ class NavigationController:
     def calculate_control_commands(self, current_x: float, current_y: float, 
                                  current_angle: float) -> Tuple[float, float]:
         """
-        Calcula comandos de control Ackermann (velocidad + ángulo) para dirigirse al objetivo.
+        Calcula comandos de control (velocidad + velocidad de dirección) para dirigirse al objetivo.
         
         Esta es la interfaz principal que funciona con cualquier tipo de robot.
         
@@ -80,7 +80,7 @@ class NavigationController:
             current_angle: Ángulo actual del robot
             
         Returns:
-            Tuple con (velocidad_lineal, ángulo_de_dirección)
+            Tuple con (velocidad_lineal, velocidad_de_dirección)
         """
         angle_diff, distance = self.calculate_direction_to_target(
             current_x, current_y, current_angle
@@ -90,12 +90,12 @@ class NavigationController:
             return 0.0, 0.0
         
         # Velocidad proporcional a la distancia
-        drive_speed = min(self.max_speed, distance * self.linear_gain)
+        drive_speed = distance * self.linear_gain
         
-        # Ángulo de dirección proporcional al error angular (limitado a ±0.5 rad ≈ ±30°)
-        steering_angle = max(-0.5, min(0.5, angle_diff * self.angular_gain))
+        # Velocidad de giro proporcional al error angular
+        steering_speed = angle_diff * self.steering_gain
         
-        return drive_speed, steering_angle
+        return drive_speed, steering_speed
     
     def is_target_reached(self, current_x: float, current_y: float) -> bool:
         """
@@ -120,28 +120,28 @@ class NavigationController:
 
 if __name__ == "__main__":
     # Ejemplo de uso del controlador de navegación
-    print("=== NavigationController con comandos Ackermann ===")
-    controller = NavigationController(max_speed=1.0, linear_gain=1.5, angular_gain=1.0)
+    print("=== NavigationController sin límites máximos ===")
+    controller = NavigationController(linear_gain=1.5, steering_gain=1.0)
     controller.set_target(2.0, 2.0, tol=0.1)
 
     # Estado inicial del robot
     current_x, current_y, current_angle = 0.0, 0.0, 0.0
 
-    # Simulación usando comandos Ackermann unificados
+    # Simulación usando comandos unificados
     for i in range(15):
         if controller.is_target_reached(current_x, current_y):
             break
             
-        drive_speed, steering_angle = controller.calculate_control_commands(
+        drive_speed, steering_speed = controller.calculate_control_commands(
             current_x, current_y, current_angle
         )
         print(f"Paso {i+1}: Pos=({current_x:.2f}, {current_y:.2f}), "
-              f"Velocidad={drive_speed:.2f}, Dirección={steering_angle:.2f}")
+              f"Velocidad={drive_speed:.2f}, Velocidad giro={steering_speed:.2f}")
 
-        # Simulación simple usando modelo Ackermann
+        # Simulación simple usando modelo cinemático
         dt = 0.1
         current_x += drive_speed * math.cos(current_angle) * dt
         current_y += drive_speed * math.sin(current_angle) * dt
-        current_angle += steering_angle * dt  # Modelo simplificado
+        current_angle += steering_speed * dt  # Modelo simplificado
 
     print("¡Navegación completada!")

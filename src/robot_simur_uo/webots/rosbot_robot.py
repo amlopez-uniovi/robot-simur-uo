@@ -161,8 +161,6 @@ class RosBot(BaseRobot):
         # Actualizar atributos de la interfaz
         self.left_speed = 0.0
         self.right_speed = 0.0
-        self.drive_speed = 0.0
-        self.steering_angle = 0.0
     
     def step(self, dt: float = None) -> int:
         """
@@ -176,24 +174,34 @@ class RosBot(BaseRobot):
         """
         return self.robot.step(self.time_step)
     
-    # Sobrescribir métodos de interfaz Ackermann para usar motores físicos
-    def set_drive_speed(self, speed: float) -> None:
+    # Sobrescribir métodos de interfaz para usar motores físicos
+    def set_drive_command(self, forward_speed: float, steering_speed: float) -> None:
         """
-        Establece la velocidad de avance (interfaz Ackermann).
-        Sobrescribe para usar motores físicos de Webots.
+        Establece velocidad y dirección simultáneamente (interfaz principal).
+        Sobrescribe para usar motores físicos de Webots con optimización.
         """
-        # Llamar al método padre para mantener conversión Ackermann
-        super().set_drive_speed(speed)
+        # Llamar al método padre para conversión
+        super().set_drive_command(forward_speed, steering_speed)
         # Aplicar velocidades convertidas usando set_motor_velocities para escalado
         self.set_motor_velocities(self.left_speed, self.right_speed)
     
-    def set_steering_angle(self, angle: float) -> None:
+    def set_forward_speed(self, speed: float) -> None:
         """
-        Establece el ángulo de dirección (interfaz Ackermann).
+        Establece la velocidad de avance (interfaz unificada).
         Sobrescribe para usar motores físicos de Webots.
         """
-        # Llamar al método padre para mantener conversión Ackermann
-        super().set_steering_angle(angle)
+        # Llamar al método padre para mantener conversión
+        super().set_forward_speed(speed)
+        # Aplicar velocidades convertidas usando set_motor_velocities para escalado
+        self.set_motor_velocities(self.left_speed, self.right_speed)
+    
+    def set_steering_speed(self, speed: float) -> None:
+        """
+        Establece la velocidad de dirección.
+        Sobrescribe para usar motores físicos de Webots.
+        """
+        # Llamar al método padre para mantener conversión
+        super().set_steering_speed(speed)
         # Aplicar velocidades convertidas usando set_motor_velocities para escalado
         self.set_motor_velocities(self.left_speed, self.right_speed)
     
