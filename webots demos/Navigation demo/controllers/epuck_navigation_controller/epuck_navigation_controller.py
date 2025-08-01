@@ -10,8 +10,8 @@ def main():
     # Crear instancia del robot e-puck
     robot = EPuck()
     
-    # Ejemplo de uso del controlador de navegación con parámetros muy conservadores
-    controller = NavigationController(linear_gain=0.3, steering_gain=0.5)
+    # Ejemplo de uso del controlador de navegación (límites aplicados por el robot individual)
+    controller = NavigationController(linear_gain=1.0, steering_gain=2.0)
     controller.set_target(1.0, 0.5, tol=0.1)
         
     # Ejemplo de uso de métodos comunes y específicos

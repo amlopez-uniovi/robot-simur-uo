@@ -155,10 +155,18 @@ class EPuck(WebotsBaseDifferentialRobot):
     def set_drive_command(self, forward_speed: float, steering_speed: float) -> None:
         """
         Establece velocidad y dirección simultáneamente (interfaz principal).
-        Sobrescribe para usar motores físicos de Webots con optimización.
+        Sobrescribe para usar motores físicos de Webots con límites específicos del EPuck.
         """
-        # Llamar al método padre para conversión
-        super().set_drive_command(forward_speed, steering_speed)
+        # Aplicar límites específicos del EPuck
+        max_linear_speed = 0.1  # m/s - Velocidad máxima lineal conservadora para EPuck
+        max_angular_speed = 0.5  # rad/s - Velocidad angular máxima conservadora para EPuck
+        
+        # Limitar velocidades según capacidades del EPuck
+        limited_forward_speed = max(-max_linear_speed, min(max_linear_speed, forward_speed))
+        limited_steering_speed = max(-max_angular_speed, min(max_angular_speed, steering_speed))
+        
+        # Llamar al método padre para conversión con velocidades limitadas
+        super().set_drive_command(limited_forward_speed, limited_steering_speed)
         # Aplicar velocidades convertidas usando set_motor_velocities para escalado
         self.set_motor_velocities(self.left_speed, self.right_speed)
     

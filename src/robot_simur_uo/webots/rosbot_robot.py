@@ -179,10 +179,18 @@ class RosBot(WebotsBaseDifferentialRobot):
     def set_drive_command(self, forward_speed: float, steering_speed: float) -> None:
         """
         Establece velocidad y dirección simultáneamente (interfaz principal).
-        Sobrescribe para usar motores físicos de Webots con optimización.
+        Sobrescribe para usar motores físicos de Webots con límites específicos del RosBot.
         """
-        # Llamar al método padre para conversión
-        super().set_drive_command(forward_speed, steering_speed)
+        # Aplicar límites específicos del RosBot (más potente que EPuck)
+        max_linear_speed = 0.5  # m/s - Velocidad máxima lineal para RosBot
+        max_angular_speed = 1.0  # rad/s - Velocidad angular máxima para RosBot
+        
+        # Limitar velocidades según capacidades del RosBot
+        limited_forward_speed = max(-max_linear_speed, min(max_linear_speed, forward_speed))
+        limited_steering_speed = max(-max_angular_speed, min(max_angular_speed, steering_speed))
+        
+        # Llamar al método padre para conversión con velocidades limitadas
+        super().set_drive_command(limited_forward_speed, limited_steering_speed)
         # Aplicar velocidades convertidas usando set_motor_velocities para escalado
         self.set_motor_velocities(self.left_speed, self.right_speed)
     
