@@ -34,7 +34,8 @@ def main():
         obstacle_sensors = robot.get_obstacle_sensors(num_sectors=5)
         
         # DEBUG: Mostrar todos los sectores en las primeras iteraciones
-        if iteration <= 5:
+        #El Lidar de EPuck barre clockwise de -pi a pi
+        if iteration <= 1000:
             print(f"🔍 DEBUG Iter {iteration} - Sectores (5):")
             sector_names = ["Izquierda", "Frontal Izquierdo", "Frontal", "Frontal Derecho", "Derecha"]
             for i, dist in enumerate(obstacle_sensors):

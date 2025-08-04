@@ -31,12 +31,12 @@ def main():
         x, y = pos[0], pos[1]
         _, angle = robot.get_compass_orientation()
         # Obtener sensores de obstáculos usando solo 5 sectores
-        obstacle_sensors = robot.get_obstacle_sensors(num_sectors=3)
+        obstacle_sensors = robot.get_obstacle_sensors(num_sectors=5)
         
         # DEBUG: Mostrar todos los sectores en las primeras iteraciones
         if iteration <= 1000:
             print(f"🔍 DEBUG Iter {iteration} - Sectores (5):")
-            sector_names = ["Izquierda", "Frontal Izquierdo", "Frontal", "Frontal Derecho", "Derecha"]
+            sector_names = ["Frontal Derecho", "Derecha", "Trasero", "Izquierda", "Frontal Izquierda"]
             for i, dist in enumerate(obstacle_sensors):
                 print(f"   Sector {i} ({sector_names[i]}): {dist:.3f}m")
             print(f"   LiDAR raw data points: {len(robot.get_lidar_data()) if robot.get_lidar_data() else 0}")
