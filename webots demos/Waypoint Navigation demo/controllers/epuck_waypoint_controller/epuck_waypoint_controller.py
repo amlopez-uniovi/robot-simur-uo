@@ -21,7 +21,7 @@ def main():
     # waypoints.create_circular_route(center_x=0, center_y=0, radius=1.0, num_points=8)
     # waypoints.create_rectangular_route(center_x=0, center_y=0, width=2.0, height=1.0)
 
-
+    # Opción 2: Definir waypoints personalizados
     custom_waypoints = [
         (0.0, 0.0),    # Punto de inicio
         (1.0, 0.0),    # Derecha
