@@ -5,7 +5,7 @@ Navega siguiendo una lista predefinida de puntos en orden secuencial.
 
 import math
 import random
-from typing import List, Tuple, Optional, Union, TYPE_CHECKING
+from typing import List, Tuple, Optional, TYPE_CHECKING
 
 from .navigation_lookahead import NavigationLookAhead
 from ..utils.waypoints import Waypoints
@@ -23,7 +23,7 @@ class WaypointNavigationController(NavigationLookAhead):
     """
     
     def __init__(self, 
-                 waypoints: Union[List[Tuple[float, float]], Waypoints],
+                 waypoints: Waypoints,
                  goal_tolerance: float = 0.15,
                  linear_gain: float = 1.0,
                  steering_gain: float = 2.0,
@@ -35,7 +35,7 @@ class WaypointNavigationController(NavigationLookAhead):
         Inicializa el controlador de navegación por waypoints.
         
         Args:
-            waypoints: Lista de puntos (x, y) a seguir en orden, o instancia de Waypoints
+            waypoints: Instancia de la clase Waypoints con los puntos de ruta
             goal_tolerance: Tolerancia para considerar alcanzado un waypoint (metros)
             linear_gain: Ganancia del controlador proporcional lineal
             steering_gain: Ganancia del controlador proporcional angular
@@ -53,11 +53,8 @@ class WaypointNavigationController(NavigationLookAhead):
             max_lookahead=min(1.0, lookahead_factor * 2.5)     # Máximo como 250% del factor
         )
         
-        # Manejar diferentes tipos de entrada para waypoints
-        if isinstance(waypoints, Waypoints):
-            waypoints_list = waypoints.get_waypoints()
-        else:
-            waypoints_list = waypoints
+        # Obtener waypoints de la instancia de Waypoints
+        waypoints_list = waypoints.get_waypoints()
         
         if not waypoints_list:
             raise ValueError("La lista de waypoints no puede estar vacía")
