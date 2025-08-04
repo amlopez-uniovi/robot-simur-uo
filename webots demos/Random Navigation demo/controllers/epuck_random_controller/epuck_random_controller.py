@@ -1,13 +1,7 @@
 # Controlador de navegación aleatoria para el robot e-puck
 # Utiliza la clase EPuck y RandomNavigationController
 
-import sys
-import os
 import math
-
-# Agregar el directorio del paquete al path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-
 from robot_simur_uo import EPuck, RandomNavigationController
 
 
