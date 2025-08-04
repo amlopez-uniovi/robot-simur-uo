@@ -24,17 +24,16 @@ class Bug0NavigationController(NavigationController):
     Controlador Bug0 simple: ir al objetivo, si hay obstáculo girar a la izquierda.
     """
     
-    def __init__(self, linear_gain: float = 1.0, steering_gain: float = 2.0):
+    def __init__(self, linear_gain: float = 1.0, steering_gain: float = 2.0, obstacle_threshold: float = 0.5):
         """Inicializa el controlador Bug0 simple."""
         super().__init__(linear_gain, steering_gain)
-        self.obstacle_threshold = 0.5  # 50cm - distancia de seguridad mayor
-        self.mode = "go_to_goal"
+        self.obstacle_threshold = obstacle_threshold 
         
     def calculate_control_commands(self, 
                                  current_x: float, 
                                  current_y: float, 
                                  current_angle: float,
-                                 obstacle_sensors: List[float] = None) -> Tuple[float, float]:
+                                 front_distance: float = None) -> Tuple[float, float]:
         """
         Bug0 simple: ir al objetivo, si hay obstáculo girar izquierda.
         
@@ -42,24 +41,24 @@ class Bug0NavigationController(NavigationController):
             current_x: Posición X actual
             current_y: Posición Y actual  
             current_angle: Ángulo actual
-            obstacle_sensors: Sensores de obstáculos (opcional)
-            
+            front_distance: Distancia frontal (opcional)
+
         Returns:
             Tupla (velocidad_lineal, velocidad_angular)
         """
         # Si no hay sensores, usar navegación básica
-        if not obstacle_sensors:
+        if front_distance is None:
             return super().calculate_control_commands(current_x, current_y, current_angle)
         
-        # Verificar obstáculo frontal (primer sensor)
-        front_distance = obstacle_sensors[0] if obstacle_sensors else 1.0
-        
+ 
         if front_distance < self.obstacle_threshold:
             # Hay obstáculo: girar a la izquierda
-            return 0.1, 1.0  # velocidad baja, girar izquierda
+            return 0.0, 1.0  # velocidad nula, girar izquierda
         else:
             # No hay obstáculo: ir al objetivo
             return super().calculate_control_commands(current_x, current_y, current_angle)
+
+
 # Ejemplo de uso simple
 if __name__ == "__main__":
     print("🧪 PRUEBA SIMPLE DEL CONTROLADOR BUG0")

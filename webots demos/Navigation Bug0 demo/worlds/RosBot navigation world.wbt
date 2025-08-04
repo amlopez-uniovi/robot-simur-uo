@@ -10,7 +10,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation -0.34115181249990534 0.33860422468561135 0.8769051373170791 1.7092126673923598
-  position -0.18876648465963108 -11.202883823500178 10.391625923149421
+  position -0.21784040537531438 -7.329233293792953 6.8399531948602545
 }
 TexturedBackground {
 }
@@ -28,11 +28,11 @@ Solid {
 TexturedBackgroundLight {
 }
 RectangleArena {
-  floorSize 8 8
-  wallHeight 0.4
+  floorSize 4 4
+  wallHeight 0.01
 }
 Rosbot {
-  translation -2 -2 -0.000562585
+  translation -1 -1 -0.000562585
   rotation -1.5967340726606063e-05 1.7912313901708202e-05 0.9999999997120965 1.45072344045886
   controller "rosbot_bug0_controller"
   lidarSlot [

@@ -30,13 +30,17 @@ Solid {
   boundingObject USE BOX_CILINDRO
 }
 E-puck {
-  hidden position_0_0 4.542429419845877
-  hidden position_0_1 4.542429419852049
-  hidden translation_1 0 0.026000000000000082 0.02
-  hidden rotation_1 0 1 0 4.542429419845877
-  hidden translation_2 0 -0.025999999999999936 0.02
-  hidden rotation_2 0 0.9999999999999999 0 4.542429419852049
   translation -1.0000000002853129 -0.9999999999990674 -6.39619983832506e-05
   rotation -2.7531938208737874e-05 -0.9999577006975193 0.009197611522711402 1.48711794530487e-05
   controller "epuck_bug0_controller"
+  turretSlot [
+    GPS {
+    }
+    Compass {
+    }
+    Lidar {
+      translation 0 0 0.05
+      name "laser"
+    }
+  ]
 }
