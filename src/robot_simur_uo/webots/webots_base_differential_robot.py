@@ -117,12 +117,107 @@ class WebotsBaseDifferentialRobot(IDifferentialRobot):
             pass
         return float('inf')
     
+    def get_lidar_sectored_distances(self, num_sectors: int = 8, 
+                                   min_range: float = 0.05, 
+                                   max_range: float = 10.0) -> list:
+        """
+        Divide los datos del LiDAR en sectores direccionales y obtiene la distancia mínima de cada sector.
+        
+        Args:
+            num_sectors (int): Número de sectores en que dividir el LiDAR (8 por defecto)
+            min_range (float): Distancia mínima válida en metros
+            max_range (float): Distancia máxima válida en metros (valor por defecto para obstáculos lejanos)
+            
+        Returns:
+            list: Lista de distancias mínimas por sector [front, front_right, right, back_right, 
+                  back, back_left, left, front_left] u orden equivalente según num_sectors
+        """
+        try:
+            lidar_data = self.get_lidar_data()
+            
+            if not lidar_data or len(lidar_data) == 0:
+                return [max_range] * num_sectors
+            
+            num_points = len(lidar_data)
+            sector_size = max(1, num_points // num_sectors)
+            sectored_distances = []
+            
+            for i in range(num_sectors):
+                # Calcular índices del sector
+                start_idx = i * sector_size
+                end_idx = min(start_idx + sector_size, num_points)
+                
+                # Obtener distancia mínima en este sector
+                if start_idx < len(lidar_data):
+                    sector_distances = lidar_data[start_idx:end_idx]
+                    if sector_distances:
+                        # Filtrar valores válidos en el sector
+                        valid_distances = [
+                            d for d in sector_distances 
+                            if d > min_range and d < max_range and d != float('inf')
+                        ]
+                        
+                        if valid_distances:
+                            min_distance = min(valid_distances)
+                            sectored_distances.append(min_distance)
+                        else:
+                            sectored_distances.append(max_range)  # Sin obstáculo válido
+                    else:
+                        sectored_distances.append(max_range)
+                else:
+                    sectored_distances.append(max_range)
+            
+            return sectored_distances
+            
+        except Exception as e:
+            print(f"Error al procesar sectores del LiDAR: {e}")
+            return [max_range] * num_sectors
+    
     def get_lidar_fov(self):
         """Obtener campo de visión del lidar"""
         try:
             return self.lidar_sensor.getFov()
         except:
             return 0.0
+    
+    def get_obstacle_sensors(self, num_sectors=8):
+        """
+        Obtener sensores de obstáculos simples desde el LiDAR.
+        Convierte datos del LiDAR en sectores para detección de obstáculos.
+        
+        Args:
+            num_sectors (int): Número de sectores a crear (por defecto 8)
+            
+        Returns:
+            List[float]: Lista con distancias mínimas por sector
+        """
+        lidar_data = self.get_lidar_data()
+        obstacle_sensors = []
+        
+        if lidar_data and len(lidar_data) > 0:
+            # Convertir LiDAR a sectores simples
+            num_points = len(lidar_data)
+            sector_size = max(1, num_points // num_sectors)
+            
+            for i in range(num_sectors):
+                start_idx = i * sector_size
+                end_idx = min(start_idx + sector_size, num_points)
+                
+                if start_idx < len(lidar_data):
+                    sector_distances = lidar_data[start_idx:end_idx]
+                    if sector_distances:
+                        min_distance = min(sector_distances)
+                        # Filtrar valores inválidos (muy cerca o infinito)
+                        obstacle_sensors.append(min_distance if min_distance > 0.02 else 1.0)
+                    else:
+                        obstacle_sensors.append(1.0)
+                else:
+                    obstacle_sensors.append(1.0)
+        else:
+            # Sin LiDAR, asumir sin obstáculos
+            obstacle_sensors = [1.0] * num_sectors
+        
+        return obstacle_sensors
     
     def print_lidar_point_cloud(self, max_points=10):
         """Imprimir los valores de la nube de puntos del lidar

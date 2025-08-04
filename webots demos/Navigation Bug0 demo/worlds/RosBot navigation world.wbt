@@ -1,0 +1,44 @@
+#VRML_SIM R2023b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "../protos/Rosbot.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/devices/slamtec/protos/RpLidarA2.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation -0.34115181249990534 0.33860422468561135 0.8769051373170791 1.7092126673923598
+  position -0.18876648465963108 -11.202883823500178 10.391625923149421
+}
+TexturedBackground {
+}
+Solid {
+  children [
+    DEF BOX_CILINDRO Shape {
+      geometry Cylinder {
+        height 0.5
+        radius 0.54
+      }
+    }
+  ]
+  boundingObject USE BOX_CILINDRO
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 8 8
+  wallHeight 0.4
+}
+Rosbot {
+  translation -2 -2 -0.000562585
+  rotation -1.5967340726606063e-05 1.7912313901708202e-05 0.9999999997120965 1.45072344045886
+  controller "rosbot_bug0_controller"
+  lidarSlot [
+    RpLidarA2 {
+      translation 0 0 0.14
+      name "laser"
+    }
+  ]
+}
