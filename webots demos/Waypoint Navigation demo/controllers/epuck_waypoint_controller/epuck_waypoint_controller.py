@@ -2,7 +2,7 @@
 # Utiliza la clase EPuck y WaypointNavigationController
 
 import math
-from robot_simur_uo import EPuck, WaypointNavigationController
+from robot_simur_uo import EPuck, WaypointNavigationController, Waypoints
 
 
 def main():
@@ -13,8 +13,16 @@ def main():
     # Crear instancia del robot e-puck
     robot = EPuck()
     
-    # Definir lista de waypoints (puntos a seguir)
-    waypoints = [
+    # Crear waypoints usando la clase Waypoints
+    waypoints = Waypoints()
+    
+    # Opción 1: Usar método para crear ruta predefinida (descomentar la que prefieras)
+    # waypoints.create_square_route(center_x=0, center_y=0, size=2.0)
+    # waypoints.create_circular_route(center_x=0, center_y=0, radius=1.0, num_points=8)
+    # waypoints.create_rectangular_route(center_x=0, center_y=0, width=2.0, height=1.0)
+
+
+    custom_waypoints = [
         (0.0, 0.0),    # Punto de inicio
         (1.0, 0.0),    # Derecha
         (1.0, 1.0),    # Arriba-derecha
@@ -25,11 +33,15 @@ def main():
         (0.0, -1.0),   # Abajo-centro
         (1.0, -1.0),   # Abajo-derecha
     ]
+    waypoints.set_waypoints(custom_waypoints)
+    
+    print(f"📍 Waypoints creados:")
+    waypoints.print_waypoints()
     
     # Crear controlador de navegación por waypoints
     # Configuración conservadora para EPuck
     controller = WaypointNavigationController(
-        waypoints=waypoints,
+        waypoints=waypoints,  # Pasar la instancia de Waypoints
         goal_tolerance=0.2,        # Tolerancia de 20cm (apropiada para EPuck)
         linear_gain=0.8,           # Ganancia lineal conservadora
         steering_gain=1.5,         # Ganancia de dirección

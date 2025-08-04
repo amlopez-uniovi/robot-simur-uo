@@ -5,9 +5,10 @@ Navega siguiendo una lista predefinida de puntos en orden secuencial.
 
 import math
 import random
-from typing import List, Tuple, Optional, TYPE_CHECKING
+from typing import List, Tuple, Optional, Union, TYPE_CHECKING
 
 from .navigation_lookahead import NavigationLookAhead
+from ..utils.waypoints import Waypoints
 
 if TYPE_CHECKING:
     from ..interfaces.irobot_base import IRobotBase
@@ -22,7 +23,7 @@ class WaypointNavigationController(NavigationLookAhead):
     """
     
     def __init__(self, 
-                 waypoints: List[Tuple[float, float]],
+                 waypoints: Union[List[Tuple[float, float]], Waypoints],
                  goal_tolerance: float = 0.15,
                  linear_gain: float = 1.0,
                  steering_gain: float = 2.0,
@@ -34,7 +35,7 @@ class WaypointNavigationController(NavigationLookAhead):
         Inicializa el controlador de navegación por waypoints.
         
         Args:
-            waypoints: Lista de puntos (x, y) a seguir en orden
+            waypoints: Lista de puntos (x, y) a seguir en orden, o instancia de Waypoints
             goal_tolerance: Tolerancia para considerar alcanzado un waypoint (metros)
             linear_gain: Ganancia del controlador proporcional lineal
             steering_gain: Ganancia del controlador proporcional angular
@@ -52,10 +53,16 @@ class WaypointNavigationController(NavigationLookAhead):
             max_lookahead=min(1.0, lookahead_factor * 2.5)     # Máximo como 250% del factor
         )
         
-        if not waypoints:
+        # Manejar diferentes tipos de entrada para waypoints
+        if isinstance(waypoints, Waypoints):
+            waypoints_list = waypoints.get_waypoints()
+        else:
+            waypoints_list = waypoints
+        
+        if not waypoints_list:
             raise ValueError("La lista de waypoints no puede estar vacía")
         
-        self.waypoints = waypoints.copy()  # Copia para evitar modificaciones externas
+        self.waypoints = list(waypoints_list)  # Copia para evitar modificaciones externas
         self.cycle_waypoints = cycle_waypoints
         self.current_waypoint_index = 0
         self.goal_tolerance = goal_tolerance
@@ -256,13 +263,8 @@ class WaypointNavigationController(NavigationLookAhead):
         Returns:
             Controlador configurado con ruta cuadrada
         """
-        half_size = size / 2
-        waypoints = [
-            (center_x - half_size, center_y - half_size),  # Esquina inferior izquierda
-            (center_x + half_size, center_y - half_size),  # Esquina inferior derecha
-            (center_x + half_size, center_y + half_size),  # Esquina superior derecha
-            (center_x - half_size, center_y + half_size),  # Esquina superior izquierda
-        ]
+        waypoints = Waypoints()
+        waypoints.create_square_route(center_x, center_y, size)
         
         return cls(waypoints, lookahead_factor=lookahead_factor, **kwargs)
     
@@ -284,11 +286,7 @@ class WaypointNavigationController(NavigationLookAhead):
         Returns:
             Controlador configurado con ruta circular
         """
-        waypoints = []
-        for i in range(num_points):
-            angle = 2 * math.pi * i / num_points
-            x = center_x + radius * math.cos(angle)
-            y = center_y + radius * math.sin(angle)
-            waypoints.append((x, y))
+        waypoints = Waypoints()
+        waypoints.create_circular_route(center_x, center_y, radius, num_points)
         
         return cls(waypoints, lookahead_factor=lookahead_factor, **kwargs)
