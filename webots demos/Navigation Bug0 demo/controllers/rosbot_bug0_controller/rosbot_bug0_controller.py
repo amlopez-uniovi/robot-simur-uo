@@ -35,6 +35,7 @@ def main():
         
         # DEBUG: Mostrar todos los sectores en las primeras iteraciones
         if iteration <= 1000:
+            #El RPLidarA2 de EPuck barre clockwise de 0 a 2pi
             print(f"🔍 DEBUG Iter {iteration} - Sectores (5):")
             sector_names = ["Frontal Derecho", "Derecha", "Trasero", "Izquierda", "Frontal Izquierda"]
             for i, dist in enumerate(obstacle_sensors):
