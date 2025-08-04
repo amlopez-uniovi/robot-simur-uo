@@ -19,8 +19,7 @@ class RandomNavigationController(NavigationController):
                  workspace_bounds: Tuple[float, float, float, float] = (-2.0, 2.0, -2.0, 2.0),
                  linear_gain: float = 1.0, 
                  steering_gain: float = 2.0,
-                 goal_tolerance: float = 0.15,
-                 sensor_report_interval: int = 50):
+                 goal_tolerance: float = 0.15):
         """
         Inicializa el controlador de navegación aleatoria.
         
@@ -37,7 +36,6 @@ class RandomNavigationController(NavigationController):
         # Configuración específica de navegación aleatoria
         self.workspace_bounds = workspace_bounds
         self.min_x, self.max_x, self.min_y, self.max_y = workspace_bounds
-        self.sensor_report_interval = sensor_report_interval
         self.tolerance = goal_tolerance  # Usar el atributo heredado
         
         # Estado del controlador aleatorio
@@ -138,31 +136,7 @@ class RandomNavigationController(NavigationController):
         drive_speed, steering_speed = self.calculate_control_commands(
             current_x, current_y, current_angle
         )
-        
-        # Reportar estado cada cierto número de iteraciones
-        if self.iteration_count % self.sensor_report_interval == 0:
-            print(f"\n{'='*80}")
-            print(f"📊 REPORTE DETALLADO - Iteración {self.iteration_count}")
-            print(f"{'='*80}")
-            
-            # Información de navegación
-            if self.current_goal:
-                goal_distance = math.sqrt((self.current_goal[0] - current_x)**2 + 
-                                        (self.current_goal[1] - current_y)**2)
-                print(f"🧭 NAVEGACIÓN:")
-                print(f"   Posición actual: ({current_x:.3f}, {current_y:.3f})")
-                print(f"   Objetivo actual: ({self.current_goal[0]:.3f}, {self.current_goal[1]:.3f})")
-                print(f"   Distancia al objetivo: {goal_distance:.3f}m")
-                print(f"   Ángulo actual: {math.degrees(current_angle):.1f}°")
-                print(f"   Velocidad lineal: {drive_speed:.3f}")
-                print(f"   Velocidad angular: {steering_speed:.3f}")
-                print(f"   Objetivos alcanzados: {self.goals_reached}")
-            
-            # Información específica del robot usando la función unificada
-            robot.log_devices()
-            
-            print(f"{'='*80}\n")
-        
+     
         return drive_speed, steering_speed
     
     def get_statistics(self) -> Dict[str, Any]:

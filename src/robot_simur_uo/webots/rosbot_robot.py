@@ -396,3 +396,21 @@ class RosBot(WebotsBaseDifferentialRobot):
         # Llamar al método base para manejar la salida
         super().log_devices(to_terminal, to_file)
 
+    def obstacle_detected(self, threshold=0.8):
+        """Detectar si hay un obstáculo cerca
+        
+        Args:
+            threshold (float): Umbral de detección en metros (default: 0.8m)
+        
+        Returns:
+            bool: True si hay obstáculo, False si no
+        """
+        distance_values = self.get_distance_sensor_values()
+        
+        # Verificar sensores frontales (índices 0 y 2: fl_range y fr_range)
+        front_left_distance = distance_values[0]   # fl_range
+        front_right_distance = distance_values[2]  # fr_range
+        
+        # Detectar obstáculo si algún sensor frontal está por debajo del umbral
+        return front_left_distance < threshold or front_right_distance < threshold
+

@@ -36,20 +36,13 @@ def main():
             current_x, current_y, current_angle
         )
         
+        robot.set_drive_command(drive_speed, steering_speed)
+        
         # Debug: Mostrar velocidades antes de aplicarlas
         print(f"Posición: ({current_x:.2f}, {current_y:.2f}) → Destino: ({controller.target_x:.2f}, {controller.target_y:.2f})")
         print(f"Ángulo actual: {current_angle:.2f}, Comandos: Velocidad={drive_speed:.2f}, Velocidad giro={steering_speed:.2f}")
         
-        # Obtener velocidades de motores después de la conversión para debug
-        robot.set_drive_command(drive_speed, steering_speed)
-        left_speed, right_speed = robot.get_motor_speeds()
-        print(f"Velocidades motores: Izq={left_speed:.2f}, Der={right_speed:.2f}")
-        print("---")
-            
-        # Mostrar información cada cierto tiempo
-        if robot.step(0) % 1000 == 0:
-            print(f"GPS: {gps_position}")
-            print(f"Brújula: {compass_angle:.2f}°")
+
     
     # Limpiar recursos (método común)
     robot.cleanup()
