@@ -7,17 +7,17 @@ import math
 import random
 from typing import List, Tuple, Optional, TYPE_CHECKING
 
-from .navigation import NavigationController
+from .navigation_lookahead import NavigationLookAhead
 
 if TYPE_CHECKING:
     from ..interfaces.irobot_base import IRobotBase
 
 
-class WaypointNavigationController(NavigationController):
+class WaypointNavigationController(NavigationLookAhead):
     """
     Controlador que navega siguiendo una lista de waypoints (puntos de ruta) predefinidos.
-    
-    Hereda de NavigationController y añade la funcionalidad de seguir una secuencia
+
+    Hereda de NavigationLookAhead y añade la funcionalidad de seguir una secuencia
     de puntos específicos en lugar de generar objetivos aleatorios.
     """
     
@@ -28,7 +28,8 @@ class WaypointNavigationController(NavigationController):
                  steering_gain: float = 2.0,
                  max_linear_speed: float = 0.5,
                  max_angular_speed: float = 1.0,
-                 cycle_waypoints: bool = True):
+                 cycle_waypoints: bool = True,
+                 lookahead_factor: float = 0.2):
         """
         Inicializa el controlador de navegación por waypoints.
         
@@ -40,8 +41,16 @@ class WaypointNavigationController(NavigationController):
             max_linear_speed: Velocidad lineal máxima (m/s) - solo informativo
             max_angular_speed: Velocidad angular máxima (rad/s) - solo informativo
             cycle_waypoints: Si True, repite la lista; si False, se detiene al final
+            lookahead_factor: Factor de lookahead para navegación suave (metros)
         """
-        super().__init__(linear_gain, steering_gain)
+        # Configurar NavigationLookAhead con parámetros optimizados para waypoints
+        super().__init__(
+            linear_gain=linear_gain, 
+            steering_gain=steering_gain,
+            lookahead_distance=lookahead_factor,  # Usar el parámetro personalizado
+            min_lookahead=max(0.05, lookahead_factor * 0.25),  # Mínimo como 25% del factor
+            max_lookahead=min(1.0, lookahead_factor * 2.5)     # Máximo como 250% del factor
+        )
         
         if not waypoints:
             raise ValueError("La lista de waypoints no puede estar vacía")
@@ -233,7 +242,7 @@ class WaypointNavigationController(NavigationController):
     
     @classmethod
     def create_square_route(cls, center_x: float = 0.0, center_y: float = 0.0, 
-                          size: float = 2.0, **kwargs) -> 'WaypointNavigationController':
+                          size: float = 2.0, lookahead_factor: float = 0.2, **kwargs) -> 'WaypointNavigationController':
         """
         Crea una ruta cuadrada predefinida.
         
@@ -241,6 +250,7 @@ class WaypointNavigationController(NavigationController):
             center_x: Centro X del cuadrado
             center_y: Centro Y del cuadrado
             size: Tamaño del lado del cuadrado
+            lookahead_factor: Factor de lookahead para navegación suave (metros)
             **kwargs: Argumentos adicionales para el constructor
             
         Returns:
@@ -254,11 +264,12 @@ class WaypointNavigationController(NavigationController):
             (center_x - half_size, center_y + half_size),  # Esquina superior izquierda
         ]
         
-        return cls(waypoints, **kwargs)
+        return cls(waypoints, lookahead_factor=lookahead_factor, **kwargs)
     
     @classmethod
     def create_circular_route(cls, center_x: float = 0.0, center_y: float = 0.0,
-                            radius: float = 1.0, num_points: int = 8, **kwargs) -> 'WaypointNavigationController':
+                            radius: float = 1.0, num_points: int = 8, 
+                            lookahead_factor: float = 0.2, **kwargs) -> 'WaypointNavigationController':
         """
         Crea una ruta circular predefinida.
         
@@ -267,6 +278,7 @@ class WaypointNavigationController(NavigationController):
             center_y: Centro Y del círculo
             radius: Radio del círculo
             num_points: Número de puntos en el círculo
+            lookahead_factor: Factor de lookahead para navegación suave (metros)
             **kwargs: Argumentos adicionales para el constructor
             
         Returns:
@@ -279,4 +291,4 @@ class WaypointNavigationController(NavigationController):
             y = center_y + radius * math.sin(angle)
             waypoints.append((x, y))
         
-        return cls(waypoints, **kwargs)
+        return cls(waypoints, lookahead_factor=lookahead_factor, **kwargs)

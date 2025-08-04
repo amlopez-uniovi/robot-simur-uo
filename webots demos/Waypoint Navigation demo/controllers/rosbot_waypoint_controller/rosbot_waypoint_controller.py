@@ -30,12 +30,13 @@ def main():
     # Configuración conservadora para RosBot
     controller = WaypointNavigationController(
         waypoints=waypoints,
-        goal_tolerance=0.2,      # Tolerancia de 20cm (apropiada para RosBot)
-        linear_gain=0.8,         # Ganancia lineal conservadora
-        steering_gain=1.5,       # Ganancia de dirección
-        max_linear_speed=0.1,    # Velocidad máxima lineal limitada para RosBot
-        max_angular_speed=0.5,   # Velocidad angular limitada para RosBot
-        cycle_waypoints=True     # Repetir la ruta indefinidamente
+        goal_tolerance=0.2,        # Tolerancia de 20cm (apropiada para RosBot)
+        linear_gain=0.8,           # Ganancia lineal conservadora
+        steering_gain=1.5,         # Ganancia de dirección
+        max_linear_speed=0.1,      # Velocidad máxima lineal limitada para RosBot
+        max_angular_speed=0.5,     # Velocidad angular limitada para RosBot
+        cycle_waypoints=True,      # Repetir la ruta indefinidamente
+        lookahead_factor=0.25      # Factor de lookahead optimizado para RosBot
     )
     
     iteration_count = 0
