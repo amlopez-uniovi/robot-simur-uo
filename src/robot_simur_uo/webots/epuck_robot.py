@@ -291,6 +291,7 @@ class EPuck(WebotsBaseDifferentialRobot):
             lidar_data = self.get_lidar_data()
             if lidar_data:
                 log_lines.append(f"Lidar:")
+                log_lines.append(f"  Lidar data : {[f'{v:.2f}' for v in lidar_data]}")
                 log_lines.append(f"  Total readings: {len(lidar_data)}")
                 log_lines.append(f"  Configuration:")
                 log_lines.append(f"    Range count: {self.get_lidar_range_count()}")
@@ -298,13 +299,6 @@ class EPuck(WebotsBaseDifferentialRobot):
                 log_lines.append(f"    Max range: {self.get_lidar_max_range():.4f}m")
                 log_lines.append(f"    FOV: {self.get_lidar_fov():.4f}rad")
                 
-                # Muestra de lecturas directas (sin procesar)
-                sample_size = min(10, len(lidar_data))
-                log_lines.append(f"  Sample readings (first {sample_size}):")
-                for i in range(sample_size):
-                    log_lines.append(f"    Reading {i}: {lidar_data[i]}")
-            else:
-                log_lines.append("Lidar: No data available")
         except Exception as e:
             log_lines.append(f"Lidar: Error - {e}")
         
@@ -333,29 +327,6 @@ class EPuck(WebotsBaseDifferentialRobot):
         except Exception as e:
             log_lines.append(f"Camera: Error - {e}")
                 
-        # 7. Acelerómetro (valores directos)
-        try:
-            accelerometer = self.robot.getDevice("accelerometer")
-            if accelerometer:
-                accelerometer.enable(self.time_step)
-                accel_values = accelerometer.getValues()
-                log_lines.append(f"Accelerometer: x={accel_values[0]:.4f}, y={accel_values[1]:.4f}, z={accel_values[2]:.4f} m/s²")
-            else:
-                log_lines.append("Accelerometer: Not available")
-        except Exception as e:
-            log_lines.append(f"Accelerometer: Error - {e}")
-        
-        # 8. Giroscopio (valores directos)
-        try:
-            gyro = self.robot.getDevice("gyro")
-            if gyro:
-                gyro.enable(self.time_step)
-                gyro_values = gyro.getValues()
-                log_lines.append(f"Gyroscope: x={gyro_values[0]:.4f}, y={gyro_values[1]:.4f}, z={gyro_values[2]:.4f} rad/s")
-            else:
-                log_lines.append("Gyroscope: Not available")
-        except Exception as e:
-            log_lines.append(f"Gyroscope: Error - {e}")
                 
         # 9. LEDs (conteo directo)
         try:
