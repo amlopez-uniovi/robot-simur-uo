@@ -313,28 +313,43 @@ class RosBot(WebotsBaseDifferentialRobot):
         except Exception as e:
             log_lines.append(f"Distance Sensors: Error - {e}")
         
-        # 5. IMU Accelerometer (valores directos)
+        # 5. Lidar (datos directos)
+        try:
+            lidar_data = self.get_lidar_data()
+            if lidar_data:
+                log_lines.append(f"Lidar:")
+                log_lines.append(f"  Lidar data : {[f'{v:.2f}' for v in lidar_data]}")
+                log_lines.append(f"  Total readings: {len(lidar_data)}")
+                log_lines.append(f"  Configuration:")
+                log_lines.append(f"    Range count: {self.get_lidar_range_count()}")
+                log_lines.append(f"    Min range: {self.get_lidar_min_range():.4f}m")
+                log_lines.append(f"    Max range: {self.get_lidar_max_range():.4f}m")
+                log_lines.append(f"    FOV: {self.get_lidar_fov():.4f}rad")
+        except Exception as e:
+            log_lines.append(f"Lidar: Error - {e}")
+        
+        # 6. IMU Accelerometer (valores directos)
         try:
             accel_values = self.get_accelerometer_values()
             log_lines.append(f"IMU Accelerometer: x={accel_values[0]:.4f}, y={accel_values[1]:.4f}, z={accel_values[2]:.4f} m/s²")
         except Exception as e:
             log_lines.append(f"IMU Accelerometer: Error - {e}")
         
-        # 6. IMU Gyroscope (valores directos)
+        # 7. IMU Gyroscope (valores directos)
         try:
             gyro_values = self.get_gyro_values()
             log_lines.append(f"IMU Gyroscope: x={gyro_values[0]:.4f}, y={gyro_values[1]:.4f}, z={gyro_values[2]:.4f} rad/s")
         except Exception as e:
             log_lines.append(f"IMU Gyroscope: Error - {e}")
         
-        # 7. IMU Compass (valores directos)
+        # 8. IMU Compass (valores directos)
         try:
             imu_compass_values = self.get_imu_compass_values()
             log_lines.append(f"IMU Compass: x={imu_compass_values[0]:.4f}, y={imu_compass_values[1]:.4f}, z={imu_compass_values[2]:.4f}")
         except Exception as e:
             log_lines.append(f"IMU Compass: Error - {e}")
         
-        # 8. Position Sensors (encoders de las ruedas)
+        # 9. Position Sensors (encoders de las ruedas)
         try:
             position_values = self.get_position_sensor_values()
             log_lines.append("Wheel Position Sensors:")
@@ -345,7 +360,7 @@ class RosBot(WebotsBaseDifferentialRobot):
         except Exception as e:
             log_lines.append(f"Position Sensors: Error - {e}")
         
-        # 9. Cámaras RGB y Depth (propiedades directas)
+        # 10. Cámaras RGB y Depth (propiedades directas)
         try:
             log_lines.append(f"Cameras:")
             # Cámara RGB
@@ -380,7 +395,7 @@ class RosBot(WebotsBaseDifferentialRobot):
         except Exception as e:
             log_lines.append(f"Cameras: Error - {e}")
         
-        # 10. Parámetros del robot (configuración)
+        # 11. Parámetros del robot (configuración)
         log_lines.append(f"Robot Configuration:")
         log_lines.append(f"  Time step: {self.time_step}ms")
         log_lines.append(f"  Wheel radius: {self.wheel_radius:.4f}m")

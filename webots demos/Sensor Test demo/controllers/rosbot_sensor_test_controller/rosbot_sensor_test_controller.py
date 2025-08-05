@@ -28,69 +28,54 @@ def main():
         current_x, current_y = pos[0], pos[1]
         _, current_angle = robot.get_compass_orientation()
         
-        # Calcular comandos de navegación
-        drive_speed, steering_speed = controller.calculate_control_commands(
-            current_x, current_y, current_angle
-        )
+        # Inicializar ángulo de referencia
+        if start_angle is None:
+            start_angle = current_angle
+            print(f"📍 Posición inicial: ({current_x:.3f}, {current_y:.3f})")
+            print(f"🧭 Ángulo inicial: {math.degrees(current_angle):.1f}°")
         
-        # Aplicar comandos al robot
-        robot.set_drive_command(drive_speed, steering_speed)
+        # Calcular rotación total desde el inicio
+        angle_diff = current_angle - start_angle
+        # Normalizar la diferencia de ángulo
+        while angle_diff > math.pi:
+            angle_diff -= 2 * math.pi
+        while angle_diff < -math.pi:
+            angle_diff += 2 * math.pi
         
-        # TEST DE SENSORES - Mostrar información cada 50 iteraciones
-        if iteration % 50 == 0:
-            print(f"\n📍 === ITERACIÓN {iteration} ===")
-            print(f"   Posición actual: ({current_x:.3f}, {current_y:.3f})")
-            print(f"   Waypoint actual: {controller.current_waypoint_index}")
-            if controller.current_waypoint_index < len(waypoints.waypoints):
-                wp = waypoints.waypoints[controller.current_waypoint_index]
-                print(f"   Waypoint objetivo: ({wp[0]:.3f}, {wp[1]:.3f})")
-            print(f"   Ángulo actual: {math.degrees(current_angle):.1f}°")
-            print(f"   Comandos: vel={drive_speed:.3f}, giro={steering_speed:.3f}")
+        # Acumular rotación (considerando cambios de signo en la normalización)
+        if iteration > 1:
+            prev_angle_diff = getattr(main, 'prev_angle_diff', 0)
+            delta = angle_diff - prev_angle_diff
+            # Detectar cruce de la discontinuidad
+            if delta > math.pi:
+                delta -= 2 * math.pi
+            elif delta < -math.pi:
+                delta += 2 * math.pi
+            total_rotation += abs(delta)
+        
+        main.prev_angle_diff = angle_diff
+        
+        # Girar a la izquierda continuamente
+        robot.turn_left()
+
+        robot.log_devices()
+
+        # Información básica cada 25 iteraciones
+        print(f"� Iter {iteration}: ángulo={math.degrees(current_angle):.1f}° rotación={math.degrees(total_rotation):.1f}°")
+        
+        # Verificar si completó una vuelta completa (360°)
+        if total_rotation >= 2 * math.pi:
+            print(f"\n🎯 ¡Giro completo de 360° completado!")
+            print(f"   Iteraciones totales: {iteration}")
+            print(f"   Rotación final: {math.degrees(total_rotation):.1f}°")
+            print(f"   Posición final: ({current_x:.3f}, {current_y:.3f})")
             
-            # TEST: Sensores de obstáculos con parámetros restrictivos para RosBot
-            obstacle_sensors = robot.get_lidar_sectored_distances(
-                num_sectors=8,
-                min_range=0.15,  # Filtrado más agresivo para RosBot
-                max_range=3.0
-            )
-            print(f"   🔍 Sensores obstáculos (8 sectores, filtrados):")
-            for i, dist in enumerate(obstacle_sensors[:4]):  # Mostrar solo 4 primeros
-                print(f"      Sector {i}: {dist:.3f}m")
-            
-            # TEST: Datos LiDAR raw
-            lidar_data = robot.get_lidar_data()
-            if lidar_data:
-                # Filtrar valores válidos
-                valid_ranges = [d for d in lidar_data if d > 0.1 and d < 10.0 and d != float('inf')]
-                if valid_ranges:
-                    min_distance = min(valid_ranges)
-                    max_distance = max(valid_ranges)
-                    avg_distance = sum(valid_ranges) / len(valid_ranges)
-                    print(f"   📡 LiDAR: {len(lidar_data)} puntos totales, {len(valid_ranges)} válidos")
-                    print(f"   📡 Distancias: min={min_distance:.3f}m, max={max_distance:.3f}m, avg={avg_distance:.3f}m")
-                    print(f"   📡 Obstáculo más cercano: {robot.get_lidar_closest_obstacle():.3f}m")
-                else:
-                    print(f"   📡 LiDAR: {len(lidar_data)} puntos, ninguno válido")
-            
-            # TEST: Información técnica del LiDAR
-            print(f"   📊 LiDAR técnico:")
-            print(f"      Rango: {robot.get_lidar_min_range():.2f} - {robot.get_lidar_max_range():.2f}m")
-            print(f"      FOV: {math.degrees(robot.get_lidar_fov()):.1f}°")
-            print(f"      Puntos: {robot.get_lidar_range_count()}")
-        
-        # Información básica cada 10 iteraciones
-        elif iteration % 10 == 0:
-            distance_to_center = math.sqrt(current_x**2 + current_y**2)
-            wp_idx = controller.current_waypoint_index
-            print(f"📍 Iter {iteration}: pos=({current_x:.2f},{current_y:.2f}) WP={wp_idx} dist_centro={distance_to_center:.2f}m")
-        
-        # Verificar si se completó la ruta
-        if controller.is_route_completed():
-            print("🎯 ¡Ruta circular completada! Reiniciando...")
-            controller.reset()  # Reiniciar para repetir la ruta circular
-    
+            # Detener el robot
+            robot.stop()
+            break  # Salir del bucle
+
     robot.cleanup()
-    print("✅ Test de sensores con ruta circular finalizado")
+    print("✅ Test de sensores con giro 360° finalizado")
 
 
 if __name__ == "__main__":
