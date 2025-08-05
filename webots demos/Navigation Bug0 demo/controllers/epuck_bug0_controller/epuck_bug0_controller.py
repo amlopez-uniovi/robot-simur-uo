@@ -7,7 +7,7 @@ from robot_simur_uo.controllers.navigation_bug0 import Bug0NavigationController
 
 def main():
     """Controlador Bug0 simple para EPuck."""
-    print("🐛 EPuck - Controlador Bug0 Simple")
+    print("EPuck - Controlador Bug0 Simple")
     
     # Robot y controlador Bug0
     robot = EPuck()
@@ -17,8 +17,8 @@ def main():
     goal_x, goal_y = 1.0, 1.0
     controller.set_target(goal_x, goal_y)
     
-    print(f"🎯 Objetivo: ({goal_x}, {goal_y})")
-    print(f"🔧 Umbral obstáculo: {controller.obstacle_threshold}m")
+    print(f"Objetivo: ({goal_x}, {goal_y})")
+    print(f"Umbral obstáculo: {controller.obstacle_threshold}m")
     
     iteration = 0
     
@@ -36,7 +36,7 @@ def main():
         # DEBUG: Mostrar todos los sectores en las primeras iteraciones
         #El Lidar de EPuck barre clockwise de -pi a pi
         if iteration <= 1000:
-            print(f"🔍 DEBUG Iter {iteration} - Sectores (5):")
+            print(f"DEBUG Iter {iteration} - Sectores (5):")
             sector_names = ["Izquierda", "Frontal Izquierdo", "Frontal", "Frontal Derecho", "Derecha"]
             for i, dist in enumerate(obstacle_sensors):
                 print(f"   Sector {i} ({sector_names[i]}): {dist:.3f}m")
@@ -50,12 +50,12 @@ def main():
             
         # Verificar si llegamos al objetivo
         if controller.is_target_reached(x, y):
-            print("🎯 ¡Objetivo alcanzado!")
+            print("Objetivo alcanzado")
             robot.stop()
             break
     
     robot.cleanup()
-    print("✅ Controlador Bug0 simple finalizado")
+    print("Controlador Bug0 simple finalizado")
 
 
 if __name__ == "__main__":
