@@ -35,14 +35,28 @@ PROTO E-puck [
   field SFInt32            emitter_channel              1                        # Is `Emitter.channel`.
   field SFInt32            receiver_channel             1                        # Is `Receiver.channel`.
   field MFNode             turretSlot                   [                        # Extends the robot with new nodes in the turret slot.
+  ]
+  field MFNode             gpsSlot                      [                        # Slot específico para el GPS.
     GPS {
       name "gps"
     }
+  ]
+  field MFNode             compassSlot                  [                        # Slot específico para el Compass.
     Compass {
       name "compass"
     }
+  ]
+  field MFNode             lidarSlot                    [                        # Slot específico para el LiDAR.
     Lidar {
       name "laser"
+      horizontalResolution 360
+      numberOfLayers 1
+      fieldOfView 6.28319
+      minRange 0.1
+      maxRange 15.0
+      noise 0.0
+      resolution 0.001
+      defaultFrequency 10
     }
   ]
   field MFNode             groundSensorsSlot            []                       # Extends the robot with new nodes in the ground slot. Typically: `E-puckGroundSensors.proto`.
@@ -1139,6 +1153,18 @@ Robot {
     DEF TURRET_SLOT Pose {
       translation -0.0095 0 0.0486
       children IS turretSlot
+    }
+    DEF GPS_SLOT Pose {
+      translation 0 0 0.04
+      children IS gpsSlot
+    }
+    DEF COMPASS_SLOT Pose {
+      translation 0 0 0.05
+      children IS compassSlot
+    }
+    DEF LIDAR_SLOT Pose {
+      translation 0 0 0.06
+      children IS lidarSlot
     }
     DEF GROUND_SENSOR_SLOT Pose {
       translation 0.03 0 0.0003
