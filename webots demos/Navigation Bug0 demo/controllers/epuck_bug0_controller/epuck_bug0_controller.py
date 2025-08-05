@@ -31,7 +31,10 @@ def main():
         x, y = pos[0], pos[1]
         _, angle = robot.get_compass_orientation()
         # Obtener sensores de obstáculos usando solo 5 sectores
-        obstacle_sensors = robot.get_obstacle_sensors(num_sectors=5)
+        if robot.has_lidar_manager():
+            obstacle_sensors = robot.lidar_manager.get_obstacle_sensors(num_sectors=5)
+        else:
+            obstacle_sensors = [1.0] * 5
         
         # DEBUG: Mostrar todos los sectores en las primeras iteraciones
         #El Lidar de EPuck barre clockwise de -pi a pi

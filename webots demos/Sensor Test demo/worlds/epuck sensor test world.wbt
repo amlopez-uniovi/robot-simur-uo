@@ -44,8 +44,6 @@ E-puck {
   translation 2.8328369965127277e-05 -5.1941475189521774e-06 -0.008509634150164565
   rotation -0.8668965482926658 0.49848808456089494 -6.410204084718962e-05 0.004784293220825203
   controller "epuck_sensor_test_controller"
-  turretSlot [
-  ]
   lidarSlot [
     Lidar {
       name "laser"

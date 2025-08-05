@@ -33,14 +33,5 @@ E-puck {
   translation -1.0000000002853129 -0.9999999999990674 -6.39619983832506e-05
   rotation -2.7531938208737874e-05 -0.9999577006975193 0.009197611522711402 1.48711794530487e-05
   controller "epuck_bug0_controller"
-  turretSlot [
-    GPS {
-    }
-    Compass {
-    }
-    Lidar {
-      translation 0 0 0.05
-      name "laser"
-    }
-  ]
+  # turretSlot eliminado para evitar duplicidad de sensores; los sensores se definen en el PROTO
 }
