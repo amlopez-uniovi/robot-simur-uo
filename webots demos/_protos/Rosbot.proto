@@ -24,7 +24,29 @@ PROTO Rosbot [
   field  SFBool      synchronization TRUE      # Is `Robot.synchronization`.
   field  SFBool      selfCollision   FALSE     # Is `Robot.selfCollision`.
   field  MFNode      cameraSlot      [ Astra { name "camera" } ] # Extends the robot with an Astra RGBD camera.
-  field  MFNode      lidarSlot       [ RpLidarA2 { name "laser" } ] # Extends the robot with a RpLidar A2 lidar.
+  field  MFNode      lidarSlot       [                        # Slot específico para el LiDAR configurable.
+    Lidar {
+      name "laser"
+      horizontalResolution 360
+      numberOfLayers 1
+      fieldOfView 6.28319
+      minRange 0.01
+      maxRange 5.0
+      noise 0.0
+      resolution 0.001
+      defaultFrequency 10
+    }
+  ]
+  field  MFNode      gpsSlot         [                        # Slot específico para el GPS.
+    GPS {
+      name "gps"
+    }
+  ]
+  field  MFNode      compassSlot     [                        # Slot específico para el Compass.
+    Compass {
+      name "compass"
+    }
+  ]
 ]
 {
   Robot {
@@ -626,12 +648,12 @@ PROTO Rosbot [
           }
         ]
       }
-      GPS {
-        name "gps"
-       }
-      Compass {
-        name "compass"
-       }
+      DEF GPS_SLOT Pose {
+        children IS gpsSlot
+      }
+      DEF COMPASS_SLOT Pose {
+        children IS compassSlot
+      }
       DistanceSensor {
         translation 0.100000 0.050000 0.053000
         rotation 0.000000 0.000000 1.000000 0.130000

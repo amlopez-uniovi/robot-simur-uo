@@ -10,29 +10,26 @@ WorldInfo {
 }
 Viewpoint {
   orientation -0.34115181249990534 0.33860422468561135 0.8769051373170791 1.7092126673923598
-  position -0.21784040537531438 -7.329233293792953 6.8399531948602545
+  position -0.23739138398556178 -4.724367600222159 4.451603917154328
 }
 TexturedBackground {
-}
-Solid {
-  children [
-    DEF BOX_CILINDRO Shape {
-      geometry Cylinder {
-        height 0.5
-        radius 0.54
-      }
-    }
-  ]
-  boundingObject USE BOX_CILINDRO
 }
 TexturedBackgroundLight {
 }
 RectangleArena {
   floorSize 4 4
-  wallHeight 0.01
+  wallHeight 0.4
 }
 Rosbot {
-  translation -1 -1 0
+  hidden position_0_0 -0.1279409550033337
+  hidden position_0_1 0.12794080495320853
+  hidden position_0_2 -0.1279408471648411
+  hidden position_0_3 0.12794091431556665
+  hidden rotation_2 0 -1 0 0.12794095500333275
+  hidden rotation_3 0 1 0 0.1279408049532098
+  hidden rotation_4 0 -1 0 0.12794084716484047
+  hidden rotation_5 0 1 0 0.12794091431556764
+  translation -1.0000000000014369 -9.588432992071509e-13 -0.000562585520604425
   controller "rosbot_sensor_test_controller"
   lidarSlot [
     RpLidarA2 {

@@ -56,7 +56,7 @@ def main():
         main.prev_angle_diff = angle_diff
         
         # Girar a la izquierda continuamente
-        robot.turn_left()
+        #robot.turn_left()
 
         robot.log_devices()
 
