@@ -313,18 +313,56 @@ class RosBot(WebotsBaseDifferentialRobot):
         except Exception as e:
             log_lines.append(f"Distance Sensors: Error - {e}")
         
-        # 5. Lidar (datos directos)
+        # 5. Lidar (datos directos y con ángulos)
         try:
             lidar_data = self.get_lidar_data()
             if lidar_data:
                 log_lines.append(f"Lidar:")
-                log_lines.append(f"  Lidar data : {[f'{v:.2f}' for v in lidar_data]}")
+                # Mostrar solo primeros 10 datos para no saturar (RosBot tiene muchos puntos)
+                log_lines.append(f"  Lidar data (primeros 10): {[f'{v:.2f}' for v in lidar_data[:10]]}")
+                if len(lidar_data) > 10:
+                    log_lines.append(f"  ... y {len(lidar_data) - 10} puntos más")
                 log_lines.append(f"  Total readings: {len(lidar_data)}")
                 log_lines.append(f"  Configuration:")
                 log_lines.append(f"    Range count: {self.get_lidar_range_count()}")
                 log_lines.append(f"    Min range: {self.get_lidar_min_range():.4f}m")
                 log_lines.append(f"    Max range: {self.get_lidar_max_range():.4f}m")
                 log_lines.append(f"    FOV: {self.get_lidar_fov():.4f}rad")
+                
+                # Agregar datos LiDAR con ángulos usando LidarManager
+                if self.has_lidar_manager():
+                    try:
+                        lidar_manager = self.get_lidar_manager()
+                        raw_data_with_angles = lidar_manager.get_raw_data_with_angles()
+                        if raw_data_with_angles:
+                            log_lines.append(f"  Ángulos-distancia (primeros 10):")
+                            for i, (distance, angle) in enumerate(raw_data_with_angles):
+                                if math.isinf(distance):
+                                    log_lines.append(f"    [{i}]: ({math.degrees(angle):6.1f}°, inf)")
+                                else:
+                                    log_lines.append(f"    [{i}]: ({math.degrees(angle):6.1f}°, {distance:6.3f}m)")
+                            if len(raw_data_with_angles) > 10:
+                                log_lines.append(f"    ... y {len(raw_data_with_angles) - 10} puntos más")
+                            
+                            # Estadísticas del LidarManager
+                            stats = lidar_manager.get_statistics()
+                            if stats:
+                                log_lines.append(f"  Estadísticas LiDAR:")
+                                log_lines.append(f"    Válidos: {stats.get('valid_points', 0)}")
+                                log_lines.append(f"    Infinitos: {stats.get('infinite_points', 0)}")
+                                log_lines.append(f"    Ceros: {stats.get('zero_points', 0)}")
+                                if 'avg_distance' in stats:
+                                    log_lines.append(f"    Distancia promedio: {stats['avg_distance']:.3f}m")
+                            
+                            # Obstáculos cercanos
+                            obstacles = lidar_manager.find_obstacles(threshold=2.5)
+                            if obstacles:
+                                log_lines.append(f"  Obstáculos (<2.5m): {len(obstacles)} detectados")
+                                for i, (idx, dist, angle) in enumerate(obstacles[:3]):
+                                    log_lines.append(f"    #{idx}: {dist:.3f}m a {math.degrees(angle):.1f}°")
+                    except Exception as e:
+                        log_lines.append(f"  LidarManager: Error - {e}")
+                        
         except Exception as e:
             log_lines.append(f"Lidar: Error - {e}")
         

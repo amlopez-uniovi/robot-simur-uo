@@ -16,6 +16,9 @@ def main():
     lidar_manager = robot.get_lidar_manager()
     if robot.has_lidar_manager():
         print("📡 LidarManager disponible en RosBot")
+        # Configurar rango de barrido para RosBot: usar rango completo por defecto
+        # RosBot mantiene el rango por defecto (0 a 2π) - se puede ajustar si es necesario
+        print(f"🔧 Configurado barrido: {math.degrees(lidar_manager.sweep_range[0]):.0f}° a {math.degrees(lidar_manager.sweep_range[1]):.0f}°")
         
         # Mostrar configuración básica sin datos (evitar crash inicial)
         config = lidar_manager.get_configuration_info()
@@ -73,72 +76,28 @@ def main():
         # Girar a la izquierda continuamente
         robot.turn_left()
 
-        # Log de dispositivos normales
+        # Log completo de todos los dispositivos (incluye LiDAR con ángulos)
         robot.log_devices()
         
-        # Mostrar datos LiDAR con ángulos en cada iteración
-        if robot.has_lidar_manager():
-            try:
-                raw_data_with_angles = lidar_manager.get_raw_data_with_angles()
-                if raw_data_with_angles:
-                    print("Lidar ángulos-distancia:")
-                    # Mostrar primeros 10 puntos para no saturar la salida
-                    for i, (distance, angle) in enumerate(raw_data_with_angles[:10]):
-                        if math.isinf(distance):
-                            print(f"  [{i}]: ({math.degrees(angle):6.1f}°, inf)")
-                        else:
-                            print(f"  [{i}]: ({math.degrees(angle):6.1f}°, {distance:6.3f}m)")
-                    if len(raw_data_with_angles) > 10:
-                        print(f"  ... y {len(raw_data_with_angles) - 10} puntos más")
-            except Exception as e:
-                print(f"Error LiDAR: {e}")
-        
-        # Test específico de LidarManager cada 50 iteraciones
+        # Test específico de LidarManager cada 50 iteraciones (análisis detallado)
         if robot.has_lidar_manager() and iteration % 50 == 0:
-            print(f"\n📡 === Test LidarManager RosBot - Iteración {iteration} ===")
+            print(f"\n📡 === Análisis Detallado LiDAR RosBot - Iteración {iteration} ===")
             
             try:
-                # Obtener datos crudos con ángulos directamente
-                raw_data_with_angles = lidar_manager.get_raw_data_with_angles()
-                print(f"📊 Datos LiDAR con ángulos: {len(raw_data_with_angles)} puntos")
-                
-                # Imprimir todos los pares (ángulo, distancia)
-                if raw_data_with_angles:
-                    print("   Todos los puntos (ángulo°, distancia):")
-                    for i, (distance, angle) in enumerate(raw_data_with_angles):
-                        if math.isinf(distance):
-                            print(f"     [{i:3d}]: ({math.degrees(angle):6.1f}°, inf)")
-                        else:
-                            print(f"     [{i:3d}]: ({math.degrees(angle):6.1f}°, {distance:6.3f}m)")
-                else:
-                    print("   No hay datos LiDAR disponibles")
-                
-                # Obtener datos filtrados
+                # Obtener datos filtrados adicionales
                 filtered_data = lidar_manager.get_filtered_data()
-                print(f"🔍 Datos filtrados: {len(filtered_data)} puntos válidos")
+                print(f"� Datos filtrados: {len(filtered_data)} puntos válidos")
                 
-                # Encontrar obstáculos cercanos (RosBot tiene mayor rango)
-                obstacles = lidar_manager.find_obstacles(threshold=2.5)
-                print(f"🚧 Obstáculos (<2.5m): {len(obstacles)} detectados")
-                
-                # Mostrar algunos obstáculos si los hay
-                if obstacles:
-                    print("   Primeros 5 obstáculos (índice, distancia, ángulo):")
-                    for i, (idx, dist, angle) in enumerate(obstacles[:5]):
-                        print(f"     #{idx}: {dist:.3f}m a {math.degrees(angle):.1f}°")
-                
-                # Estadísticas
-                stats = lidar_manager.get_statistics()
-                if stats:
-                    print(f"📈 Estadísticas:")
-                    print(f"   Válidos: {stats.get('valid_points', 0)}")
-                    print(f"   Infinitos: {stats.get('infinite_points', 0)}")
-                    print(f"   Ceros: {stats.get('zero_points', 0)}")
-                    if 'avg_distance' in stats:
-                        print(f"   Distancia promedio: {stats['avg_distance']:.3f}m")
+                # Análisis específico del rango de barrido configurado
+                config = lidar_manager.get_configuration_info()
+                print(f"🔧 Configuración de barrido:")
+                print(f"   Rango configurado: {math.degrees(lidar_manager.sweep_range[0]):.0f}° a {math.degrees(lidar_manager.sweep_range[1]):.0f}°")
+                print(f"   FOV del dispositivo: {math.degrees(config['fov']):.1f}°")
+                print(f"   Resolución angular: {math.degrees(config['fov'] / config['range_count']):.2f}°/punto")
+                print(f"   Total de puntos: {config['range_count']}")
                 
             except Exception as e:
-                print(f"⚠️ Error en test LiDAR: {e}")
+                print(f"⚠️ Error en análisis detallado LiDAR: {e}")
             
             print("=" * 50)
 
@@ -153,31 +112,20 @@ def main():
             print(f"   Rotación final: {math.degrees(total_rotation):.1f}°")
             print(f"   Posición final: ({current_x:.3f}, {current_y:.3f})")
             
-            # Último test del LidarManager
+            # Test final del LidarManager
             if robot.has_lidar_manager():
-                print(f"\n📡 === Test Final LidarManager RosBot ===")
+                print(f"\n📡 === Resumen Final LidarManager RosBot ===")
                 try:
-                    # Imprimir datos finales directamente
-                    raw_data_with_angles = lidar_manager.get_raw_data_with_angles()
-                    print(f"📊 Datos LiDAR finales: {len(raw_data_with_angles)} puntos")
-                    
-                    if raw_data_with_angles:
-                        print("   Datos finales (ángulo°, distancia):")
-                        for i, (distance, angle) in enumerate(raw_data_with_angles):
-                            if math.isinf(distance):
-                                print(f"     [{i:3d}]: ({math.degrees(angle):6.1f}°, inf)")
-                            else:
-                                print(f"     [{i:3d}]: ({math.degrees(angle):6.1f}°, {distance:6.3f}m)")
-                    
-                    # Mostrar configuración final
                     config = lidar_manager.get_configuration_info()
-                    print(f"🔧 Configuración final:")
+                    print(f"� Configuración final:")
                     print(f"   Dispositivo: {config['device_name']}")
                     print(f"   Puntos: {config['range_count']}")
                     print(f"   FOV: {math.degrees(config['fov']):.1f}°")
+                    print(f"   Rango barrido: {math.degrees(lidar_manager.sweep_range[0]):.0f}° a {math.degrees(lidar_manager.sweep_range[1]):.0f}°")
+                    print("   (Los datos finales completos están en el último log_devices)")
                     
                 except Exception as e:
-                    print(f"⚠️ Error en test final LiDAR: {e}")
+                    print(f"⚠️ Error en resumen final LiDAR: {e}")
             
             # Detener el robot
             robot.stop()

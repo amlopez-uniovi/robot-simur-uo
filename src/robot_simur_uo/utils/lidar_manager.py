@@ -40,7 +40,7 @@ class LidarManager:
         self.device_name = device_name
         self.sweep_range = sweep_range
         self.time_step = time_step
-        
+                
         # Inicializar dispositivo LiDAR
         self.lidar_device = None
         self._initialize_lidar()
@@ -65,6 +65,13 @@ class LidarManager:
         if self.lidar_device:
             self._update_configuration()
     
+    def set_sweep_range(self, sweep_range: Tuple[float, float]) -> None:
+        """Establecer el rango de barrido del LiDAR."""
+        self.sweep_range = sweep_range
+        # Recalcular ángulos si ya tenemos configuración
+        if hasattr(self, 'range_count') and self.range_count > 1:
+            self.angles = np.linspace(self.sweep_range[0], self.sweep_range[1], self.range_count)
+
     def _initialize_lidar(self) -> bool:
         """
         Inicializar el dispositivo LiDAR.
@@ -74,7 +81,7 @@ class LidarManager:
         """
         try:
             self.lidar_device = self.robot.getDevice(self.device_name)
-            if self.lidar_device:
+            if self.lidar_device is not None:
                 self.lidar_device.enable(self.time_step)
                 self.lidar_device.enablePointCloud()
                 print(f"✅ LiDAR '{self.device_name}' inicializado correctamente")
@@ -101,8 +108,10 @@ class LidarManager:
             # Calcular resolución angular
             if self.range_count > 1:
                 self.angular_resolution = self.fov / (self.range_count - 1)
+                self.angles = np.linspace(self.sweep_range[0], self.sweep_range[1], self.range_count)
             else:
                 self.angular_resolution = 0.0
+                self.angles = []
                 
         except Exception as e:
             print(f"⚠️ Error obteniendo configuración del LiDAR: {e}")
@@ -198,18 +207,17 @@ class LidarManager:
             List[Tuple[float, float]]: Lista de (distancia, ángulo) en metros y radianes
         """
         raw_data = self.get_raw_data()
-        if not raw_data:
+        if not raw_data or not hasattr(self, 'angles') or len(self.angles) == 0:
             return []
         
         data_with_angles = []
         for i, distance in enumerate(raw_data):
-            angle = self.get_angle_for_index(i)
-            data_with_angles.append((distance, angle))
+            if i < len(self.angles):
+                angle = self.angles[i]
+                data_with_angles.append((distance, angle))
         
         return data_with_angles
     
-
-
     def get_angle_for_index(self, index: int) -> float:
         """
         Obtener el ángulo correspondiente a un índice específico.
@@ -223,9 +231,14 @@ class LidarManager:
         if self.range_count <= 1:
             return 0.0
         
-        # Usar sweep_range para calcular ángulos distribuidos uniformemente
-        angles = np.linspace(self.sweep_range[0], self.sweep_range[1], self.range_count)
-        return angles[index]  # Usar el ángulo pre-calculado para el índice
+        if not hasattr(self, 'angles') or len(self.angles) == 0:
+            return 0.0
+            
+        if index >= len(self.angles):
+            return 0.0
+        
+        # Usar ángulos pre-calculados
+        return self.angles[index]
     
     def get_cartesian_points(self, use_filtered: bool = True) -> List[Tuple[float, float]]:
         """

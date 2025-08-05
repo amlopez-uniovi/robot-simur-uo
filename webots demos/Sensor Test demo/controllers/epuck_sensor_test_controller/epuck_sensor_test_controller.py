@@ -17,7 +17,7 @@ def main():
     if robot.has_lidar_manager():
         print("📡 LidarManager disponible en EPuck")
         # Configurar rango de barrido para EPuck: -π a π (360° completo)
-        lidar_manager.sweep_range = (math.pi, -math.pi)
+        lidar_manager.set_sweep_range((math.pi, -math.pi))
         print(f"🔧 Configurado barrido: {math.degrees(lidar_manager.sweep_range[0]):.0f}° a {math.degrees(lidar_manager.sweep_range[1]):.0f}°")
         
         # Mostrar configuración básica sin datos (evitar crash inicial)

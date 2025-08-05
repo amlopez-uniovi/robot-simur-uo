@@ -54,21 +54,36 @@ class WebotsBaseDifferentialRobot(IDifferentialRobot):
         self.lidar_sensor.enablePointCloud()
     
     def _init_lidar_manager(self):
-        """Inicializar LidarManager con configuración por defecto"""
+        """Inicializar LidarManager con auto-detección del dispositivo"""
         try:
-            # Intentar con "lidar" primero, luego "laser"
-            lidar_name = "lidar"
-            test_device = self.robot.getDevice(lidar_name)
-            if test_device is None:
-                lidar_name = "laser"
+            # Lista de nombres posibles para dispositivos LiDAR
+            possible_names = ["lidar", "laser", "Lidar", "LIDAR"]
+            device_name = None
             
-            self.lidar_manager = LidarManager(
-                robot=self.robot, 
-                device_name=lidar_name, 
-                time_step=self.time_step
-            )
+            # Buscar el primer dispositivo disponible
+            for name in possible_names:
+                try:
+                    test_device = self.robot.getDevice(name)
+                    if test_device is not None:
+                        device_name = name
+                        print(f"🔍 Dispositivo LiDAR encontrado: '{name}'")
+                        break
+                except:
+                    continue
+            
+            if device_name:
+                self.lidar_manager = LidarManager(
+                    robot=self.robot, 
+                    device_name=device_name, 
+                    time_step=self.time_step
+                )
+                print(f"✅ LidarManager inicializado con dispositivo '{device_name}'")
+            else:
+                print("⚠️ No se encontró ningún dispositivo LiDAR en el robot")
+                self.lidar_manager = None
+                
         except Exception as e:
-            print(f"⚠️ No se pudo inicializar LidarManager: {e}")
+            print(f"⚠️ Error inicializando LidarManager: {e}")
             self.lidar_manager = None
     
     def step(self, time_step=None):
