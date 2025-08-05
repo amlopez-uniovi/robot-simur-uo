@@ -79,26 +79,6 @@ def main():
         # Log completo de todos los dispositivos (incluye LiDAR con ángulos)
         robot.log_devices()
         
-        # Test específico de LidarManager cada 50 iteraciones (análisis detallado)
-        if robot.has_lidar_manager() and iteration % 50 == 0:
-            print(f"\n📡 === Análisis Detallado LiDAR EPuck - Iteración {iteration} ===")
-            
-            try:
-                # Obtener datos filtrados adicionales
-                filtered_data = lidar_manager.get_filtered_data()
-                print(f"� Datos filtrados: {len(filtered_data)} puntos válidos")
-                
-                # Análisis específico del rango de barrido configurado
-                config = lidar_manager.get_configuration_info()
-                print(f"� Configuración de barrido:")
-                print(f"   Rango configurado: {math.degrees(lidar_manager.sweep_range[0]):.0f}° a {math.degrees(lidar_manager.sweep_range[1]):.0f}°")
-                print(f"   FOV del dispositivo: {math.degrees(config['fov']):.1f}°")
-                print(f"   Resolución angular: {math.degrees(config['fov'] / config['range_count']):.1f}°/punto")
-                
-            except Exception as e:
-                print(f"⚠️ Error en análisis detallado LiDAR: {e}")
-            
-            print("=" * 50)
 
         # Información básica cada 25 iteraciones
         print(f"🔄 Iter {iteration}: ángulo={math.degrees(current_angle):.1f}° rotación={math.degrees(total_rotation):.1f}°")

@@ -265,70 +265,6 @@ class WebotsBaseDifferentialRobot(IDifferentialRobot):
         
         return obstacle_sensors
     
-    def print_lidar_point_cloud(self, max_points=10):
-        """Imprimir los valores de la nube de puntos del lidar
-        
-        Args:
-            max_points (int): Número máximo de puntos a mostrar
-        """
-        try:
-            point_cloud = self.get_lidar_point_cloud()
-            ranges = self.get_lidar_data()
-            
-            print(f"--- LIDAR POINT CLOUD ---")
-            print(f"Número total de puntos: {len(point_cloud) if point_cloud else 0}")
-            print(f"Número de rangos: {len(ranges) if ranges else 0}")
-            
-            if point_cloud and len(point_cloud) > 0:
-                print(f"Primeros {min(max_points, len(point_cloud))} puntos:")
-                for i in range(min(max_points, len(point_cloud))):
-                    if i < len(point_cloud):
-                        point = point_cloud[i]
-                        if len(point) >= 3:  # Verificar que tenga coordenadas x, y, z
-                            print(f"  Punto {i}: x={point[0]:.3f}, y={point[1]:.3f}, z={point[2]:.3f}")
-                        else:
-                            print(f"  Punto {i}: {point}")
-            
-            if ranges and len(ranges) > 0:
-                print(f"Primeros {min(max_points, len(ranges))} rangos:")
-                for i in range(min(max_points, len(ranges))):
-                    if i < len(ranges):
-                        range_val = ranges[i]
-                        if range_val != float('inf'):
-                            print(f"  Rango {i}: {range_val:.3f}m")
-                        else:
-                            print(f"  Rango {i}: inf")
-            
-            print("------------------------")
-            
-        except Exception as e:
-            print(f"Error al obtener nube de puntos: {e}")
-    
-    def print_lidar_summary(self):
-        """Imprimir un resumen de la información del lidar"""
-        try:
-            ranges = self.get_lidar_data()
-            point_cloud = self.get_lidar_point_cloud()
-            
-            print(f"--- LIDAR SUMMARY ---")
-            print(f"Puntos totales: {self.get_lidar_range_count()}")
-            print(f"Rango: {self.get_lidar_min_range():.2f} - {self.get_lidar_max_range():.2f}m")
-            print(f"Campo de visión: {math.degrees(self.get_lidar_fov()):.1f}°")
-            print(f"Obstáculo más cercano: {self.get_lidar_closest_obstacle():.3f}m")
-            
-            if ranges:
-                valid_ranges = [r for r in ranges if r != float('inf') and r > 0]
-                if valid_ranges:
-                    print(f"Rangos válidos: {len(valid_ranges)}/{len(ranges)}")
-                    print(f"Distancia promedio: {sum(valid_ranges)/len(valid_ranges):.3f}m")
-                else:
-                    print("No hay rangos válidos")
-            
-            print("--------------------")
-            
-        except Exception as e:
-            print(f"Error en resumen del lidar: {e}")
-    
     def cleanup(self):
         """Limpiar recursos al finalizar"""
         # Llamar al método de la interfaz base que detiene el robot
@@ -376,6 +312,84 @@ class WebotsBaseDifferentialRobot(IDifferentialRobot):
         """
         # Debe ser implementado por subclases específicas
         raise NotImplementedError("Subclases deben implementar get_motor_speeds")
+    
+    def log_lidar_data(self) -> list:
+        """
+        Genera el logging de datos del LiDAR utilizando LidarManager.
+        Método común que pueden usar todas las subclases.
+        
+        Returns:
+            list: Lista de strings con la información del LiDAR para logging
+        """
+        log_lines = []
+        
+        try:
+            # Verificar si el LiDAR está disponible
+            if not self.has_lidar_manager():
+                log_lines.append("Lidar: No disponible")
+                return log_lines
+                
+            # Usar LidarManager para obtener información del LiDAR
+            lidar_manager = self.get_lidar_manager()
+            
+            # Agregar el resumen del LiDAR usando las funciones del LidarManager
+            lidar_summary = lidar_manager.print_summary()
+            if lidar_summary:
+                log_lines.extend(lidar_summary.split('\n'))
+            else:
+                log_lines.append("Lidar: Sin datos disponibles")
+                
+        except Exception as e:
+            log_lines.append(f"Lidar: Error - {e}")
+            
+        return log_lines
+    
+    def log_devices(self, to_terminal: bool = True, to_file: str = None) -> None:
+        """
+        Método base para logging de dispositivos.
+        Añade automáticamente información del LiDAR y maneja la salida a terminal y archivo.
+        
+        Args:
+            to_terminal: Si True, imprime a la terminal
+            to_file: Si se especifica, escribe al archivo indicado
+        """
+        # Las subclases deben establecer self.log_message antes de llamar a este método
+        if hasattr(self, 'log_message') and self.log_message:
+            # Convertir el mensaje a lista de líneas para poder agregar LiDAR
+            log_lines = self.log_message.split('\n')
+            
+            # Buscar dónde insertar la información del LiDAR (antes de la línea de separación final)
+            insert_index = len(log_lines) - 1  # Por defecto al final
+            for i, line in enumerate(log_lines):
+                if line.startswith("=" * 10):  # Buscar línea de separación final
+                    insert_index = i
+                    break
+            
+            # Agregar información del LiDAR
+            try:
+                lidar_log_lines = self.log_lidar_data()
+                # Insertar las líneas del LiDAR antes de la separación final
+                for j, lidar_line in enumerate(lidar_log_lines):
+                    log_lines.insert(insert_index + j, lidar_line)
+            except Exception as e:
+                log_lines.insert(insert_index, f"Lidar: Error - {e}")
+            
+            # Reconstruir el mensaje final
+            final_message = '\n'.join(log_lines)
+            
+            # Salida a terminal
+            if to_terminal:
+                print(final_message)
+            
+            # Salida a archivo
+            if to_file:
+                try:
+                    with open(to_file, 'a', encoding='utf-8') as f:
+                        f.write(f"{final_message}\n\n")
+                except Exception as e:
+                    print(f"Error escribiendo a archivo {to_file}: {e}")
+        else:
+            print("Warning: No log message available. Subclases should set self.log_message before calling super().log_devices()")
     
     # Métodos abstractos que deben ser implementados por subclases
     def _init_motors(self):

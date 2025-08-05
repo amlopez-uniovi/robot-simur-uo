@@ -20,8 +20,6 @@ class LidarManager:
     Proporciona funcionalidades para:
     - Inicialización y configuración del LiDAR
     - Obtención y procesamiento de datos
-    - Análisis de lecturas (obstáculos, distancias, etc.)
-    - Filtrado y validación de datos
     """
     
     def __init__(self, robot: Robot, device_name: str = "lidar", 
@@ -54,12 +52,6 @@ class LidarManager:
         
         # Datos actuales
         self.current_data: List[float] = []
-        self.filtered_data: List[float] = []
-        self.valid_readings_count = 0
-        self.invalid_readings_count = 0
-        
-        # Estadísticas
-        self.stats: Dict[str, Any] = {}
         
         # Obtener configuración si el LiDAR está disponible
         if self.lidar_device:
@@ -146,59 +138,6 @@ class LidarManager:
             print(f"⚠️ Error obteniendo datos del LiDAR: {e}")
             return []
     
-    def get_filtered_data(self, min_valid: float = None, max_valid: float = None,
-                         filter_inf: bool = True, filter_zero: bool = True) -> List[float]:
-        """
-        Obtener datos filtrados del LiDAR.
-        
-        Args:
-            min_valid: Distancia mínima válida (usa min_range del LiDAR si es None)
-            max_valid: Distancia máxima válida (usa max_range del LiDAR si es None)
-            filter_inf: Si filtrar valores infinitos
-            filter_zero: Si filtrar valores cero
-            
-        Returns:
-            List[float]: Lista de distancias filtradas
-        """
-        raw_data = self.get_raw_data()
-        if not raw_data:
-            return []
-        
-        # Usar rangos del LiDAR si no se especifican
-        min_val = min_valid if min_valid is not None else self.min_range
-        max_val = max_valid if max_valid is not None else self.max_range
-        
-        filtered = []
-        valid_count = 0
-        invalid_count = 0
-        
-        for distance in raw_data:
-            is_valid = True
-            
-            # Filtrar infinitos
-            if filter_inf and math.isinf(distance):
-                is_valid = False
-            
-            # Filtrar ceros
-            if filter_zero and distance == 0.0:
-                is_valid = False
-            
-            # Filtrar fuera de rango
-            if is_valid and (distance < min_val or distance > max_val):
-                is_valid = False
-            
-            if is_valid:
-                filtered.append(distance)
-                valid_count += 1
-            else:
-                invalid_count += 1
-        
-        self.filtered_data = filtered
-        self.valid_readings_count = valid_count
-        self.invalid_readings_count = invalid_count
-        
-        return filtered
-    
     def get_raw_data_with_angles(self) -> List[Tuple[float, float]]:
         """
         Obtener datos crudos del LiDAR con sus ángulos correspondientes.
@@ -210,11 +149,9 @@ class LidarManager:
         if not raw_data or not hasattr(self, 'angles') or len(self.angles) == 0:
             return []
         
-        data_with_angles = []
-        for i, distance in enumerate(raw_data):
-            if i < len(self.angles):
-                angle = self.angles[i]
-                data_with_angles.append((distance, angle))
+        # crear pares (distancia, ángulo) 
+        min_length = min(len(raw_data), len(self.angles))
+        data_with_angles = list(zip(raw_data[:min_length], self.angles[:min_length]))
         
         return data_with_angles
     
@@ -240,92 +177,6 @@ class LidarManager:
         # Usar ángulos pre-calculados
         return self.angles[index]
     
-    def get_cartesian_points(self, use_filtered: bool = True) -> List[Tuple[float, float]]:
-        """
-        Convertir datos LiDAR a coordenadas cartesianas (x, y).
-        
-        Args:
-            use_filtered: Si usar datos filtrados o crudos
-            
-        Returns:
-            List[Tuple[float, float]]: Lista de puntos (x, y) en metros
-        """
-        data = self.filtered_data if use_filtered else self.current_data
-        if not data:
-            return []
-        
-        points = []
-        for i, distance in enumerate(data):
-            if not math.isinf(distance) and distance > 0:
-                angle = self.get_angle_for_index(i)
-                x = distance * math.cos(angle)
-                y = distance * math.sin(angle)
-                points.append((x, y))
-        
-        return points
-    
-    def find_obstacles(self, threshold: float = 1.0) -> List[Tuple[int, float, float]]:
-        """
-        Encontrar obstáculos dentro de un umbral de distancia.
-        
-        Args:
-            threshold: Distancia máxima para considerar como obstáculo
-            
-        Returns:
-            List[Tuple[int, float, float]]: Lista de (índice, distancia, ángulo)
-        """
-        raw_data = self.get_raw_data()
-        if not raw_data:
-            return []
-        
-        obstacles = []
-        for i, distance in enumerate(raw_data):
-            if not math.isinf(distance) and 0 < distance <= threshold:
-                angle = self.get_angle_for_index(i)
-                obstacles.append((i, distance, angle))
-        
-        return obstacles
-    
-    def get_statistics(self) -> Dict[str, Any]:
-        """
-        Obtener estadísticas de los datos LiDAR actuales.
-        
-        Returns:
-            Dict[str, Any]: Diccionario con estadísticas
-        """
-        raw_data = self.current_data
-        filtered_data = self.filtered_data
-        
-        if not raw_data:
-            return {}
-        
-        # Estadísticas básicas
-        total_points = len(raw_data)
-        inf_count = sum(1 for x in raw_data if math.isinf(x))
-        zero_count = sum(1 for x in raw_data if x == 0.0)
-        valid_points = [x for x in raw_data if not math.isinf(x) and x > 0]
-        
-        stats = {
-            'total_points': total_points,
-            'valid_points': len(valid_points),
-            'infinite_points': inf_count,
-            'zero_points': zero_count,
-            'invalid_points': self.invalid_readings_count,
-            'filtered_points': len(filtered_data),
-        }
-        
-        # Estadísticas de distancias válidas
-        if valid_points:
-            stats.update({
-                'min_distance': min(valid_points),
-                'max_distance': max(valid_points),
-                'avg_distance': sum(valid_points) / len(valid_points),
-                'median_distance': sorted(valid_points)[len(valid_points)//2]
-            })
-        
-        self.stats = stats
-        return stats
-    
     def get_configuration_info(self) -> Dict[str, Any]:
         """
         Obtener información de configuración del LiDAR.
@@ -345,69 +196,63 @@ class LidarManager:
             'is_available': self.is_available()
         }
     
-    def print_summary(self) -> None:
-        """Imprimir un resumen del estado actual del LiDAR."""
+    def print_summary(self) -> str:
+        """
+        Generar un resumen del estado actual del LiDAR.
+        
+        Returns:
+            str: String con el resumen del LiDAR
+        """
         if not self.is_available():
-            print(f"❌ LiDAR '{self.device_name}' no está disponible")
-            return
+            return f"❌ LiDAR '{self.device_name}' no está disponible"
         
         config = self.get_configuration_info()
-        stats = self.get_statistics()
         
-        print(f"\n📡 === LiDAR Manager: {self.device_name} ===")
-        print(f"🔧 Configuración:")
-        print(f"   Puntos de medición: {config['range_count']}")
-        print(f"   Rango: {config['min_range']:.3f}m - {config['max_range']:.3f}m")
-        print(f"   Campo de visión: {math.degrees(config['fov']):.1f}°")
-        print(f"   Resolución angular: {math.degrees(config['angular_resolution']):.2f}°")
+        lines = []
+        lines.append(f"\n📡 === LiDAR Manager: {self.device_name} ===")
+        lines.append(f"🔧 Configuración:")
+        lines.append(f"   Puntos de medición: {config['range_count']}")
+        lines.append(f"   Rango: {config['min_range']:.3f}m - {config['max_range']:.3f}m")
+        lines.append(f"   Campo de visión: {math.degrees(config['fov']):.1f}°")
+        lines.append(f"   Resolución angular: {math.degrees(config['angular_resolution']):.2f}°")
         
-        # Imprimir todos los datos LiDAR con ángulos
-        raw_data_with_angles = self.get_raw_data_with_angles()
-        if raw_data_with_angles:
-            print(f"📊 Datos LiDAR completos (ángulo, distancia):")
-            for i, (distance, angle) in enumerate(raw_data_with_angles):
-                if math.isinf(distance):
-                    print(f"   [{i:3d}]: ({math.degrees(angle):6.1f}°, inf)")
-                else:
-                    print(f"   [{i:3d}]: ({math.degrees(angle):6.1f}°, {distance:6.3f}m)")
+        # Agregar datos LiDAR usando la función existente
+        lidar_data = self.print_all_lidar_data()
+        lines.append(lidar_data)
         
-        if stats:
-            print(f"📈 Estadísticas:")
-            print(f"   Total de puntos: {stats['total_points']}")
-            print(f"   Puntos válidos: {stats['valid_points']}")
-            print(f"   Puntos infinitos: {stats['infinite_points']}")
-            print(f"   Puntos cero: {stats['zero_points']}")
-            
-            if 'min_distance' in stats:
-                print(f"   Distancia min/max: {stats['min_distance']:.3f}m / {stats['max_distance']:.3f}m")
-                print(f"   Distancia promedio: {stats['avg_distance']:.3f}m")
-        
-        print("=" * 50)
+        return "\n".join(lines)
     
-    def print_all_lidar_data(self) -> None:
-        """Imprimir todos los datos LiDAR con sus ángulos correspondientes."""
+    def print_all_lidar_data(self) -> str:
+        """
+        Generar string con todos los datos LiDAR y sus ángulos correspondientes.
+        
+        Returns:
+            str: String con todos los datos LiDAR formateados
+        """
         if not self.is_available():
-            print(f"❌ LiDAR '{self.device_name}' no está disponible")
-            return
+            return f"❌ LiDAR '{self.device_name}' no está disponible"
         
         try:
             raw_data_with_angles = self.get_raw_data_with_angles()
             if not raw_data_with_angles:
-                print("📊 No hay datos LiDAR disponibles")
-                return
+                return "📊 No hay datos LiDAR disponibles"
             
-            print(f"\n📊 === Datos LiDAR Completos: {self.device_name} ===")
-            print(f"Total de puntos: {len(raw_data_with_angles)}")
-            print("Formato: [índice]: (ángulo°, distancia)")
-            print("-" * 40)
+            lines = []
+            lines.append(f"\n📊 === Datos LiDAR Completos: {self.device_name} ===")
+            lines.append(f"Total de puntos: {len(raw_data_with_angles)}")
+            lines.append("Formato: [índice]: (ángulo°, distancia)")
+            lines.append("-" * 40)
             
             for i, (distance, angle) in enumerate(raw_data_with_angles):
                 if math.isinf(distance):
-                    print(f"[{i:3d}]: ({math.degrees(angle):6.1f}°, inf)")
+                    lines.append(f"[{i:3d}]: ({math.degrees(angle):6.1f}°, inf)")
                 else:
-                    print(f"[{i:3d}]: ({math.degrees(angle):6.1f}°, {distance:6.3f}m)")
+                    lines.append(f"[{i:3d}]: ({math.degrees(angle):6.1f}°, {distance:6.3f}m)")
             
-            print("=" * 50)
+            lines.append("=" * 50)
+            
+            return "\n".join(lines)
             
         except Exception as e:
-            print(f"⚠️ Error al imprimir datos LiDAR: {e}")
+            return f"⚠️ Error al generar datos LiDAR: {e}"
+    
