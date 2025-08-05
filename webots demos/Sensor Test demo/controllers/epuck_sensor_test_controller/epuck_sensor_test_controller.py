@@ -12,6 +12,24 @@ def main():
     # Robot EPuck
     robot = EPuck()
     
+    # Verificar LidarManager
+    lidar_manager = robot.get_lidar_manager()
+    if robot.has_lidar_manager():
+        print("📡 LidarManager disponible en EPuck")
+        # Configurar rango de barrido para EPuck: -π a π (360° completo)
+        lidar_manager.sweep_range = (math.pi, -math.pi)
+        print(f"🔧 Configurado barrido: {math.degrees(lidar_manager.sweep_range[0]):.0f}° a {math.degrees(lidar_manager.sweep_range[1]):.0f}°")
+        
+        # Mostrar configuración básica sin datos (evitar crash inicial)
+        config = lidar_manager.get_configuration_info()
+        print(f"📊 Configuración LiDAR:")
+        print(f"   Dispositivo: {config['device_name']}")
+        print(f"   Puntos: {config['range_count']}")
+        print(f"   Rango: {config['min_range']:.3f}m - {config['max_range']:.3f}m")
+        print(f"   FOV: {math.degrees(config['fov']):.1f}°")
+    else:
+        print("⚠️ LidarManager no disponible, continuando sin él...")
+    
     print("🎯 Test: Robot girando 360° sobre sí mismo")
     print("🔄 Usando método turn_left() para rotación continua")
     
@@ -58,7 +76,29 @@ def main():
         # Girar a la izquierda continuamente
         robot.turn_left()
 
+        # Log completo de todos los dispositivos (incluye LiDAR con ángulos)
         robot.log_devices()
+        
+        # Test específico de LidarManager cada 50 iteraciones (análisis detallado)
+        if robot.has_lidar_manager() and iteration % 50 == 0:
+            print(f"\n📡 === Análisis Detallado LiDAR EPuck - Iteración {iteration} ===")
+            
+            try:
+                # Obtener datos filtrados adicionales
+                filtered_data = lidar_manager.get_filtered_data()
+                print(f"� Datos filtrados: {len(filtered_data)} puntos válidos")
+                
+                # Análisis específico del rango de barrido configurado
+                config = lidar_manager.get_configuration_info()
+                print(f"� Configuración de barrido:")
+                print(f"   Rango configurado: {math.degrees(lidar_manager.sweep_range[0]):.0f}° a {math.degrees(lidar_manager.sweep_range[1]):.0f}°")
+                print(f"   FOV del dispositivo: {math.degrees(config['fov']):.1f}°")
+                print(f"   Resolución angular: {math.degrees(config['fov'] / config['range_count']):.1f}°/punto")
+                
+            except Exception as e:
+                print(f"⚠️ Error en análisis detallado LiDAR: {e}")
+            
+            print("=" * 50)
 
         # Información básica cada 25 iteraciones
         print(f"🔄 Iter {iteration}: ángulo={math.degrees(current_angle):.1f}° rotación={math.degrees(total_rotation):.1f}°")
@@ -70,12 +110,27 @@ def main():
             print(f"   Rotación final: {math.degrees(total_rotation):.1f}°")
             print(f"   Posición final: ({current_x:.3f}, {current_y:.3f})")
             
+            # Test final del LidarManager
+            if robot.has_lidar_manager():
+                print(f"\n📡 === Resumen Final LidarManager EPuck ===")
+                try:
+                    config = lidar_manager.get_configuration_info()
+                    print(f"� Configuración final:")
+                    print(f"   Dispositivo: {config['device_name']}")
+                    print(f"   Puntos: {config['range_count']}")
+                    print(f"   FOV: {math.degrees(config['fov']):.1f}°")
+                    print(f"   Rango barrido: {math.degrees(lidar_manager.sweep_range[0]):.0f}° a {math.degrees(lidar_manager.sweep_range[1]):.0f}°")
+                    print("   (Los datos finales completos están en el último log_devices)")
+                    
+                except Exception as e:
+                    print(f"⚠️ Error en resumen final LiDAR: {e}")
+            
             # Detener el robot
             robot.stop()
             break  # Salir del bucle
 
     robot.cleanup()
-    print("✅ Test de sensores con giro 360° finalizado")
+    print("✅ Test de sensores con giro 360° y LidarManager finalizado")
 
 
 if __name__ == "__main__":

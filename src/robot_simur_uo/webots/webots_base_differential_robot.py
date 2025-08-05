@@ -10,6 +10,7 @@ import math
 from typing import Tuple
 from ..interfaces.idifferential_robot import IDifferentialRobot
 from ..utils.coordinates import RobotPose
+from ..utils.lidar_manager import LidarManager
 
 class WebotsBaseDifferentialRobot(IDifferentialRobot):
     """Clase base para robots diferenciales en Webots con funcionalidades comunes"""
@@ -21,6 +22,10 @@ class WebotsBaseDifferentialRobot(IDifferentialRobot):
         
         # Inicializar componentes comunes
         self._init_common_components()
+        
+        # Inicializar LidarManager
+        self.lidar_manager = None
+        self._init_lidar_manager()
         
         # Inicializar componentes específicos del robot (implementado en subclases)
         self._init_specific_components()
@@ -47,6 +52,24 @@ class WebotsBaseDifferentialRobot(IDifferentialRobot):
         self.lidar_sensor = self.robot.getDevice("laser")
         self.lidar_sensor.enable(self.time_step)
         self.lidar_sensor.enablePointCloud()
+    
+    def _init_lidar_manager(self):
+        """Inicializar LidarManager con configuración por defecto"""
+        try:
+            # Intentar con "lidar" primero, luego "laser"
+            lidar_name = "lidar"
+            test_device = self.robot.getDevice(lidar_name)
+            if test_device is None:
+                lidar_name = "laser"
+            
+            self.lidar_manager = LidarManager(
+                robot=self.robot, 
+                device_name=lidar_name, 
+                time_step=self.time_step
+            )
+        except Exception as e:
+            print(f"⚠️ No se pudo inicializar LidarManager: {e}")
+            self.lidar_manager = None
     
     def step(self, time_step=None):
         """Ejecutar un paso de simulación
@@ -179,6 +202,14 @@ class WebotsBaseDifferentialRobot(IDifferentialRobot):
             return self.lidar_sensor.getFov()
         except:
             return 0.0
+    
+    def get_lidar_manager(self):
+        """Obtener el LidarManager configurado"""
+        return self.lidar_manager
+    
+    def has_lidar_manager(self):
+        """Verificar si el LidarManager está disponible"""
+        return self.lidar_manager is not None and self.lidar_manager.is_available()
     
     def get_obstacle_sensors(self, num_sectors=8):
         """
