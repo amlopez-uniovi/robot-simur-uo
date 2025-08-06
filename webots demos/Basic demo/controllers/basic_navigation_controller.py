@@ -1,16 +1,11 @@
-"""
-Controlador de navegación demo para RosBot
-Estructura unificada: inicialización, bucle principal, sensores, control y logging
-"""
-from robot_simur_uo.webots.rosbot_robot import RosBot
 from robot_simur_uo.controllers.navigation import NavigationController
 
-def main():
-    robot = RosBot()
+def run_basic_demo(RobotClass):
+    robot = RobotClass()
     controller = NavigationController(linear_gain=1.0, steering_gain=2.0)
     controller.set_target(-1.0, 0.5, tol=0.1)
     iteration = 0
-    print("Iniciando demo de navegación RosBot...")
+    print(f"Iniciando demo básica para {RobotClass.__name__}...")
 
     while robot.step() != -1:
         iteration += 1
@@ -37,6 +32,3 @@ def main():
             robot.log_devices(to_terminal=True)
 
     robot.cleanup()
-
-if __name__ == "__main__":
-    main()
