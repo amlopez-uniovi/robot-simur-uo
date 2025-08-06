@@ -1,3 +1,46 @@
+def transform_points(points, pose):
+    """
+    Transforma una lista de puntos (x, y) locales a coordenadas globales usando la pose del robot.
+    Args:
+        points (list of tuple): Lista de tuplas (x, y) en el marco local del robot
+        pose (tuple): Pose del robot (x, y, theta) en el mundo
+    Returns:
+        list of tuple: Lista de tuplas (x, y) en el marco global
+    """
+    x_r, y_r, theta = pose
+    cos_t = math.cos(theta)
+    sin_t = math.sin(theta)
+    transformed = []
+    for x, y in points:
+        x_w = x_r + x * cos_t - y * sin_t
+        y_w = y_r + x * sin_t + y * cos_t
+        transformed.append((x_w, y_w))
+    return transformed
+
+def polar_to_cartesian(points):
+    """
+    Convierte una lista de puntos en coordenadas polares (ángulo, distancia)
+    a coordenadas cartesianas (x, y).
+    Args:
+        points (list of tuple): Lista de tuplas (ángulo_rad, distancia_m)
+    Returns:
+        list of tuple: Lista de tuplas (x, y)
+    """
+    cartesian = []
+    for angle, distance in points:
+        # Validar ángulo y distancia
+        if not isinstance(angle, (int, float)) or not isinstance(distance, (int, float)):
+            continue
+        if math.isnan(angle) or math.isnan(distance):
+            continue
+        if math.isinf(angle) or math.isinf(distance):
+            continue
+        if distance < 0:
+            continue
+        x = distance * math.cos(angle)
+        y = distance * math.sin(angle)
+        cartesian.append((x, y))
+    return cartesian
 """
 Sistema de coordenadas básico para robots.
 """

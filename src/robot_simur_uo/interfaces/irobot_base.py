@@ -18,11 +18,9 @@ class IRobotBase(ABC):
     
     def __init__(self):
         """Inicializa el robot con pose y estado básico."""
-        self.pose = RobotPose(0.0, 0.0, 0.0)
-        # Atributo para almacenar el último mensaje de log generado
-        self.log_message = ""
     
     # Métodos implementados (comunes para todos los robots)
+    @abstractmethod
     def get_pose(self) -> RobotPose:
         """
         Obtiene la pose actual del robot.
@@ -30,18 +28,9 @@ class IRobotBase(ABC):
         Returns:
             Pose actual del robot
         """
-        return self.pose.copy()
+        return RobotPose(0.0, 0.0, 0.0)  # Valor por defecto, puede ser sobrescrito por subclases
     
-    def set_pose(self, x: float, y: float, theta: float) -> None:
-        """
-        Establece la pose del robot.
-        
-        Args:
-            x: Coordenada x
-            y: Coordenada y  
-            theta: Ángulo de orientación
-        """
-        self.pose = RobotPose(x, y, theta)
+
     
     @abstractmethod
     def set_drive_command(self, forward_speed: float, steering_speed: float) -> None:
