@@ -14,6 +14,37 @@ except ImportError:
 
 
 class LidarManager:
+    def get_closest_obstacle_in_angle_range(self, angle_min: float, angle_max: float):
+        """
+        Obtener información de obstáculos en un rango de ángulos.
+        Args:
+            angle_min (float): Ángulo mínimo en radianes (inicio del sector)
+            angle_max (float): Ángulo máximo en radianes (fin del sector)
+        Returns:
+            Tuple[List[float], List[float], float, float]:
+                - Lista de ángulos dentro del rango
+                - Lista de distancias correspondientes
+                - Ángulo del obstáculo más cercano
+                - Distancia del obstáculo más cercano
+                Si no hay datos válidos, listas vacías y float('inf')
+        """
+        try:
+            data_with_angles = self.get_raw_data_with_angles()
+            if not data_with_angles:
+                return [], [], float('inf'), float('inf')
+            # Filtrar puntos dentro del rango de ángulos
+            filtered = [(d, a) for d, a in data_with_angles if angle_min <= a <= angle_max and d > 0 and not math.isinf(d)]
+            if not filtered:
+                return [], [], float('inf'), float('inf')
+            angles = [a for d, a in filtered]
+            distances = [d for d, a in filtered]
+            min_idx = distances.index(min(distances))
+            min_angle = angles[min_idx]
+            min_distance = distances[min_idx]
+            return angles, distances, min_angle, min_distance
+        except Exception as e:
+            print(f"⚠️ Error calculando obstáculo en rango [{math.degrees(angle_min):.1f}°, {math.degrees(angle_max):.1f}°]: {e}")
+            return [], [], float('inf'), float('inf')
     """
     Clase para manejar dispositivos LiDAR en Webots.
     
