@@ -5,6 +5,7 @@ Maneja la conversión entre steering_speed (usado por controladores)
 y steering_angle (usado por la cinemática Ackermann).
 """
 
+from abc import abstractmethod
 from .irobot_base import IRobotBase
 
 
@@ -20,11 +21,23 @@ class IAckermannRobot(IRobotBase):
     y proporciona métodos específicos para robots Ackermann.
     """
     
-    def __init__(self):
+    def __init__(self, max_steering_angle: float = 0.5):
         """Inicializa el robot Ackermann con ángulo de dirección."""
         super().__init__()
         self.steering_angle = 0.0  # Ángulo actual de las ruedas directrices (rad)
-        self.max_steering_angle = 0.5  # Ángulo máximo por defecto (rad) ~28.6°
+        self.max_steering_angle = max_steering_angle  # Ángulo máximo (rad)
+
+    # Métodos auxiliares para acceso directo a motores
+    @abstractmethod
+    def set_motor_velocities(self, forward_speed: float, steering_angle: float) -> None:
+        """
+        Método abstracto: debe ser implementado por cada robot concreto para aplicar físicamente las velocidades a los motores.
+        Args:
+            forward_speed: Velocidad de avance (m/s)
+            steering_angle: Ángulo de dirección (rad)
+        """
+        pass
+
     
     def set_drive_command(self, forward_speed: float, steering_speed: float) -> None:
         """
@@ -34,47 +47,11 @@ class IAckermannRobot(IRobotBase):
             forward_speed: Velocidad lineal (m/s)
             steering_speed: Velocidad de dirección (rad/s) - se convierte a ángulo
         """
-        super().set_drive_command(forward_speed, steering_speed)
         # Conversión de steering_speed a steering_angle
         # Simplificación: asumir dt=1s para la conversión básica
         # En implementaciones reales, esto podría ser más sofisticado
-        desired_angle = steering_speed  # Conversión simplificada
-        self.set_steering_angle(desired_angle)
+        desired_angle = max(-self.max_steering_angle, 
+                                 min(self.max_steering_angle, steering_speed))  # Conversión simplificada
+        self.set_motor_velocities(forward_speed, desired_angle)
     
-    def set_steering_angle(self, angle: float) -> None:
-        """
-        Establece el ángulo de dirección con limitación (método específico Ackermann).
-        
-        Args:
-            angle: Ángulo de dirección en radianes
-        """
-        # Limitar el ángulo dentro del rango permitido
-        self.steering_angle = max(-self.max_steering_angle, 
-                                 min(self.max_steering_angle, angle))
-    
-    def get_steering_angle(self) -> float:
-        """
-        Obtiene el ángulo de dirección actual.
-        
-        Returns:
-            Ángulo de dirección actual en radianes
-        """
-        return self.steering_angle
-    
-    def set_max_steering_angle(self, max_angle: float) -> None:
-        """
-        Establece el ángulo máximo de dirección.
-        
-        Args:
-            max_angle: Ángulo máximo en radianes
-        """
-        self.max_steering_angle = abs(max_angle)
-    
-    def get_max_steering_angle(self) -> float:
-        """
-        Obtiene el ángulo máximo de dirección.
-        
-        Returns:
-            Ángulo máximo en radianes
-        """
-        return self.max_steering_angle
+

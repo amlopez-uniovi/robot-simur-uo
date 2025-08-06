@@ -13,15 +13,17 @@ def main():
     iteration = 0    
     # Ejemplo de uso de métodos comunes y específicos
     while robot.step() != -1:
-        
-        iteration = iteration + 1        
-        # Ejemplo de detección de obstáculos (específico del e-puck)
-        if robot.obstacle_detected():
+        iteration = iteration + 1
+        # Detección de obstáculos usando sensores frontales del e-puck (ps0 y ps7 suelen ser los frontales extremos)
+        distance_values = robot.get_distance_sensor_values()
+        front_left = distance_values[0]  # ps0
+        front_right = distance_values[7] # ps7
+        threshold = 80.0  # Ajusta este valor según la escala de los sensores del e-puck
+        if front_left > threshold or front_right > threshold:
             print("Obstáculo detectado!")
-            robot.turn_left()  # Método común
+            robot.turn_left()
         else:
-            robot.move_forward()  # Método común
-        
+            robot.move_forward()
         # Mostrar información cada cierto tiempo
         if iteration % 100 == 0:
             print(f"Iteración {iteration}:")

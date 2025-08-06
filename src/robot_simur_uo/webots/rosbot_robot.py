@@ -123,11 +123,7 @@ class RosBot(WebotsBaseDifferentialRobot):
             scale_ratio = MAX_VELOCITY / max_requested
             left_velocity = left_velocity * scale_ratio
             right_velocity = right_velocity * scale_ratio
-        
-        # Actualizar atributos de la interfaz diferencial
-        self.left_speed = left_velocity
-        self.right_speed = right_velocity
-        
+                
         # Aplicar velocidades a los motores físicos (4 ruedas)
         self.front_left_motor.setVelocity(left_velocity)
         self.rear_left_motor.setVelocity(left_velocity)
@@ -151,16 +147,6 @@ class RosBot(WebotsBaseDifferentialRobot):
         """Girar el robot a la derecha"""
         self.set_motor_velocities(speed, -speed)
     
-    def stop(self):
-        """Detener el robot"""
-        # Detener motores físicos directamente (4 ruedas)
-        self.front_left_motor.setVelocity(0.0)
-        self.rear_left_motor.setVelocity(0.0)
-        self.front_right_motor.setVelocity(0.0)
-        self.rear_right_motor.setVelocity(0.0)
-        # Actualizar atributos de la interfaz
-        self.left_speed = 0.0
-        self.right_speed = 0.0
     
     def step(self, dt: float = None) -> int:
         """
@@ -174,44 +160,6 @@ class RosBot(WebotsBaseDifferentialRobot):
         """
         return self.robot.step(self.time_step)
     
-    # Sobrescribir métodos de interfaz para usar motores físicos
-    def set_drive_command(self, forward_speed: float, steering_speed: float) -> None:
-        """
-        Establece velocidad y dirección simultáneamente (interfaz principal).
-        Sobrescribe para usar motores físicos de Webots con límites específicos del RosBot.
-        """
-        # Aplicar límites específicos del RosBot (más potente que EPuck)
-        max_linear_speed = 0.5  # m/s - Velocidad máxima lineal para RosBot
-        max_angular_speed = 1.0  # rad/s - Velocidad angular máxima para RosBot
-        
-        # Limitar velocidades según capacidades del RosBot
-        limited_forward_speed = max(-max_linear_speed, min(max_linear_speed, forward_speed))
-        limited_steering_speed = max(-max_angular_speed, min(max_angular_speed, steering_speed))
-        
-        # Llamar al método padre para conversión con velocidades limitadas
-        super().set_drive_command(limited_forward_speed, limited_steering_speed)
-        # Aplicar velocidades convertidas usando set_motor_velocities para escalado
-        self.set_motor_velocities(self.left_speed, self.right_speed)
-    
-    def set_forward_speed(self, speed: float) -> None:
-        """
-        Establece la velocidad de avance (interfaz unificada).
-        Sobrescribe para usar motores físicos de Webots.
-        """
-        # Llamar al método padre para mantener conversión
-        super().set_forward_speed(speed)
-        # Aplicar velocidades convertidas usando set_motor_velocities para escalado
-        self.set_motor_velocities(self.left_speed, self.right_speed)
-    
-    def set_steering_speed(self, speed: float) -> None:
-        """
-        Establece la velocidad de dirección.
-        Sobrescribe para usar motores físicos de Webots.
-        """
-        # Llamar al método padre para mantener conversión
-        super().set_steering_speed(speed)
-        # Aplicar velocidades convertidas usando set_motor_velocities para escalado
-        self.set_motor_velocities(self.left_speed, self.right_speed)
     
     # Métodos específicos del RosBot
     def get_accelerometer_values(self):
@@ -243,15 +191,6 @@ class RosBot(WebotsBaseDifferentialRobot):
             self.rear_right_position_sensor.getValue()
         ]
     
-    def get_motor_speeds(self) -> Tuple[float, float]:
-        """
-        Obtiene las velocidades actuales de los motores.
-        
-        Returns:
-            Tupla (velocidad_izquierda, velocidad_derecha) en rad/s
-        """
-        return (self.left_speed, self.right_speed)
-
     def log_devices(self, to_terminal: bool = True, to_file: str = None) -> None:
         """
         Log de dispositivos del RosBot - solo datos directos de sensores.
@@ -287,8 +226,10 @@ class RosBot(WebotsBaseDifferentialRobot):
         # 3. Motors (velocidades directas - 4 ruedas)
         try:
             log_lines.append(f"Motors (4WD):")
-            log_lines.append(f"  Left motors velocity: {self.left_speed:.4f}rad/s")
-            log_lines.append(f"  Right motors velocity: {self.right_speed:.4f}rad/s")
+            log_lines.append(f"  Front Left motor velocity: {self.front_left_motor.getVelocity():.4f}rad/s")
+            log_lines.append(f"  Rear Left motor velocity: {self.rear_left_motor.getVelocity():.4f}rad/s")
+            log_lines.append(f"  Front Right motor velocity: {self.front_right_motor.getVelocity():.4f}rad/s")
+            log_lines.append(f"  Rear Right motor velocity: {self.rear_right_motor.getVelocity():.4f}rad/s")
             
             # Posición de motores si está disponible
             try:
@@ -396,21 +337,4 @@ class RosBot(WebotsBaseDifferentialRobot):
         # Llamar al método base para manejar la salida
         super().log_devices(to_terminal, to_file)
 
-    def obstacle_detected(self, threshold=0.8):
-        """Detectar si hay un obstáculo cerca
-        
-        Args:
-            threshold (float): Umbral de detección en metros (default: 0.8m)
-        
-        Returns:
-            bool: True si hay obstáculo, False si no
-        """
-        distance_values = self.get_distance_sensor_values()
-        
-        # Verificar sensores frontales (índices 0 y 2: fl_range y fr_range)
-        front_left_distance = distance_values[0]   # fl_range
-        front_right_distance = distance_values[2]  # fr_range
-        
-        # Detectar obstáculo si algún sensor frontal está por debajo del umbral
-        return front_left_distance < threshold or front_right_distance < threshold
 

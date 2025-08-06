@@ -19,14 +19,11 @@ except ImportError:
 from .webots_base_differential_robot import WebotsBaseDifferentialRobot
 from ..interfaces.idifferential_robot import IDifferentialRobot
 
-# Constantes
-TIME_STEP = 64
-MAX_VELOCITY = 6.28  # Velocidad máxima típica para e-puck
 
 class EPuck(WebotsBaseDifferentialRobot):
     """Clase para encapsular la configuración y control del robot e-puck"""
     
-    def __init__(self, time_step=TIME_STEP):
+    def __init__(self, time_step=64):
         """Inicializar el robot e-puck y sus componentes específicos"""
         # Nombres de los sensores de distancia del e-puck
         self.distance_sensors_names = ["ps0", "ps1", "ps2", "ps3", "ps4", "ps5", "ps6", "ps7"]
@@ -34,11 +31,13 @@ class EPuck(WebotsBaseDifferentialRobot):
         # Parámetros físicos del e-puck
         wheel_radius = 0.0205  # metros
         wheel_base = 0.052     # metros
+
         
         # Inicializar primero la interfaz diferencial con parámetros
         IDifferentialRobot.__init__(self, wheel_radius, wheel_base)
             
         super().__init__(time_step)
+        self.MAX_VELOCITY = 6.28*0.99  # Velocidad máxima  para motores e-puck
     
     def _init_specific_components(self):
         """Inicializar componentes específicos del e-puck"""
@@ -99,15 +98,11 @@ class EPuck(WebotsBaseDifferentialRobot):
         max_requested = max(abs(left_velocity), abs(right_velocity))
         
         # Si alguna velocidad excede el límite, escalar proporcionalmente
-        if max_requested > MAX_VELOCITY:
-            scale_ratio = MAX_VELOCITY / max_requested
+        if max_requested > self.MAX_VELOCITY:
+            scale_ratio = self.MAX_VELOCITY / max_requested
             left_velocity = left_velocity * scale_ratio
             right_velocity = right_velocity * scale_ratio
-        
-        # Actualizar atributos de la interfaz diferencial
-        self.left_speed = left_velocity
-        self.right_speed = right_velocity
-        
+               
         # Aplicar velocidades a los motores físicos
         self.left_motor.setVelocity(left_velocity)
         self.right_motor.setVelocity(right_velocity)
@@ -129,15 +124,6 @@ class EPuck(WebotsBaseDifferentialRobot):
         """Girar el robot a la derecha"""
         self.set_motor_velocities(speed, -speed)
     
-    def stop(self):
-        """Detener el robot"""
-        # Detener motores físicos directamente
-        self.left_motor.setVelocity(0.0)
-        self.right_motor.setVelocity(0.0)
-        # Actualizar atributos de la interfaz
-        self.left_speed = 0.0
-        self.right_speed = 0.0
-    
     def step(self, dt: float = None) -> int:
         """
         Ejecuta un paso de simulación de Webots.
@@ -150,84 +136,7 @@ class EPuck(WebotsBaseDifferentialRobot):
         """
         return self.robot.step(self.time_step)
     
-    # Sobrescribir métodos de interfaz para usar motores físicos
-    def set_drive_command(self, forward_speed: float, steering_speed: float) -> None:
-        """
-        Establece velocidad y dirección simultáneamente (interfaz principal).
-        Sobrescribe para usar motores físicos de Webots con límites específicos del EPuck.
-        """
-        # Aplicar límites específicos del EPuck
-        max_linear_speed = 0.1  # m/s - Velocidad máxima lineal conservadora para EPuck
-        max_angular_speed = 0.5  # rad/s - Velocidad angular máxima conservadora para EPuck
-        
-        # Limitar velocidades según capacidades del EPuck
-        limited_forward_speed = max(-max_linear_speed, min(max_linear_speed, forward_speed))
-        limited_steering_speed = max(-max_angular_speed, min(max_angular_speed, steering_speed))
-        
-        # Llamar al método padre para conversión con velocidades limitadas
-        super().set_drive_command(limited_forward_speed, limited_steering_speed)
-        # Aplicar velocidades convertidas usando set_motor_velocities para escalado
-        self.set_motor_velocities(self.left_speed, self.right_speed)
-    
-    def set_forward_speed(self, speed: float) -> None:
-        """
-        Establece la velocidad de avance.
-        Sobrescribe para usar motores físicos de Webots.
-        """
-        # Llamar al método padre para mantener conversión
-        super().set_forward_speed(speed)
-        # Aplicar velocidades convertidas usando set_motor_velocities para escalado
-        self.set_motor_velocities(self.left_speed, self.right_speed)
-    
-    def set_steering_speed(self, speed: float) -> None:
-        """
-        Establece la velocidad de dirección.
-        Sobrescribe para usar motores físicos de Webots.
-        """
-        # Llamar al método padre para mantener conversión
-        super().set_steering_speed(speed)
-        # Aplicar velocidades convertidas usando set_motor_velocities para escalado
-        self.set_motor_velocities(self.left_speed, self.right_speed)
-    
-    # Métodos específicos para sensores de distancia del e-puck
-    def get_front_sensors_average(self):
-        """Obtener el promedio de los sensores frontales (ps0, ps1, ps6, ps7)"""
-        front_sensors = [0, 1, 6, 7]  # Índices de los sensores frontales
-        values = [self.distance_sensors[i].getValue() for i in front_sensors]
-        return sum(values) / len(values)
-    
-    def get_left_sensors_average(self):
-        """Obtener el promedio de los sensores izquierdos (ps5, ps6, ps7)"""
-        left_sensors = [5, 6, 7]  # Índices de los sensores izquierdos
-        values = [self.distance_sensors[i].getValue() for i in left_sensors]
-        return sum(values) / len(values)
-    
-    def get_right_sensors_average(self):
-        """Obtener el promedio de los sensores derechos (ps0, ps1, ps2)"""
-        right_sensors = [0, 1, 2]  # Índices de los sensores derechos
-        values = [self.distance_sensors[i].getValue() for i in right_sensors]
-        return sum(values) / len(values)
-    
-    def obstacle_detected(self, threshold=80.0):
-        """Detectar si hay un obstáculo cerca
-        
-        Args:
-            threshold (float): Umbral de detección
-        
-        Returns:
-            bool: True si hay obstáculo, False si no
-        """
-        front_value = self.get_front_sensors_average()
-        return front_value > threshold
-    
-    def get_motor_speeds(self) -> Tuple[float, float]:
-        """
-        Obtiene las velocidades actuales de los motores.
-        
-        Returns:
-            Tupla (velocidad_izquierda, velocidad_derecha) en rad/s
-        """
-        return (self.left_speed, self.right_speed)
+
 
     def log_devices(self, to_terminal: bool = True, to_file: str = None) -> None:
         """
@@ -264,8 +173,8 @@ class EPuck(WebotsBaseDifferentialRobot):
         # 3. Motors (velocidades directas)
         try:
             log_lines.append(f"Motors:")
-            log_lines.append(f"  Left motor velocity: {self.left_speed:.4f}rad/s")
-            log_lines.append(f"  Right motor velocity: {self.right_speed:.4f}rad/s")
+            log_lines.append(f"  Left motor velocity: {self.left_motor.getVelocity():.4f}rad/s")
+            log_lines.append(f"  Right motor velocity: {self.right_motor.getVelocity():.4f}rad/s")
             
             # Posición de motores si está disponible
             try:
