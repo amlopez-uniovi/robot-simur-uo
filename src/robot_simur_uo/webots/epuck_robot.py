@@ -1,3 +1,5 @@
+from ..utils.gps_manager import GpsManager
+from ..utils.compass_manager import CompassManager
 # Archivo que contiene la clase EPuck para encapsular la configuración del robot e-puck
 # Precisa un e-puck estándar con sensores de distancia, GPS y brújula definidos en el proto
 
@@ -43,6 +45,17 @@ class EPuck(WebotsBaseDifferentialRobot):
         """Inicializar componentes específicos del e-puck"""
         self._init_motors()
         self._init_distance_sensors()
+        self.gps_manager = GpsManager(self.robot, time_step=self.time_step)
+        self.compass_manager = CompassManager(self.robot, time_step=self.time_step)
+    def get_gps_position(self):
+        """Obtener posición GPS usando GpsManager"""
+        return self.gps_manager.get_position()
+
+    def get_compass_orientation(self):
+        """Obtener orientación de la brújula usando CompassManager"""
+        direction = self.compass_manager.get_direction()
+        angle = math.pi / 2 - math.atan2(direction[1], direction[0])
+        return direction, angle
     
     def _init_motors(self):
         """Inicializar y configurar los motores del robot"""
@@ -243,7 +256,7 @@ class EPuck(WebotsBaseDifferentialRobot):
         log_lines.append(f"  Time step: {self.time_step}ms")
         log_lines.append(f"  Wheel radius: {self.wheel_radius:.4f}m")
         log_lines.append(f"  Wheel base: {self.wheel_base:.4f}m")
-        log_lines.append(f"  Max velocity: {MAX_VELOCITY:.4f}rad/s")
+        log_lines.append(f"  Max velocity: {self.MAX_VELOCITY:.4f}rad/s")
         
         log_lines.append("=" * 70)
         

@@ -11,6 +11,8 @@ from typing import Tuple
 from ..interfaces.idifferential_robot import IDifferentialRobot
 from ..utils.coordinates import RobotPose
 from ..utils.lidar_manager import LidarManager
+from ..utils.gps_manager import GpsManager
+from ..utils.compass_manager import CompassManager
 
 class WebotsBaseDifferentialRobot(IDifferentialRobot):
     """Clase base para robots diferenciales en Webots con funcionalidades comunes"""
@@ -28,7 +30,8 @@ class WebotsBaseDifferentialRobot(IDifferentialRobot):
     
     def _init_common_components(self):
         """Inicializar componentes comunes a todos los robots"""
-        self._init_navigation_sensors()
+        self.gps_manager = GpsManager(self.robot, time_step=self.time_step)
+        self.compass_manager = CompassManager(self.robot, time_step=self.time_step)
         # Inicializar LidarManager
         self.lidar_manager = None
         self._init_lidar_manager()
@@ -39,13 +42,7 @@ class WebotsBaseDifferentialRobot(IDifferentialRobot):
         """Inicializar componentes específicos del robot (debe ser implementado por subclases)"""
         raise NotImplementedError("Subclases deben implementar _init_specific_components")
     
-    def _init_navigation_sensors(self):
-        """Inicializar GPS y brújula para navegación"""
-        self.gps_sensor = self.robot.getDevice("gps")
-        self.gps_sensor.enable(self.time_step)
-        
-        self.compass_sensor = self.robot.getDevice("compass")
-        self.compass_sensor.enable(self.time_step)
+    # Eliminado: _init_navigation_sensors (ahora gestionado por managers)
     
     def _init_lidar_manager(self):
         """Inicializar LidarManager con auto-detección del dispositivo"""
@@ -95,13 +92,13 @@ class WebotsBaseDifferentialRobot(IDifferentialRobot):
         return self.robot.step(time_step)
     
     def get_gps_position(self):
-        """Obtener posición GPS"""
-        return self.gps_sensor.getValues()
-    
+        """Obtener posición GPS usando GpsManager"""
+        return self.gps_manager.get_position()
+
     def get_compass_orientation(self):
-        """Obtener orientación de la brújula"""
-        direction = self.compass_sensor.getValues()
-        angle = math.pi / 2 -math.atan2(direction[1], direction[0])
+        """Obtener orientación de la brújula usando CompassManager"""
+        direction = self.compass_manager.get_direction()
+        angle = math.pi / 2 - math.atan2(direction[1], direction[0])
         return direction, angle
     
     def get_lidar_data(self):

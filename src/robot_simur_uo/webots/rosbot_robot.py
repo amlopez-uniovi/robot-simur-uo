@@ -19,16 +19,13 @@ except ImportError:
 # Importar WebotsBaseDifferentialRobot del mismo paquete
 from .webots_base_differential_robot import WebotsBaseDifferentialRobot
 from ..interfaces.idifferential_robot import IDifferentialRobot
-
-# Constantes
-TIME_STEP = 32
-MAX_VELOCITY = 26
+from ..utils.imu_manager import ImuManager
 
 
 class RosBot(WebotsBaseDifferentialRobot):
     """Clase para encapsular la configuración y control del robot RosBot"""
     
-    def __init__(self, time_step=TIME_STEP):
+    def __init__(self, time_step=64):
         """Inicializar el robot RosBot y sus componentes específicos"""
         # Parámetros físicos del RosBot (extraidos del PROTO)
         wheel_radius = 0.043  # metros
@@ -36,6 +33,8 @@ class RosBot(WebotsBaseDifferentialRobot):
         
         # Inicializar primero la interfaz diferencial con parámetros
         IDifferentialRobot.__init__(self, wheel_radius, wheel_base)
+        
+        self.MAX_VELOCITY = 26*0.99
         
         super().__init__(time_step)
     
@@ -86,14 +85,8 @@ class RosBot(WebotsBaseDifferentialRobot):
         self.camera_depth.enable(self.time_step)
     
     def _init_imu(self):
-        """Inicializar IMU (acelerómetro, giroscopio y brújula)"""
-        self.accelerometer = self.robot.getDevice("imu accelerometer")
-        self.gyro = self.robot.getDevice("imu gyro")
-        self.imu_compass = self.robot.getDevice("imu compass")
-        
-        self.accelerometer.enable(self.time_step)
-        self.gyro.enable(self.time_step)
-        self.imu_compass.enable(self.time_step)
+        """Inicializar IMU usando ImuManager"""
+        self.imu_manager = ImuManager(self.robot, time_step=self.time_step)
     
     def _init_distance_sensors(self):
         """Inicializar sensores de distancia específicos del RosBot"""
@@ -119,8 +112,8 @@ class RosBot(WebotsBaseDifferentialRobot):
         max_requested = max(abs(left_velocity), abs(right_velocity))
         
         # Si alguna velocidad excede el límite, escalar proporcionalmente
-        if max_requested > MAX_VELOCITY:
-            scale_ratio = MAX_VELOCITY / max_requested
+        if max_requested > self.MAX_VELOCITY:
+            scale_ratio = self.MAX_VELOCITY / max_requested
             left_velocity = left_velocity * scale_ratio
             right_velocity = right_velocity * scale_ratio
                 
@@ -164,15 +157,15 @@ class RosBot(WebotsBaseDifferentialRobot):
     # Métodos específicos del RosBot
     def get_accelerometer_values(self):
         """Obtener valores del acelerómetro"""
-        return self.accelerometer.getValues()
-    
+        return self.imu_manager.get_accelerometer()
+
     def get_gyro_values(self):
         """Obtener valores del giroscopio"""
-        return self.gyro.getValues()
-    
+        return self.imu_manager.get_gyro()
+
     def get_imu_compass_values(self):
         """Obtener valores de la brújula del IMU"""
-        return self.imu_compass.getValues()
+        return self.imu_manager.get_compass()
     
     def get_camera_rgb_image(self):
         """Obtener imagen RGB de la cámara"""
@@ -326,7 +319,7 @@ class RosBot(WebotsBaseDifferentialRobot):
         log_lines.append(f"  Time step: {self.time_step}ms")
         log_lines.append(f"  Wheel radius: {self.wheel_radius:.4f}m")
         log_lines.append(f"  Wheel base: {self.wheel_base:.4f}m")
-        log_lines.append(f"  Max velocity: {MAX_VELOCITY:.4f}rad/s")
+        log_lines.append(f"  Max velocity: {self.MAX_VELOCITY:.4f}rad/s")
         log_lines.append(f"  Drive type: 4WD (Four Wheel Drive)")
         
         log_lines.append("=" * 70)

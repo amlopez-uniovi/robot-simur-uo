@@ -20,7 +20,7 @@ def main():
         gps_position = robot.get_gps_position()
         
         # Obtener orientación de la brújula (método común)
-        compass_direction, compass_angle = robot.get_compass_orientation()
+        _, compass_angle = robot.get_compass_orientation()
         
         current_x = gps_position[0]
         current_y = gps_position[1]
