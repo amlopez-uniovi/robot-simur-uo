@@ -3,7 +3,7 @@
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/RectangleArena.proto"
-EXTERNPROTO "../../_protos/E-puck.proto"
+EXTERNPROTO "/Users/antoniolopez/desarrollo_codigo/robotica/robot-simur-uo/webots demos/_protos/E-puck.proto"
 
 WorldInfo {
 }
@@ -31,27 +31,10 @@ Solid {
   boundingObject USE BOX_CILINDRO
 }
 E-puck {
-  hidden linearVelocity_0 0.0020032030774993835 0.0017818716740420372 -0.2639326193999511
-  hidden angularVelocity_0 -0.12961333871923172 0.07452984102352488 -9.581365693989807e-06
-  hidden translation_1 0 0.026 0.02
-  hidden rotation_1 0 1 0 0.0018645851540719015
-  hidden linearVelocity_1 0.0024761515572947704 0.0025293827550115114 -0.26720317003060196
-  hidden angularVelocity_1 -0.12971068420539594 0.13279832239621162 -1.1640109484952495e-05
-  hidden translation_2 0 -0.026 0.02
+  hidden rotation_1 0 0.9999999999999999 0 0.0018645851540719015
   hidden rotation_2 0 1 0 0.0016483927631961057
-  hidden linearVelocity_2 0.0024751098230808566 0.002529934014847868 -0.2604580986431399
-  hidden angularVelocity_2 -0.1297159611493389 0.12604224576690312 -7.548717979916906e-06
   translation 2.8328369965127277e-05 -5.1941475189521774e-06 -0.008509634150164565
   rotation -0.8668965482926658 0.49848808456089494 -6.410204084718962e-05 0.004784293220825203
   controller "epuck_sensor_test_controller"
-  lidarSlot [
-    Lidar {
-      name "laser"
-      horizontalResolution 9
-      fieldOfView 6.28319
-      numberOfLayers 1
-      minRange 0.1
-      maxRange 10
-    }
-  ]
+  # lidarSlot eliminado para usar la configuración por defecto del PROTO
 }
