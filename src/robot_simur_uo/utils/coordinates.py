@@ -1,6 +1,6 @@
 def is_angle_in_range(angle, angle_min, angle_max):
     """
-    Devuelve True si angle está dentro del rango [angle_min, angle_max] en el círculo trigonométrico.
+    Devuelve True si angle está dentro del rango [angle_min, angle_max] en el círculo trigonométrico. Supone giro antihorario. 
     Soporta rangos que cruzan el cero y normaliza todo a [0, 2π).
     """
     # Normaliza todos los ángulos al rango [0, 2π)
