@@ -31,10 +31,9 @@ Solid {
   boundingObject USE BOX_CILINDRO
 }
 E-puck {
-  hidden rotation_1 0 0.9999999999999999 0 0.0018645851540719015
+  hidden rotation_1 0 1 0 0.0018645851540719015
   hidden rotation_2 0 1 0 0.0016483927631961057
-  translation 2.8328369965127277e-05 -5.1941475189521774e-06 -0.008509634150164565
+  translation 0.25 -0.2506 -0.00850963
   rotation -0.8668965482926658 0.49848808456089494 -6.410204084718962e-05 0.004784293220825203
   controller "epuck_sensor_test_controller"
-  # lidarSlot eliminado para usar la configuración por defecto del PROTO
 }

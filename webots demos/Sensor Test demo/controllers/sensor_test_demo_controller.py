@@ -67,12 +67,15 @@ def run_sensor_test_demo(RobotClass):
             local_coordinates = polar_to_cartesian([(angulo, distancia)])
             tf = transform_points(local_coordinates, (pose.x, pose.y, pose.theta))
             
-            print("======")
-            print(f"Pose del robot: {pose}")
-            print(robot.get_lidar_manager().print_all_lidar_data())
-            print(f"Obstáculo más cercano: ángulo={math.degrees(angulo):.1f}°, distancia={distancia:.2f} m")
-            print(f"local_coordinates: {local_coordinates}")
+            #print("======")
+            #print(f"Pose del robot: {pose}")
+            #print(robot.get_lidar_manager().print_all_lidar_data())
+            #print(f"Obstáculo más cercano: ángulo={math.degrees(angulo):.1f}°, distancia={distancia:.2f} m")
+            #print(f"local_coordinates: {local_coordinates}")
             print(f"Coordenadas globales: {tf}")
+            #print(f"\n")
+            #print(f"\n")
+
 
         # Verificar si completó una vuelta completa (360°)
         if total_rotation >= 2 * math.pi:

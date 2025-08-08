@@ -1,3 +1,35 @@
+def is_angle_in_range(angle, angle_min, angle_max):
+    """
+    Devuelve True si angle está dentro del rango [angle_min, angle_max] en el círculo trigonométrico.
+    Soporta rangos que cruzan el cero y normaliza todo a [0, 2π).
+    """
+    # Normaliza todos los ángulos al rango [0, 2π)
+    angle = angle % (2 * math.pi)
+    angle_min = angle_min % (2 * math.pi)
+    angle_max = angle_max % (2 * math.pi)
+
+    #print(f"angulo {math.degrees(angle):.1f}°, angulo minimo {math.degrees(angle_min):.1f}°, angulo maximo {math.degrees(angle_max):.1f}°")
+
+    # Log de entrada
+    #print(f"[is_angle_in_range] angle={math.degrees(angle):.1f}°, min={math.degrees(angle_min):.1f}°, max={math.degrees(angle_max):.1f}°")
+
+    # Si el rango cubre todo el círculo
+    if angle_min == angle_max:
+        #print("[is_angle_in_range] Rango cubre todo el círculo (min == max), devuelve True")
+        return True
+
+    # Rango normal (no cruza el cero)
+    if angle_min < angle_max:
+        result = angle_min <= angle <= angle_max
+        #print(f"[is_angle_in_range] Rango directo: {result}")
+        return result
+    else:
+        # Rango circular (cruza el cero)
+        result = angle >= angle_min or angle <= angle_max
+        print(f"[is_angle_in_range] Rango circular: {result}")
+        return result
+
+
 def transform_points(points, pose):
     """
     Transforma una lista de puntos (x, y) locales a coordenadas globales usando la pose del robot.

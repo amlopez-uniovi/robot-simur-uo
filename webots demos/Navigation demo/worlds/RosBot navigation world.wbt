@@ -44,10 +44,5 @@ Rosbot {
   translation 0.05790567712993736 -1.7236571989906515 -0.0005625852434034961
   rotation -1.5967340726606063e-05 1.7912313901708202e-05 0.9999999997120965 1.45072344045886
   controller "rosbot_navigation_controller"
-  lidarSlot [
-    RpLidarA2 {
-      translation 0 0 0.14
-      name "laser"
-    }
-  ]
+  # lidarSlot eliminado para usar la configuración por defecto del PROTO
 }
