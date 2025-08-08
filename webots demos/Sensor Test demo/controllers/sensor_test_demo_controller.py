@@ -5,6 +5,8 @@ Estructura unificada: inicialización, bucle principal, lectura de sensores y lo
 
 import math
 
+from robot_simur_uo import transform_points, polar_to_cartesian
+
 def run_sensor_test_demo(RobotClass):
     robot = RobotClass()
     iteration = 0
@@ -53,7 +55,24 @@ def run_sensor_test_demo(RobotClass):
         robot.turn_left()
 
         # Log completo de todos los dispositivos (incluye LiDAR con ángulos)
-        robot.log_devices()
+        #robot.log_devices()
+
+
+        #plotear informacion de obstaculo mas cercano
+        
+        if hasattr(robot, 'lidar_manager'):
+            _, _, angulo, distancia = robot.lidar_manager.get_closest_obstacle_in_angle_range(-math.pi, math.pi)
+            pose = robot.get_pose()
+            # Transformar a coordenadas globales
+            local_coordinates = polar_to_cartesian([(angulo, distancia)])
+            tf = transform_points(local_coordinates, (pose.x, pose.y, pose.theta))
+            
+            print("======")
+            print(f"Pose del robot: {pose}")
+            print(robot.get_lidar_manager().print_all_lidar_data())
+            print(f"Obstáculo más cercano: ángulo={math.degrees(angulo):.1f}°, distancia={distancia:.2f} m")
+            print(f"local_coordinates: {local_coordinates}")
+            print(f"Coordenadas globales: {tf}")
 
         # Verificar si completó una vuelta completa (360°)
         if total_rotation >= 2 * math.pi:

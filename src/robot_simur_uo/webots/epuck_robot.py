@@ -41,7 +41,13 @@ class EPuck(WebotsBaseDifferentialRobot):
         super().__init__(time_step)
         self.MAX_VELOCITY = 6.28*0.99  # Velocidad máxima  para motores e-puck
     
-    def _init_specific_components(self):
+    def _init_lidar_manager(self):
+        """Inicializar LidarManager con auto-detección del dispositivo"""
+        super()._init_lidar_manager()
+        
+        self.lidar_manager.set_sweep_range((math.pi, -math.pi))  # Rango completo de 360 grados
+        
+    def _init_specific_components(self  ):
         """Inicializar componentes específicos del e-puck"""
         self._init_motors()
         self._init_distance_sensors()

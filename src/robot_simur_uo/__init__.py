@@ -17,6 +17,7 @@ finally:
 
 from .controllers import *
 from .utils import *
+from .utils import transform_points, polar_to_cartesian
 from .webots import *
 from .interfaces import *
 

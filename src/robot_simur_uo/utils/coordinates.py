@@ -92,3 +92,7 @@ class RobotPose:
     
     def __repr__(self):
         return self.__str__()
+    
+    def get_pose(self):
+        """Devuelve la pose como una tupla (x, y, theta)."""
+        return (self.x, self.y, self.theta)
