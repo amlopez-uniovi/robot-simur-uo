@@ -12,39 +12,10 @@ except ImportError:
         def __init__(self, *args, **kwargs):
             raise RuntimeError("El módulo `controller` solo está disponible en el entorno de Webots.")
 
+from .coordinates import is_angle_in_range
 
 class LidarManager:
-    def get_closest_obstacle_in_angle_range(self, angle_min: float, angle_max: float):
-        """
-        Obtener información de obstáculos en un rango de ángulos.
-        Args:
-            angle_min (float): Ángulo mínimo en radianes (inicio del sector)
-            angle_max (float): Ángulo máximo en radianes (fin del sector)
-        Returns:
-            Tuple[List[float], List[float], float, float]:
-                - Lista de ángulos dentro del rango
-                - Lista de distancias correspondientes
-                - Ángulo del obstáculo más cercano
-                - Distancia del obstáculo más cercano
-                Si no hay datos válidos, listas vacías y float('inf')
-        """
-        try:
-            data_with_angles = self.get_raw_data_with_angles()
-            if not data_with_angles:
-                return [], [], float('inf'), float('inf')
-            # Filtrar puntos dentro del rango de ángulos
-            filtered = [(d, a) for d, a in data_with_angles if angle_min <= a <= angle_max and d > 0 and not math.isinf(d)]
-            if not filtered:
-                return [], [], float('inf'), float('inf')
-            angles = [a for d, a in filtered]
-            distances = [d for d, a in filtered]
-            min_idx = distances.index(min(distances))
-            min_angle = angles[min_idx]
-            min_distance = distances[min_idx]
-            return angles, distances, min_angle, min_distance
-        except Exception as e:
-            print(f"⚠️ Error calculando obstáculo en rango [{math.degrees(angle_min):.1f}°, {math.degrees(angle_max):.1f}°]: {e}")
-            return [], [], float('inf'), float('inf')
+
     """
     Clase para manejar dispositivos LiDAR en Webots.
     
@@ -54,7 +25,7 @@ class LidarManager:
     """
     
     def __init__(self, robot: Robot, device_name: str = "lidar", 
-                 sweep_range: Tuple[float, float] = (0.0, 2*math.pi), 
+                 sweep_range: Tuple[float, float] = (0.0, -2*math.pi), 
                  time_step: int = 32):
         """
         Inicializar el gestor de LiDAR.
@@ -339,115 +310,42 @@ class LidarManager:
         """
         return self.fov
     
-    def get_closest_obstacle(self) -> float:
-        """
-        Obtener la distancia al obstáculo más cercano detectado por el LiDAR.
-        
-        Returns:
-            float: Distancia al obstáculo más cercano en metros
-        """
-        try:
-            ranges = self.get_raw_data()
-            if ranges and len(ranges) > 0:
-                # Filtrar valores infinitos o inválidos
-                valid_ranges = [r for r in ranges if r != float('inf') and r > 0]
-                if valid_ranges:
-                    return min(valid_ranges)
-        except Exception as e:
-            print(f"⚠️ Error calculando obstáculo más cercano: {e}")
-        
-        return float('inf')
     
-    def get_sectored_distances(self, num_sectors: int = 8, 
-                             min_range: float = 0.05, 
-                             max_range: float = 10.0) -> List[float]:
+    def get_closest_obstacle_in_angle_range(self, angle_min: float, angle_max: float):
         """
-        Divide los datos del LiDAR en sectores direccionales y obtiene la distancia mínima de cada sector.
-        
+        Obtener información de obstáculos en un rango de ángulos.
         Args:
-            num_sectors (int): Número de sectores en que dividir el LiDAR (8 por defecto)
-            min_range (float): Distancia mínima válida en metros
-            max_range (float): Distancia máxima válida en metros (valor por defecto para obstáculos lejanos)
-            
+            angle_min (float): Ángulo mínimo en radianes (inicio del sector)
+            angle_max (float): Ángulo máximo en radianes (fin del sector)
         Returns:
-            List[float]: Lista de distancias mínimas por sector
+            Tuple[List[float], List[float], float, float]:
+                - Lista de ángulos dentro del rango
+                - Lista de distancias correspondientes
+                - Ángulo del obstáculo más cercano
+                - Distancia del obstáculo más cercano
+                Si no hay datos válidos, listas vacías y float('inf')
         """
+
         try:
-            lidar_data = self.get_raw_data()
-            
-            if not lidar_data or len(lidar_data) == 0:
-                return [max_range] * num_sectors
-            
-            num_points = len(lidar_data)
-            sector_size = max(1, num_points // num_sectors)
-            sectored_distances = []
-            
-            for i in range(num_sectors):
-                # Calcular índices del sector
-                start_idx = i * sector_size
-                end_idx = min(start_idx + sector_size, num_points)
-                
-                # Obtener distancia mínima en este sector
-                if start_idx < len(lidar_data):
-                    sector_distances = lidar_data[start_idx:end_idx]
-                    if sector_distances:
-                        # Filtrar valores válidos en el sector
-                        valid_distances = [
-                            d for d in sector_distances 
-                            if d > min_range and d < max_range and d != float('inf')
-                        ]
-                        
-                        if valid_distances:
-                            min_distance = min(valid_distances)
-                            sectored_distances.append(min_distance)
-                        else:
-                            sectored_distances.append(max_range)  # Sin obstáculo válido
-                    else:
-                        sectored_distances.append(max_range)
-                else:
-                    sectored_distances.append(max_range)
-            
-            return sectored_distances
-            
+            data_with_angles = self.get_raw_data_with_angles()
+            if not data_with_angles:
+                return [], [], float('inf'), float('inf')
+            # Filtrar puntos dentro del rango de ángulos (soporta rangos que cruzan el cero)
+            #print(f"Filtrando datos en rango [{math.degrees(angle_min):.1f}°, {math.degrees(angle_max):.1f}°]")
+            #print(f"Datos originales: {data_with_angles}")
+            filtered = [
+                (d, a) for d, a in data_with_angles
+                if is_angle_in_range(a, angle_min, angle_max) and d > 0 and not math.isinf(d)
+            ]
+            #print(f"Datos filtrados: {len(filtered)} puntos válidos")
+            if not filtered:
+                return [], [], float('inf'), float('inf')
+            angles = [a for d, a in filtered]
+            distances = [d for d, a in filtered]
+            min_idx = distances.index(min(distances))
+            min_angle = angles[min_idx]
+            min_distance = distances[min_idx]
+            return angles, distances, min_angle, min_distance
         except Exception as e:
-            print(f"Error al procesar sectores del LiDAR: {e}")
-            return [max_range] * num_sectors
-    
-    def get_obstacle_sensors(self, num_sectors: int = 8) -> List[float]:
-        """
-        Obtener sensores de obstáculos simples desde el LiDAR.
-        Convierte datos del LiDAR en sectores para detección de obstáculos.
-        
-        Args:
-            num_sectors (int): Número de sectores a crear (por defecto 8)
-            
-        Returns:
-            List[float]: Lista con distancias mínimas por sector
-        """
-        lidar_data = self.get_raw_data()
-        obstacle_sensors = []
-        
-        if lidar_data and len(lidar_data) > 0:
-            # Convertir LiDAR a sectores simples
-            num_points = len(lidar_data)
-            sector_size = max(1, num_points // num_sectors)
-            
-            for i in range(num_sectors):
-                start_idx = i * sector_size
-                end_idx = min(start_idx + sector_size, num_points)
-                
-                if start_idx < len(lidar_data):
-                    sector_distances = lidar_data[start_idx:end_idx]
-                    if sector_distances:
-                        min_distance = min(sector_distances)
-                        # Filtrar valores inválidos (muy cerca o infinito)
-                        obstacle_sensors.append(min_distance if min_distance > 0.02 else 1.0)
-                    else:
-                        obstacle_sensors.append(1.0)
-                else:
-                    obstacle_sensors.append(1.0)
-        else:
-            # Sin LiDAR, asumir sin obstáculos
-            obstacle_sensors = [1.0] * num_sectors
-        
-        return obstacle_sensors
+            print(f"⚠️ Error calculando obstáculo en rango [{math.degrees(angle_min):.1f}°, {math.degrees(angle_max):.1f}°]: {e}")
+            return [], [], float('inf'), float('inf')
