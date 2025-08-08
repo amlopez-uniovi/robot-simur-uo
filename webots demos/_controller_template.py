@@ -1,15 +1,12 @@
 """
-Plantilla base para controladores de robots Webots
-- Inicialización de robot
-- Bucle principal
-- Acceso a sensores y actuadores
-- Logging y estructura uniforme
+Controlador base para la demo de test de sensores (EPuck y RosBot)
+Estructura unificada: inicialización, bucle principal, lectura de sensores y logging
 """
 
-def main():
-    # Importar la clase de robot adecuada
-    from robot_simur_uo.webots.rosbot_robot import RosBot  # O EPuck, según el demo
-    robot = RosBot()  # O EPuck()
+import math
+
+def run_controller_name(RobotClass):
+    robot = RobotClass()
 
     iteration = 0
     print("Iniciando demo...")
@@ -25,10 +22,12 @@ def main():
         # Ejemplo: avanzar si no hay obstáculo
         robot.move_forward()
 
+        robot.log_devices(to_terminal=True)
+        
         # --- Logging periódico ---
-        if iteration % 100 == 0:
-            print(f"Iteración {iteration}:")
-            robot.log_devices(to_terminal=True)
+        if iteration % 10 == 0:
+            break
+            
 
-if __name__ == "__main__":
-    main()
+    robot.cleanup()
+    robot.stop()

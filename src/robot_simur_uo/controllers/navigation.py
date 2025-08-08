@@ -97,6 +97,36 @@ class NavigationController:
         
         return drive_speed, steering_speed
     
+    def calculate_control_commands(self, current_x: float, current_y: float, 
+                                 current_angle: float) -> Tuple[float, float]:
+        """
+        Calcula comandos de control (velocidad + velocidad de dirección) para dirigirse al objetivo.
+        
+        Esta es la interfaz principal que funciona con cualquier tipo de robot.
+        
+        Args:
+            current_x: Posición X actual
+            current_y: Posición Y actual  
+            current_angle: Ángulo actual del robot
+            
+        Returns:
+            Tuple con (velocidad_lineal, velocidad_de_dirección)
+        """
+        angle_diff, distance = self.calculate_direction_to_target(
+            current_x, current_y, current_angle
+        )
+        
+        if distance < self.tolerance:  # Ya llegamos al objetivo
+            return 0.0, 0.0
+        
+        # Velocidad proporcional a la distancia (sin límites - cada robot los aplica)
+        drive_speed = distance * self.linear_gain
+        
+        # Velocidad de giro proporcional al error angular (sin límites - cada robot los aplica)
+        steering_speed = angle_diff * self.steering_gain
+        
+        return drive_speed, steering_speed
+    
     def is_target_reached(self, current_x: float, current_y: float) -> bool:
         """
         Verifica si se ha alcanzado el objetivo.
