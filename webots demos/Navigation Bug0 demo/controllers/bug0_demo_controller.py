@@ -8,7 +8,7 @@ import numpy as np
 def run_bug0_demo(RobotClass):
     robot = RobotClass()
     controller = Bug0NavigationController(linear_gain=1.0, steering_gain=2.0)
-    controller.set_target(-1.0, 0.5, tol=0.1)
+    controller.set_target(1.0, 2, tol=0.1)
     iteration = 0
     print(f"Iniciando demo Bug0 para {RobotClass.__name__}...")
 
