@@ -72,27 +72,48 @@ class GridMap:
 
 if __name__ == "__main__":
     # Ejemplo de uso
-    bottom_left = (-2.0, -2.0)
-    top_right = (4.0, 4.0)
+    bottom_left = (-2.0, -3.0)
+    top_right = (2.0, 4.0)
     resolution = 1.0
     grid = GridMap(bottom_left, top_right, resolution)
     print(grid)
     # Recorrer todas las celdas y visualizar cada centro
     import time
+    import matplotlib.pyplot as plt
+
+    # Recorrer todas las celdas y visualizar cada centro
     for row in range(grid.rows):
         for col in range(grid.cols):
-            # Limpiar matriz
             grid.grid[:, :] = 0
-            # Obtener centro físico de la celda
             x, y = grid.map_to_world(row, col)
             grid.grid[row, col] = 1
-            # Visualizar con título personalizado
-            import matplotlib.pyplot as plt
             plt.imshow(grid.grid, cmap='gray', origin='upper',
                        extent=[grid.bottom_left[0], grid.top_right[0], grid.bottom_left[1], grid.top_right[1]])
             plt.xlabel('X (m)')
             plt.ylabel('Y (m)')
             plt.title(f'Celda activa: centro=({x:.2f}, {y:.2f})')
             plt.colorbar(label='Valor celda')
-            plt.show()
-            time.sleep(0.2)
+            plt.pause(0.2)
+            plt.clf()
+
+    # Recorrer coordenadas del mundo con paso 'step'
+    step = 0.5  # Puedes ajustar el paso aquí
+    x_min, x_max = grid.bottom_left[0], grid.top_right[0]
+    y_min, y_max = grid.bottom_left[1], grid.top_right[1]
+    x_vals = np.arange(x_min, x_max, step)
+    y_vals = np.arange(y_min, y_max, step)
+    for x in x_vals:
+        for y in y_vals:
+            grid.grid[:, :] = 0
+            row, col = grid.world_to_map(x, y)
+            grid.grid[row, col] = 1
+            plt.imshow(grid.grid, cmap='gray', origin='upper',
+                       extent=[grid.bottom_left[0], grid.top_right[0], grid.bottom_left[1], grid.top_right[1]])
+            plt.xlabel('X (m)')
+            plt.ylabel('Y (m)')
+            plt.title(f'Coordenada activa: ({x:.2f}, {y:.2f})')
+            plt.colorbar(label='Valor celda')
+            plt.pause(0.2)
+            plt.clf()
+
+    plt.close()
