@@ -2,20 +2,9 @@ import math
 import numpy as np
 
 class GridMap:
-    def visualize(self, cmap='gray'):
-        """
-        Visualiza la matriz como un mapa de grises, con correspondencia física correcta.
-        Requiere matplotlib.
-        """
-        import matplotlib.pyplot as plt
-        plt.imshow(self.grid, cmap=cmap, origin='upper',
-                   extent=[self.bottom_left[0], self.top_right[0], self.bottom_left[1], self.top_right[1]])
-        plt.xlabel('X (m)')
-        plt.ylabel('Y (m)')
-        plt.title('GridMap (mapa de grises)')
-        plt.colorbar(label='Valor celda')
-        plt.show()
-    def __init__(self, bottom_left, top_right, resolution):
+
+        
+    def __init__(self, bottom_left, top_right, resolution, empty_value=0.0):
         """
         Inicializa el mapa de rejilla.
         Args:
@@ -32,6 +21,12 @@ class GridMap:
         self.cols = math.ceil(width / resolution)
         self.rows = math.ceil(height / resolution)
         self.grid = np.zeros((self.rows, self.cols), dtype=np.int8)
+        self.empty_value = empty_value
+        self.grid[:, :] = self.empty_value
+
+
+    def reset(self):
+        self.grid[:, :] = self.empty_value
 
     def world_to_map(self, x, y):
         """
@@ -69,6 +64,28 @@ class GridMap:
 
     def __repr__(self):
         return f"GridMap({self.rows}x{self.cols}, res={self.resolution}, bottom_left={self.bottom_left}, top_right={self.top_right})"
+
+    def visualize(self, cmap='gray', fig=None, block=False):
+        """
+        Visualiza la matriz como un mapa de grises, con correspondencia física correcta.
+        Requiere matplotlib.
+        Si se proporciona una figura, dibuja sobre ella. Si no, la crea.
+        Devuelve la figura.
+        El parámetro 'block' controla si plt.show() es bloqueante.
+        """
+        import matplotlib.pyplot as plt
+        if fig is None:
+            fig = plt.figure()
+        ax = fig.gca()
+        im = ax.imshow(self.grid, cmap=cmap, origin='upper',
+                       extent=[self.bottom_left[0], self.top_right[0], self.bottom_left[1], self.top_right[1]])
+        ax.set_xlabel('X (m)')
+        ax.set_ylabel('Y (m)')
+        ax.set_title('GridMap (mapa de grises)')
+        #fig.colorbar(im, ax=ax, label='Valor celda')
+        plt.show(block=block)
+        plt.pause(0.001)  # Pequeña pausa para actualizar la figura
+        return fig
 
 if __name__ == "__main__":
     # Ejemplo de uso
@@ -117,3 +134,4 @@ if __name__ == "__main__":
             plt.clf()
 
     plt.close()
+

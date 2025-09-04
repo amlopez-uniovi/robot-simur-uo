@@ -1,3 +1,5 @@
+
+
 # Clase para manejar dispositivos LiDAR en Webots
 # Proporciona una interfaz unificada para gestión de LiDAR y procesamiento de datos
 
@@ -349,3 +351,32 @@ class LidarManager:
         except Exception as e:
             print(f"⚠️ Error calculando obstáculo en rango [{math.degrees(angle_min):.1f}°, {math.degrees(angle_max):.1f}°]: {e}")
             return [], [], float('inf'), float('inf')
+
+
+    def get_obstacle_points_xy(self) -> Tuple[List[Tuple[float, float]], List[Tuple[float, float]]]:
+        """
+        Devuelve dos listas de coordenadas (x, y) en coordenadas locales del robot:
+        - Obstáculos detectados (rango finito)
+        - Puntos libres máximos (rango infinito)
+        Las coordenadas están en el sistema local del robot (x hacia delante, y hacia la izquierda).
+        Returns:
+            Tuple[List[Tuple[float, float]], List[Tuple[float, float]]]
+        """
+        data_with_angles = self.get_raw_data_with_angles()
+        if not data_with_angles:
+            return [], []
+        max_range = self.get_max_range()
+        obstacles = []
+        free_points = []
+        for dist, angle in data_with_angles:
+            if dist > 0 and not math.isinf(dist):
+                # Obstáculo detectado
+                x = dist * math.cos(angle)
+                y = dist * math.sin(angle)
+                obstacles.append((x, y))
+            elif math.isinf(dist):
+                # Punto libre máximo
+                x = max_range * math.cos(angle)
+                y = max_range * math.sin(angle)
+                free_points.append((x, y))
+        return obstacles, free_points
