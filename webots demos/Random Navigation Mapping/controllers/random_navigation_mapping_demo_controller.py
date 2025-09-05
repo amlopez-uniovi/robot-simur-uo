@@ -40,43 +40,6 @@ def run_random_navigation_mapping_demo(RobotClass):
 
         pose = robot.get_pose().to_tuple()
         
-#        celdas_ocupadas, celdas_libres = grid_map.get_occupied_free_cells_from_pose_obstacles(
-#            pose, obstacle_points, free_points, points_in_robot_frame=True
-#        )
-        
-#        grid_map.reset()  # Limpiar el mapa antes de actualizarlo
-
-        # Actualizar el mapa de ocupación con las celdas ocupadas y libres
-    #    for cell in celdas_ocupadas:
-    #        grid_map.set_cell(*cell, -1.0)  # Marcar celda como ocupada
-    #    for cell in celdas_libres:
-    #        grid_map.set_cell(*cell, 1)  # Marcar celda como libre
-
-    #    print(f"Iteración {iteration_count}")
-    #    print(f"Pose actual del robot: {pose}")
-    #    print(f"Puntos de obstáculos detectados (robot frame): {obstacle_points}")
-    #    print(f"Puntos libres detectados (robot frame): {free_points}")
-    #    print(f"Celdas ocupadas detectadas: {sorted(celdas_ocupadas, key=lambda x: x[0])}")
-    #    print(f"Celdas libres detectadas: {sorted(celdas_libres, key=lambda x: x[0])}")
-    #    print("-" * 40)
-    
-    
-#        obstacle_points_tf = transform_points(obstacle_points, pose)
-#        free_points_tf = transform_points(free_points, pose)
-
-#        grid_map.reset()  # Limpiar el mapa antes de actualizarlo
-        
-        # Actualizar el mapa de ocupación con los puntos transformados
-#        obstacle_points_map = [grid_map.world_to_map(x, y) for x, y in obstacle_points_tf]
-        
-        #for x, y in obstacle_points_map:
-#       for x, y in celdas_ocupadas:
-#           grid_map.set_cell(x, y, 1.0, world_coordinates=False)  # Marcar celda como ocupada
-
-        #for x, y in obstacle_points_map:
-#        for x, y in celdas_libres:
-#            grid_map.set_cell(x, y, -1.0, world_coordinates=False)  # Marcar celda como ocupada
-
         # Pintar el mapa de ocupación (visualización simple en consola)
         fig_visualizacion = prob_grid_map.visualize(fig=fig_visualizacion)
 
