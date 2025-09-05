@@ -1,5 +1,7 @@
 """
 Interfaz específica para robots de tracción diferencial.
+
+Define la interfaz y métodos comunes para robots diferenciales.
 """
 
 from abc import abstractmethod
@@ -10,15 +12,15 @@ from .irobot_base import IRobotBase
 class IDifferentialRobot(IRobotBase):
     """
     Interfaz específica para robots de tracción diferencial.
-    
+
     Los robots diferenciales usan la interfaz estándar:
-    - set_drive_command(drive_speed, steering_speed) - Comando unificado principal
-    - set_forward_speed() / get_forward_speed() - Velocidad lineal (mantiene velocidad de dirección)
-    - set_steering_speed() / get_steering_speed() - Velocidad de dirección (mantiene velocidad lineal)
-    
+        - set_drive_command(drive_speed, steering_speed) - Comando unificado principal
+        - set_forward_speed() / get_forward_speed() - Velocidad lineal (mantiene velocidad de dirección)
+        - set_steering_speed() / get_steering_speed() - Velocidad de dirección (mantiene velocidad lineal)
+
     La implementación convierte internamente estas a velocidades de motores.
-    
-    Métodos adicionales para acceso directo a motores (opcional):
+
+    Métodos adicionales para acceso directo a motores (opcional).
     """
     
     def __init__(self, wheel_radius: float = 0.0205, wheel_base: float = 0.117):

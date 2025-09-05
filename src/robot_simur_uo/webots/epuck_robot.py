@@ -23,7 +23,14 @@ from ..interfaces.idifferential_robot import IDifferentialRobot
 
 
 class EPuck(WebotsBaseDifferentialRobot):
-    """Clase para encapsular la configuración y control del robot e-puck"""
+    """
+    Clase para encapsular la configuración y control del robot e-puck.
+
+    Ejemplo:
+        >>> robot = EPuck()
+        >>> pos = robot.get_gps_position()
+        >>> print(pos)
+    """
     
     def __init__(self, time_step=64):
         """Inicializar el robot e-puck y sus componentes específicos"""

@@ -1,6 +1,12 @@
 """
 Controlador de navegación con estrategia Look-Ahead.
 Implementa una navegación más suave anticipando la trayectoria futura.
+
+Ejemplo:
+    >>> ctrl = NavigationLookAhead()
+    >>> ctrl.set_target(1.0, 2.0)
+    >>> punto = ctrl.calculate_lookahead_point(0, 0, 0)
+    >>> print(punto)
 """
 
 import math

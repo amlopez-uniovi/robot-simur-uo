@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>robot_simur_uo.interfaces.iackermann_robot &#8212; robot-simur-uo 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for robot_simur_uo.interfaces.iackermann_robot</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Interfaz específica para robots con dirección tipo Ackermann.</span>
+
+<span class="sd">Maneja la conversión entre steering_speed (usado por controladores)</span>
+<span class="sd">y steering_angle (usado por la cinemática Ackermann).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.irobot_base</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRobotBase</span>
+
+
+<div class="viewcode-block" id="IAckermannRobot">
+<a class="viewcode-back" href="../../../robot_simur_uo.interfaces.html#robot_simur_uo.interfaces.IAckermannRobot">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IAckermannRobot</span><span class="p">(</span><span class="n">IRobotBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Interfaz específica para robots con dirección tipo Ackermann.</span>
+
+<span class="sd">    Los robots Ackermann tienen una diferencia conceptual importante:</span>
+<span class="sd">        - NavigationController devuelve steering_speed (rad/s)</span>
+<span class="sd">        - Robots Ackermann usan steering_angle (rad) para las ruedas directrices</span>
+
+<span class="sd">    Esta clase maneja la conversión entre steering_speed y steering_angle,</span>
+<span class="sd">    y proporciona métodos específicos para robots Ackermann.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_steering_angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Inicializa el robot Ackermann con ángulo de dirección.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steering_angle</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># Ángulo actual de las ruedas directrices (rad)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_steering_angle</span> <span class="o">=</span> <span class="n">max_steering_angle</span>  <span class="c1"># Ángulo máximo (rad)</span>
+
+    <span class="c1"># Métodos auxiliares para acceso directo a motores</span>
+<div class="viewcode-block" id="IAckermannRobot.set_motor_velocities">
+<a class="viewcode-back" href="../../../robot_simur_uo.interfaces.html#robot_simur_uo.interfaces.IAckermannRobot.set_motor_velocities">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_motor_velocities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forward_speed</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">steering_angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Método abstracto: debe ser implementado por cada robot concreto para aplicar físicamente las velocidades a los motores.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            forward_speed: Velocidad de avance (m/s)</span>
+<span class="sd">            steering_angle: Ángulo de dirección (rad)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+    
+<div class="viewcode-block" id="IAckermannRobot.set_drive_command">
+<a class="viewcode-back" href="../../../robot_simur_uo.interfaces.html#robot_simur_uo.interfaces.IAckermannRobot.set_drive_command">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_drive_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forward_speed</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">steering_speed</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Interfaz unificada que convierte steering_speed a steering_angle internamente.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            forward_speed: Velocidad lineal (m/s)</span>
+<span class="sd">            steering_speed: Velocidad de dirección (rad/s) - se convierte a ángulo</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Conversión de steering_speed a steering_angle</span>
+        <span class="c1"># Simplificación: asumir dt=1s para la conversión básica</span>
+        <span class="c1"># En implementaciones reales, esto podría ser más sofisticado</span>
+        <span class="n">desired_angle</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">max_steering_angle</span><span class="p">,</span> 
+                                 <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_steering_angle</span><span class="p">,</span> <span class="n">steering_speed</span><span class="p">))</span>  <span class="c1"># Conversión simplificada</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_motor_velocities</span><span class="p">(</span><span class="n">forward_speed</span><span class="p">,</span> <span class="n">desired_angle</span><span class="p">)</span></div>
+</div>
+
+    
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">robot-simur-uo</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">robot_simur_uo</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, amlopez-uniovi.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

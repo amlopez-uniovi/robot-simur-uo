@@ -1,5 +1,7 @@
 """
 Módulo de interfaces para robots.
+
+Incluye interfaces base, diferencial y Ackermann.
 """
 
 from .irobot_base import IRobotBase

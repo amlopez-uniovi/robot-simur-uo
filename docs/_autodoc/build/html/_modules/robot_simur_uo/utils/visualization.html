@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>robot_simur_uo.utils.visualization &#8212; robot-simur-uo 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for robot_simur_uo.utils.visualization</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Herramientas de visualización para datos de robots.</span>
+
+<span class="sd">Ejemplo:</span>
+<span class="sd">    &gt;&gt;&gt; viz = DataVisualizer(60, 20)</span>
+<span class="sd">    &gt;&gt;&gt; viz.set_bounds(-5, 5, -5, 5)</span>
+<span class="sd">    &gt;&gt;&gt; viz.draw_point(0, 0, &#39;*&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; print(viz.render())</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+
+
+<div class="viewcode-block" id="DataVisualizer">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.visualization.DataVisualizer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DataVisualizer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clase para visualizar datos de robots (versión simplificada para consola).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">24</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inicializa el visualizador.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            width (int): Ancho del área de visualización en caracteres.</span>
+<span class="sd">            height (int): Alto del área de visualización en caracteres.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">height</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="p">[[</span><span class="s1">&#39; &#39;</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">width</span><span class="p">)]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">height</span><span class="p">)]</span>
+    
+<div class="viewcode-block" id="DataVisualizer.clear">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.visualization.DataVisualizer.clear">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Limpia la grilla de visualización.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="p">[[</span><span class="s1">&#39; &#39;</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">)]</span></div>
+
+    
+<div class="viewcode-block" id="DataVisualizer.set_bounds">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.visualization.DataVisualizer.set_bounds">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">max_x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">min_y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">max_y</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Establece los límites del mundo a visualizar.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            min_x (float): Límite mínimo en X.</span>
+<span class="sd">            max_x (float): Límite máximo en X.</span>
+<span class="sd">            min_y (float): Límite mínimo en Y.</span>
+<span class="sd">            max_y (float): Límite máximo en Y.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_x</span> <span class="o">=</span> <span class="n">min_x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_x</span> <span class="o">=</span> <span class="n">max_x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_y</span> <span class="o">=</span> <span class="n">min_y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_y</span> <span class="o">=</span> <span class="n">max_y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_x</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">max_x</span> <span class="o">-</span> <span class="n">min_x</span><span class="p">)</span> <span class="k">if</span> <span class="n">max_x</span> <span class="o">&gt;</span> <span class="n">min_x</span> <span class="k">else</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_y</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">max_y</span> <span class="o">-</span> <span class="n">min_y</span><span class="p">)</span> <span class="k">if</span> <span class="n">max_y</span> <span class="o">&gt;</span> <span class="n">min_y</span> <span class="k">else</span> <span class="mi">1</span></div>
+
+    
+<div class="viewcode-block" id="DataVisualizer.world_to_screen">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.visualization.DataVisualizer.world_to_screen">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">world_to_screen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convierte coordenadas del mundo a coordenadas de pantalla.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (float): Coordenada X del mundo.</span>
+<span class="sd">            y (float): Coordenada Y del mundo.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[int, int]: Coordenadas de pantalla (col, row).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;scale_x&#39;</span><span class="p">):</span>
+            <span class="c1"># Usar valores por defecto si no se han establecido límites</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_bounds</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+        
+        <span class="n">screen_x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_x</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_x</span><span class="p">)</span>
+        <span class="n">screen_y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">max_y</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_y</span><span class="p">)</span>  <span class="c1"># Invertir Y</span>
+        
+        <span class="c1"># Asegurar que esté dentro de los límites</span>
+        <span class="n">screen_x</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">screen_x</span><span class="p">))</span>
+        <span class="n">screen_y</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">screen_y</span><span class="p">))</span>
+        
+        <span class="k">return</span> <span class="n">screen_x</span><span class="p">,</span> <span class="n">screen_y</span></div>
+
+    
+<div class="viewcode-block" id="DataVisualizer.draw_point">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.visualization.DataVisualizer.draw_point">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">char</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;*&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Dibuja un punto en las coordenadas del mundo.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (float): Coordenada X.</span>
+<span class="sd">            y (float): Coordenada Y.</span>
+<span class="sd">            char (str): Carácter a dibujar.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">screen_x</span><span class="p">,</span> <span class="n">screen_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">world_to_screen</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="n">screen_y</span><span class="p">][</span><span class="n">screen_x</span><span class="p">]</span> <span class="o">=</span> <span class="n">char</span></div>
+
+    
+<div class="viewcode-block" id="DataVisualizer.draw_robot">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.visualization.DataVisualizer.draw_robot">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw_robot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">char</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;R&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Dibuja un robot con su orientación.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (float): Posición X.</span>
+<span class="sd">            y (float): Posición Y.</span>
+<span class="sd">            theta (float): Orientación en radianes.</span>
+<span class="sd">            char (str): Carácter base para el robot.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+        
+        <span class="c1"># Dibujar el robot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw_point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">char</span><span class="p">)</span>
+        
+        <span class="c1"># Dibujar indicador de dirección</span>
+        <span class="n">front_x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">front_y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw_point</span><span class="p">(</span><span class="n">front_x</span><span class="p">,</span> <span class="n">front_y</span><span class="p">,</span> <span class="s1">&#39;&gt;&#39;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="DataVisualizer.draw_line">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.visualization.DataVisualizer.draw_line">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">char</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Dibuja una línea entre dos puntos.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x1 (float): X inicial.</span>
+<span class="sd">            y1 (float): Y inicial.</span>
+<span class="sd">            x2 (float): X final.</span>
+<span class="sd">            y2 (float): Y final.</span>
+<span class="sd">            char (str): Carácter para la línea.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+        
+        <span class="c1"># Algoritmo de línea simple</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">num_points</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">distance</span> <span class="o">*</span> <span class="mi">20</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Densidad de puntos</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_points</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">i</span> <span class="o">/</span> <span class="n">num_points</span> <span class="k">if</span> <span class="n">num_points</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x1</span> <span class="o">+</span> <span class="n">t</span> <span class="o">*</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">y1</span> <span class="o">+</span> <span class="n">t</span> <span class="o">*</span> <span class="p">(</span><span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">draw_point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">char</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="DataVisualizer.draw_circle">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.visualization.DataVisualizer.draw_circle">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw_circle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">center_x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">center_y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">radius</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">char</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;o&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Dibuja un círculo.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            center_x (float): Centro X.</span>
+<span class="sd">            center_y (float): Centro Y.</span>
+<span class="sd">            radius (float): Radio.</span>
+<span class="sd">            char (str): Carácter para el círculo.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+        
+        <span class="c1"># Dibujar puntos en el perímetro del círculo</span>
+        <span class="n">num_points</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">radius</span> <span class="o">*</span> <span class="mi">10</span><span class="p">),</span> <span class="mi">8</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_points</span><span class="p">):</span>
+            <span class="n">angle</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">i</span> <span class="o">/</span> <span class="n">num_points</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">center_x</span> <span class="o">+</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">center_y</span> <span class="o">+</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">draw_point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">char</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="DataVisualizer.draw_lidar_scan">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.visualization.DataVisualizer.draw_lidar_scan">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw_lidar_scan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot_x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">robot_y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> 
+                       <span class="n">ranges</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">angles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+                       <span class="n">max_range</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Dibuja un escaneo LiDAR.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            robot_x (float): Posición X del robot.</span>
+<span class="sd">            robot_y (float): Posición Y del robot.</span>
+<span class="sd">            ranges (List[float]): Distancias medidas.</span>
+<span class="sd">            angles (List[float]): Ángulos de medición.</span>
+<span class="sd">            max_range (float): Rango máximo del sensor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+        
+        <span class="k">for</span> <span class="n">range_val</span><span class="p">,</span> <span class="n">angle</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ranges</span><span class="p">,</span> <span class="n">angles</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">range_val</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">range_val</span> <span class="o">&lt;</span> <span class="n">max_range</span><span class="p">:</span>
+                <span class="c1"># Punto de obstáculo</span>
+                <span class="n">obs_x</span> <span class="o">=</span> <span class="n">robot_x</span> <span class="o">+</span> <span class="n">range_val</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+                <span class="n">obs_y</span> <span class="o">=</span> <span class="n">robot_y</span> <span class="o">+</span> <span class="n">range_val</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">draw_point</span><span class="p">(</span><span class="n">obs_x</span><span class="p">,</span> <span class="n">obs_y</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="DataVisualizer.draw_path">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.visualization.DataVisualizer.draw_path">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waypoints</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="n">char</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;+&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Dibuja una ruta como serie de waypoints.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            waypoints (List[Tuple[float, float]]): Lista de puntos (x, y).</span>
+<span class="sd">            char (str): Carácter para los waypoints.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">waypoints</span><span class="p">):</span>
+            <span class="c1"># Numerar waypoints si son pocos</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">waypoints</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">10</span><span class="p">:</span>
+                <span class="n">display_char</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">10</span> <span class="k">else</span> <span class="n">char</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">display_char</span> <span class="o">=</span> <span class="n">char</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">draw_point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">display_char</span><span class="p">)</span>
+            
+            <span class="c1"># Conectar con líneas</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">prev_x</span><span class="p">,</span> <span class="n">prev_y</span> <span class="o">=</span> <span class="n">waypoints</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">draw_line</span><span class="p">(</span><span class="n">prev_x</span><span class="p">,</span> <span class="n">prev_y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="DataVisualizer.add_text">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.visualization.DataVisualizer.add_text">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Añade texto en coordenadas de pantalla.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (int): Posición X en caracteres.</span>
+<span class="sd">            y (int): Posición Y en caracteres.</span>
+<span class="sd">            text (str): Texto a mostrar.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">char</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+                <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">char</span></div>
+
+    
+<div class="viewcode-block" id="DataVisualizer.render">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.visualization.DataVisualizer.render">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Renderiza la visualización como string.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: String con la visualización.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1"># Añadir borde superior</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;┌&#39;</span> <span class="o">+</span> <span class="s1">&#39;─&#39;</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">+</span> <span class="s1">&#39;┐&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># Añadir filas con bordes laterales</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="s1">&#39;│&#39;</span> <span class="o">+</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;│&#39;</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        
+        <span class="c1"># Añadir borde inferior</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;└&#39;</span> <span class="o">+</span> <span class="s1">&#39;─&#39;</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">+</span> <span class="s1">&#39;┘&#39;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="DataVisualizer.print_visualization">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.visualization.DataVisualizer.print_visualization">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_visualization</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Imprime la visualización en consola.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">())</span></div>
+
+    
+<div class="viewcode-block" id="DataVisualizer.create_sensor_chart">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.visualization.DataVisualizer.create_sensor_chart">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_sensor_chart</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensor_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span> 
+                          <span class="n">titles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Crea un gráfico simple de barras para datos de sensores.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sensor_data (Dict[str, List[float]]): Diccionario con datos de sensores.</span>
+<span class="sd">            titles (List[str], optional): Títulos para los sensores.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: String con el gráfico.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sensor_data</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;No hay datos de sensores&quot;</span>
+        
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Datos de Sensores:&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;─&quot;</span> <span class="o">*</span> <span class="mi">40</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">sensor_name</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">sensor_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">values</span><span class="p">:</span>
+                <span class="n">avg_val</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+                <span class="n">max_val</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+                <span class="n">min_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+                
+                <span class="c1"># Crear barra simple</span>
+                <span class="n">bar_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">avg_val</span> <span class="o">*</span> <span class="mi">20</span><span class="p">)</span>  <span class="c1"># Escalar a 20 caracteres max</span>
+                <span class="n">bar</span> <span class="o">=</span> <span class="s1">&#39;█&#39;</span> <span class="o">*</span> <span class="n">bar_length</span> <span class="o">+</span> <span class="s1">&#39;░&#39;</span> <span class="o">*</span> <span class="p">(</span><span class="mi">20</span> <span class="o">-</span> <span class="n">bar_length</span><span class="p">)</span>
+                
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sensor_name</span><span class="si">:</span><span class="s2">12</span><span class="si">}</span><span class="s2">: [</span><span class="si">{</span><span class="n">bar</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">avg_val</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;&#39;</span><span class="si">:</span><span class="s2">12</span><span class="si">}</span><span class="s2">  Min: </span><span class="si">{</span><span class="n">min_val</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, Max: </span><span class="si">{</span><span class="n">max_val</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="DataVisualizer.save_to_file">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.visualization.DataVisualizer.save_to_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Guarda la visualización actual a un archivo.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (str): Nombre del archivo.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">())</span>
+        <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error guardando visualización: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="create_simple_map">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.visualization.create_simple_map">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_simple_map</span><span class="p">(</span><span class="n">robot_pos</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> 
+                     <span class="n">obstacles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> 
+                     <span class="n">goal</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="n">bounds</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Crea un mapa simple con robot, obstáculos y objetivo.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        robot_pos (Tuple[float, float]): Posición del robot (x, y).</span>
+<span class="sd">        obstacles (List[Tuple[float, float]]): Lista de obstáculos (x, y).</span>
+<span class="sd">        goal (Tuple[float, float], optional): Posición objetivo opcional (x, y).</span>
+<span class="sd">        bounds (Tuple[float, float, float, float], optional): Límites del mapa (min_x, max_x, min_y, max_y).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: String con el mapa.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">viz</span> <span class="o">=</span> <span class="n">DataVisualizer</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+    <span class="n">viz</span><span class="o">.</span><span class="n">set_bounds</span><span class="p">(</span><span class="o">*</span><span class="n">bounds</span><span class="p">)</span>
+    <span class="c1"># Dibujar robot</span>
+    <span class="n">viz</span><span class="o">.</span><span class="n">draw_robot</span><span class="p">(</span><span class="n">robot_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">robot_pos</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;R&#39;</span><span class="p">)</span>
+    <span class="c1"># Dibujar obstáculos</span>
+    <span class="k">for</span> <span class="n">obs_x</span><span class="p">,</span> <span class="n">obs_y</span> <span class="ow">in</span> <span class="n">obstacles</span><span class="p">:</span>
+        <span class="n">viz</span><span class="o">.</span><span class="n">draw_point</span><span class="p">(</span><span class="n">obs_x</span><span class="p">,</span> <span class="n">obs_y</span><span class="p">,</span> <span class="s1">&#39;#&#39;</span><span class="p">)</span>
+    <span class="c1"># Dibujar objetivo</span>
+    <span class="k">if</span> <span class="n">goal</span><span class="p">:</span>
+        <span class="n">viz</span><span class="o">.</span><span class="n">draw_point</span><span class="p">(</span><span class="n">goal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">goal</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;G&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">viz</span><span class="o">.</span><span class="n">render</span><span class="p">()</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">robot-simur-uo</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">robot_simur_uo</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, amlopez-uniovi.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

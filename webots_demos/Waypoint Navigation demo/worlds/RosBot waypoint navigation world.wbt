@@ -1,0 +1,28 @@
+#VRML_SIM R2023b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/devices/slamtec/protos/RpLidarA2.proto"
+EXTERNPROTO "../../_protos/Rosbot.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation -0.34115181249990534 0.33860422468561135 0.8769051373170791 1.7092126673923598
+  position -0.18876648465963108 -11.202883823500178 10.391625923149421
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 8 8
+  wallHeight 0.4
+}
+Rosbot {
+  translation 0.05790567712977966 -1.7236571989906517 -0.0005625904345572252
+  rotation -1.59678952899982e-05 1.7912984143449935e-05 0.9999999997120758 1.4507234404588811
+  controller "rosbot_waypoint_controller"
+  # lidarSlot eliminado para usar la configuración por defecto del PROTO
+}

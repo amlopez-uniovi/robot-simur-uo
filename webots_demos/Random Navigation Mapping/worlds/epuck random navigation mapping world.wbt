@@ -1,0 +1,36 @@
+#VRML_SIM R2023b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "/Users/antoniolopez/desarrollo_codigo/robotica/robot-simur-uo/webots demos/_protos/E-puck.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation -0.5773502691896257 0.5773502691896257 0.5773502691896257 2.0944
+  position 0 0 10
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 4 4
+}
+Solid {
+  translation 1 1 0
+  children [
+    Shape {
+      geometry DEF obj1 Box {
+        size 0.2 0.2 0.9
+      }
+    }
+  ]
+  boundingObject USE obj1
+}
+E-puck {
+  translation 0.09087994648080304 -4.533304039074514e-12 -6.394637548159943e-05
+  rotation -2.2214572793619666e-07 -0.9999999999955997 2.9582169497791474e-06 0.0012604923481184672
+  controller "epuck_random_navigation_mapping_controller"
+}

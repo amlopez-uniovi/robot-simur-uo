@@ -1,6 +1,11 @@
 """
 Controlador de navegación aleatoria para robots.
 Genera objetivos aleatorios y navega entre ellos mostrando información detallada de sensores.
+
+Ejemplo:
+    >>> ctrl = RandomNavigationController()
+    >>> ctrl.set_target(1.0, 2.0)
+    >>> print(ctrl.current_goal)
 """
 
 import math

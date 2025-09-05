@@ -1,5 +1,7 @@
 """
 Módulo de controladores para robots.
+
+Incluye controladores de navegación, aleatorios, por waypoints, etc.
 """
 
 from .navigation import NavigationController

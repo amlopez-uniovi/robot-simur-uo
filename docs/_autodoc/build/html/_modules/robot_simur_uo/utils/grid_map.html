@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>robot_simur_uo.utils.grid_map &#8212; robot-simur-uo 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for robot_simur_uo.utils.grid_map</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">robot_simur_uo.utils.coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">transform_points</span>
+
+<div class="viewcode-block" id="bresenham">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.grid_map.bresenham">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">bresenham</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Algoritmo de Bresenham para trazar una línea entre dos puntos.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        start (tuple): Coordenadas iniciales (x, y).</span>
+<span class="sd">        end (tuple): Coordenadas finales (x, y).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: Lista de tuplas (x, y) que representan los puntos de la línea.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">start</span>
+    <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">end</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span>
+    <span class="n">dy</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span>
+    <span class="n">sx</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">x1</span> <span class="o">&lt;</span> <span class="n">x2</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">sy</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">y1</span> <span class="o">&lt;</span> <span class="n">y2</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">if</span> <span class="n">dx</span> <span class="o">&gt;</span> <span class="n">dy</span><span class="p">:</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="n">dx</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="k">while</span> <span class="n">x1</span> <span class="o">!=</span> <span class="n">x2</span><span class="p">:</span>
+            <span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">))</span>
+            <span class="n">err</span> <span class="o">-=</span> <span class="n">dy</span>
+            <span class="k">if</span> <span class="n">err</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">y1</span> <span class="o">+=</span> <span class="n">sy</span>
+                <span class="n">err</span> <span class="o">+=</span> <span class="n">dx</span>
+            <span class="n">x1</span> <span class="o">+=</span> <span class="n">sx</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="n">dy</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="k">while</span> <span class="n">y1</span> <span class="o">!=</span> <span class="n">y2</span><span class="p">:</span>
+            <span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">))</span>
+            <span class="n">err</span> <span class="o">-=</span> <span class="n">dx</span>
+            <span class="k">if</span> <span class="n">err</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">x1</span> <span class="o">+=</span> <span class="n">sx</span>
+                <span class="n">err</span> <span class="o">+=</span> <span class="n">dy</span>
+            <span class="n">y1</span> <span class="o">+=</span> <span class="n">sy</span>
+    <span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">points</span></div>
+
+
+<div class="viewcode-block" id="GridMap">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.grid_map.GridMap">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GridMap</span><span class="p">:</span>
+
+        
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bottom_left</span><span class="p">,</span> <span class="n">top_right</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">empty_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inicializa el mapa de rejilla.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bottom_left (tuple): (x, y) esquina inferior izquierda (metros).</span>
+<span class="sd">            top_right (tuple): (x, y) esquina superior derecha (metros).</span>
+<span class="sd">            resolution (float): Tamaño de celda en metros.</span>
+<span class="sd">            empty_value (float, opcional): Valor inicial de las celdas. Por defecto 0.0.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bottom_left</span> <span class="o">=</span> <span class="n">bottom_left</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_right</span> <span class="o">=</span> <span class="n">top_right</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">=</span> <span class="n">resolution</span>
+        <span class="c1"># Calcular dimensiones del mapa (redondeo superior)</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">top_right</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">bottom_left</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="n">top_right</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">bottom_left</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">width</span> <span class="o">/</span> <span class="n">resolution</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">height</span> <span class="o">/</span> <span class="n">resolution</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">empty_value</span> <span class="o">=</span> <span class="n">empty_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">empty_value</span>
+
+
+<div class="viewcode-block" id="GridMap.reset">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.grid_map.GridMap.reset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Restaura el mapa a su valor vacío.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">empty_value</span></div>
+
+
+<div class="viewcode-block" id="GridMap.world_to_map">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.grid_map.GridMap.world_to_map">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">world_to_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convierte coordenadas físicas (x, y) a índices de celda (fila, columna).</span>
+
+<span class="sd">        La columna crece hacia la derecha, la fila crece hacia arriba (fila 0 = parte inferior).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (float): Coordenada X en metros.</span>
+<span class="sd">            y (float): Coordenada Y en metros.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: (fila, columna) de la celda correspondiente.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom_left</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">))</span>
+        <span class="c1"># Fila invertida: la fila 0 es la parte inferior (mínimo y)</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom_left</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">))</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span></div>
+
+
+<div class="viewcode-block" id="GridMap.map_to_world">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.grid_map.GridMap.map_to_world">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">map_to_world</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convierte índices de celda (fila, columna) a coordenadas físicas (x, y) del centro de la celda.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            row (int): Índice de fila.</span>
+<span class="sd">            col (int): Índice de columna.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: Coordenadas (x, y) del centro de la celda.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom_left</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">col</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom_left</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">row</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span></div>
+
+
+<div class="viewcode-block" id="GridMap.set_cell">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.grid_map.GridMap.set_cell">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">world_coordinates</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Marca una celda en el mapa.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (float|int): Coordenada X o índice de fila.</span>
+<span class="sd">            y (float|int): Coordenada Y o índice de columna.</span>
+<span class="sd">            value (float|int): Valor a asignar a la celda.</span>
+<span class="sd">            world_coordinates (bool): Si True, usa coordenadas físicas; si False, índices de celda.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">world_coordinates</span><span class="p">:</span>
+            <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">world_to_map</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
+            <span class="n">col</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="GridMap.get_cell">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.grid_map.GridMap.get_cell">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">world_coordinates</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Obtiene el valor de una celda.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (float|int): Coordenada X o índice de fila.</span>
+<span class="sd">            y (float|int): Coordenada Y o índice de columna.</span>
+<span class="sd">            world_coordinates (bool): Si True, usa coordenadas físicas; si False, índices de celda.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float|int: Valor de la celda.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">world_coordinates</span><span class="p">:</span>
+            <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">world_to_map</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
+            <span class="n">col</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Representación en string del objeto GridMap.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;GridMap(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="si">}</span><span class="s2">, res=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="si">}</span><span class="s2">, bottom_left=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bottom_left</span><span class="si">}</span><span class="s2">, top_right=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">top_right</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+<div class="viewcode-block" id="GridMap.visualize">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.grid_map.GridMap.visualize">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">visualize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Visualiza la matriz como un mapa de grises, con correspondencia física correcta.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cmap (str): Mapa de colores de matplotlib.</span>
+<span class="sd">            fig (matplotlib.figure.Figure, opcional): Figura sobre la que dibujar.</span>
+<span class="sd">            block (bool): Si True, plt.show() es bloqueante.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            matplotlib.figure.Figure: Figura utilizada para la visualización.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+        <span class="k">if</span> <span class="n">fig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+        <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;upper&#39;</span><span class="p">,</span>
+                       <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bottom_left</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_right</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom_left</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_right</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;X (m)&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Y (m)&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;GridMap (mapa de grises)&#39;</span><span class="p">)</span>
+        <span class="c1">#fig.colorbar(im, ax=ax, label=&#39;Valor celda&#39;)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">pause</span><span class="p">(</span><span class="mf">0.001</span><span class="p">)</span>  <span class="c1"># Pequeña pausa para actualizar la figura</span>
+        <span class="k">return</span> <span class="n">fig</span></div>
+
+    
+<div class="viewcode-block" id="GridMap.get_occupied_free_cells_from_pose_obstacles">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.grid_map.GridMap.get_occupied_free_cells_from_pose_obstacles">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_occupied_free_cells_from_pose_obstacles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pose</span><span class="p">,</span> <span class="n">obstacle_points</span><span class="p">,</span> <span class="n">free_points</span><span class="p">,</span> <span class="n">points_in_robot_frame</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calcula celdas ocupadas y libres a partir de la pose y los puntos detectados.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pose (tuple): Pose del robot (x, y, theta).</span>
+<span class="sd">            obstacle_points (list): Lista de puntos (x, y) de obstáculos.</span>
+<span class="sd">            free_points (list): Lista de puntos (x, y) libres.</span>
+<span class="sd">            points_in_robot_frame (bool): Si True, transforma los puntos al marco global.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: (occupied, free) listas de celdas ocupadas y libres.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Transformar puntos si es necesario</span>
+        <span class="k">if</span> <span class="n">points_in_robot_frame</span><span class="p">:</span>
+            <span class="n">obstacle_points</span> <span class="o">=</span> <span class="n">transform_points</span><span class="p">(</span><span class="n">obstacle_points</span><span class="p">,</span> <span class="n">pose</span><span class="p">)</span>
+            <span class="n">free_points</span> <span class="o">=</span> <span class="n">transform_points</span><span class="p">(</span><span class="n">free_points</span><span class="p">,</span> <span class="n">pose</span><span class="p">)</span>
+
+        <span class="c1"># Obtener celda del robot</span>
+        <span class="n">pose_row</span><span class="p">,</span> <span class="n">pose_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">world_to_map</span><span class="p">(</span><span class="n">pose</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pose</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">occupied_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">free_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="c1"># Marcar celdas ocupadas y los rayos hasta ellas</span>
+        <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">obstacle_points</span><span class="p">:</span>
+            <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">world_to_map</span><span class="p">(</span><span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">occupied_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">bresenham</span><span class="p">((</span><span class="n">pose_row</span><span class="p">,</span> <span class="n">pose_col</span><span class="p">),</span> <span class="n">cell</span><span class="p">):</span>
+                <span class="n">free_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+
+        <span class="c1"># Marcar celdas libres recorridas por rayos sin obstáculo</span>
+        <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">free_points</span><span class="p">:</span>
+            <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">world_to_map</span><span class="p">(</span><span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">bresenham</span><span class="p">((</span><span class="n">pose_row</span><span class="p">,</span> <span class="n">pose_col</span><span class="p">),</span> <span class="n">cell</span><span class="p">):</span>
+                <span class="n">free_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+
+        <span class="c1"># Las celdas ocupadas no son libres</span>
+        <span class="n">free</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">free_set</span> <span class="o">-</span> <span class="n">occupied_set</span><span class="p">)</span>
+        <span class="n">occupied</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">occupied_set</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">occupied</span><span class="p">,</span> <span class="n">free</span></div>
+</div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Ejemplo de uso</span>
+    <span class="n">bottom_left</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.0</span><span class="p">)</span>
+    <span class="n">top_right</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">)</span>
+    <span class="n">resolution</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">GridMap</span><span class="p">(</span><span class="n">bottom_left</span><span class="p">,</span> <span class="n">top_right</span><span class="p">,</span> <span class="n">resolution</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
+    <span class="c1"># Recorrer todas las celdas y visualizar cada centro</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+    <span class="c1"># Recorrer todas las celdas y visualizar cada centro</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
+            <span class="n">grid</span><span class="o">.</span><span class="n">grid</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">map_to_world</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span>
+            <span class="n">grid</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;upper&#39;</span><span class="p">,</span>
+                       <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="n">grid</span><span class="o">.</span><span class="n">bottom_left</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">grid</span><span class="o">.</span><span class="n">top_right</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">grid</span><span class="o">.</span><span class="n">bottom_left</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">grid</span><span class="o">.</span><span class="n">top_right</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;X (m)&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Y (m)&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Celda activa: centro=(</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">y</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Valor celda&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">pause</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+
+    <span class="c1"># Recorrer coordenadas del mundo con paso &#39;step&#39;</span>
+    <span class="n">step</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># Puedes ajustar el paso aquí</span>
+    <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">bottom_left</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">grid</span><span class="o">.</span><span class="n">top_right</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">bottom_left</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">grid</span><span class="o">.</span><span class="n">top_right</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">x_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+    <span class="n">y_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">x_vals</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">y_vals</span><span class="p">:</span>
+            <span class="n">grid</span><span class="o">.</span><span class="n">grid</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">world_to_map</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="n">grid</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;upper&#39;</span><span class="p">,</span>
+                       <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="n">grid</span><span class="o">.</span><span class="n">bottom_left</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">grid</span><span class="o">.</span><span class="n">top_right</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">grid</span><span class="o">.</span><span class="n">bottom_left</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">grid</span><span class="o">.</span><span class="n">top_right</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;X (m)&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Y (m)&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Coordenada activa: (</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">y</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Valor celda&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">pause</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">robot-simur-uo</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">robot_simur_uo</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, amlopez-uniovi.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

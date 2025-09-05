@@ -1,38 +1,48 @@
 """
 Herramientas de visualización para datos de robots.
+
+Ejemplo:
+    >>> viz = DataVisualizer(60, 20)
+    >>> viz.set_bounds(-5, 5, -5, 5)
+    >>> viz.draw_point(0, 0, '*')
+    >>> print(viz.render())
 """
 
 from typing import List, Tuple, Dict, Any, Optional
 
 
 class DataVisualizer:
-    """Clase para visualizar datos de robots (versión simplificada para consola)."""
+    """
+    Clase para visualizar datos de robots (versión simplificada para consola).
+    """
     
     def __init__(self, width: int = 80, height: int = 24):
         """
         Inicializa el visualizador.
-        
+
         Args:
-            width: Ancho del área de visualización en caracteres
-            height: Alto del área de visualización en caracteres
+            width (int): Ancho del área de visualización en caracteres.
+            height (int): Alto del área de visualización en caracteres.
         """
         self.width = width
         self.height = height
         self.grid = [[' ' for _ in range(width)] for _ in range(height)]
     
     def clear(self):
-        """Limpia la grilla de visualización."""
+        """
+        Limpia la grilla de visualización.
+        """
         self.grid = [[' ' for _ in range(self.width)] for _ in range(self.height)]
     
     def set_bounds(self, min_x: float, max_x: float, min_y: float, max_y: float):
         """
         Establece los límites del mundo a visualizar.
-        
+
         Args:
-            min_x: Límite mínimo en X
-            max_x: Límite máximo en X
-            min_y: Límite mínimo en Y
-            max_y: Límite máximo en Y
+            min_x (float): Límite mínimo en X.
+            max_x (float): Límite máximo en X.
+            min_y (float): Límite mínimo en Y.
+            max_y (float): Límite máximo en Y.
         """
         self.min_x = min_x
         self.max_x = max_x
@@ -44,13 +54,13 @@ class DataVisualizer:
     def world_to_screen(self, x: float, y: float) -> Tuple[int, int]:
         """
         Convierte coordenadas del mundo a coordenadas de pantalla.
-        
+
         Args:
-            x: Coordenada X del mundo
-            y: Coordenada Y del mundo
-            
+            x (float): Coordenada X del mundo.
+            y (float): Coordenada Y del mundo.
+
         Returns:
-            Coordenadas de pantalla (col, row)
+            Tuple[int, int]: Coordenadas de pantalla (col, row).
         """
         if not hasattr(self, 'scale_x'):
             # Usar valores por defecto si no se han establecido límites
@@ -68,11 +78,11 @@ class DataVisualizer:
     def draw_point(self, x: float, y: float, char: str = '*'):
         """
         Dibuja un punto en las coordenadas del mundo.
-        
+
         Args:
-            x: Coordenada X
-            y: Coordenada Y
-            char: Carácter a dibujar
+            x (float): Coordenada X.
+            y (float): Coordenada Y.
+            char (str): Carácter a dibujar.
         """
         screen_x, screen_y = self.world_to_screen(x, y)
         self.grid[screen_y][screen_x] = char
@@ -80,12 +90,12 @@ class DataVisualizer:
     def draw_robot(self, x: float, y: float, theta: float, char: str = 'R'):
         """
         Dibuja un robot con su orientación.
-        
+
         Args:
-            x: Posición X
-            y: Posición Y
-            theta: Orientación en radianes
-            char: Carácter base para el robot
+            x (float): Posición X.
+            y (float): Posición Y.
+            theta (float): Orientación en radianes.
+            char (str): Carácter base para el robot.
         """
         import math
         
@@ -100,11 +110,13 @@ class DataVisualizer:
     def draw_line(self, x1: float, y1: float, x2: float, y2: float, char: str = '-'):
         """
         Dibuja una línea entre dos puntos.
-        
+
         Args:
-            x1, y1: Punto inicial
-            x2, y2: Punto final
-            char: Carácter para la línea
+            x1 (float): X inicial.
+            y1 (float): Y inicial.
+            x2 (float): X final.
+            y2 (float): Y final.
+            char (str): Carácter para la línea.
         """
         import math
         
@@ -121,12 +133,12 @@ class DataVisualizer:
     def draw_circle(self, center_x: float, center_y: float, radius: float, char: str = 'o'):
         """
         Dibuja un círculo.
-        
+
         Args:
-            center_x: Centro X
-            center_y: Centro Y
-            radius: Radio
-            char: Carácter para el círculo
+            center_x (float): Centro X.
+            center_y (float): Centro Y.
+            radius (float): Radio.
+            char (str): Carácter para el círculo.
         """
         import math
         
@@ -144,13 +156,13 @@ class DataVisualizer:
                        max_range: float = 5.0):
         """
         Dibuja un escaneo LiDAR.
-        
+
         Args:
-            robot_x: Posición X del robot
-            robot_y: Posición Y del robot
-            ranges: Distancias medidas
-            angles: Ángulos de medición
-            max_range: Rango máximo del sensor
+            robot_x (float): Posición X del robot.
+            robot_y (float): Posición Y del robot.
+            ranges (List[float]): Distancias medidas.
+            angles (List[float]): Ángulos de medición.
+            max_range (float): Rango máximo del sensor.
         """
         import math
         
@@ -164,10 +176,10 @@ class DataVisualizer:
     def draw_path(self, waypoints: List[Tuple[float, float]], char: str = '+'):
         """
         Dibuja una ruta como serie de waypoints.
-        
+
         Args:
-            waypoints: Lista de puntos (x, y)
-            char: Carácter para los waypoints
+            waypoints (List[Tuple[float, float]]): Lista de puntos (x, y).
+            char (str): Carácter para los waypoints.
         """
         for i, (x, y) in enumerate(waypoints):
             # Numerar waypoints si son pocos
@@ -185,11 +197,11 @@ class DataVisualizer:
     def add_text(self, x: int, y: int, text: str):
         """
         Añade texto en coordenadas de pantalla.
-        
+
         Args:
-            x: Posición X en caracteres
-            y: Posición Y en caracteres
-            text: Texto a mostrar
+            x (int): Posición X en caracteres.
+            y (int): Posición Y en caracteres.
+            text (str): Texto a mostrar.
         """
         if 0 <= y < self.height:
             for i, char in enumerate(text):
@@ -199,9 +211,9 @@ class DataVisualizer:
     def render(self) -> str:
         """
         Renderiza la visualización como string.
-        
+
         Returns:
-            String con la visualización
+            str: String con la visualización.
         """
         lines = []
         
@@ -219,20 +231,22 @@ class DataVisualizer:
         return '\n'.join(lines)
     
     def print_visualization(self):
-        """Imprime la visualización en consola."""
+        """
+        Imprime la visualización en consola.
+        """
         print(self.render())
     
     def create_sensor_chart(self, sensor_data: Dict[str, List[float]], 
                           titles: List[str] = None) -> str:
         """
         Crea un gráfico simple de barras para datos de sensores.
-        
+
         Args:
-            sensor_data: Diccionario con datos de sensores
-            titles: Títulos para los sensores
-            
+            sensor_data (Dict[str, List[float]]): Diccionario con datos de sensores.
+            titles (List[str], optional): Títulos para los sensores.
+
         Returns:
-            String con el gráfico
+            str: String con el gráfico.
         """
         if not sensor_data:
             return "No hay datos de sensores"
@@ -259,9 +273,9 @@ class DataVisualizer:
     def save_to_file(self, filename: str):
         """
         Guarda la visualización actual a un archivo.
-        
+
         Args:
-            filename: Nombre del archivo
+            filename (str): Nombre del archivo.
         """
         try:
             with open(filename, 'w', encoding='utf-8') as f:
@@ -276,28 +290,24 @@ def create_simple_map(robot_pos: Tuple[float, float],
                      bounds: Tuple[float, float, float, float] = (-5, 5, -5, 5)) -> str:
     """
     Crea un mapa simple con robot, obstáculos y objetivo.
-    
+
     Args:
-        robot_pos: Posición del robot (x, y)
-        obstacles: Lista de obstáculos (x, y)
-        goal: Posición objetivo opcional (x, y)
-        bounds: Límites del mapa (min_x, max_x, min_y, max_y)
-        
+        robot_pos (Tuple[float, float]): Posición del robot (x, y).
+        obstacles (List[Tuple[float, float]]): Lista de obstáculos (x, y).
+        goal (Tuple[float, float], optional): Posición objetivo opcional (x, y).
+        bounds (Tuple[float, float, float, float], optional): Límites del mapa (min_x, max_x, min_y, max_y).
+
     Returns:
-        String con el mapa
+        str: String con el mapa.
     """
     viz = DataVisualizer(60, 20)
     viz.set_bounds(*bounds)
-    
     # Dibujar robot
     viz.draw_robot(robot_pos[0], robot_pos[1], 0, 'R')
-    
     # Dibujar obstáculos
     for obs_x, obs_y in obstacles:
         viz.draw_point(obs_x, obs_y, '#')
-    
     # Dibujar objetivo
     if goal:
         viz.draw_point(goal[0], goal[1], 'G')
-    
     return viz.render()

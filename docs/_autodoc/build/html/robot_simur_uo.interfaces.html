@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>robot_simur_uo.interfaces package &#8212; robot-simur-uo 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="robot_simur_uo.utils package" href="robot_simur_uo.utils.html" />
+    <link rel="prev" title="robot_simur_uo.controllers package" href="robot_simur_uo.controllers.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-robot_simur_uo.interfaces">
+<span id="robot-simur-uo-interfaces-package"></span><h1>robot_simur_uo.interfaces package<a class="headerlink" href="#module-robot_simur_uo.interfaces" title="Link to this heading">¶</a></h1>
+<p>Módulo de interfaces para robots.</p>
+<p>Incluye interfaces base, diferencial y Ackermann.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.IAckermannRobot">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robot_simur_uo.interfaces.</span></span><span class="sig-name descname"><span class="pre">IAckermannRobot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_steering_angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/iackermann_robot.html#IAckermannRobot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.IAckermannRobot" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robot_simur_uo.interfaces.irobot_base.IRobotBase" title="robot_simur_uo.interfaces.irobot_base.IRobotBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">IRobotBase</span></code></a></p>
+<p>Interfaz específica para robots con dirección tipo Ackermann.</p>
+<dl class="simple">
+<dt>Los robots Ackermann tienen una diferencia conceptual importante:</dt><dd><ul class="simple">
+<li><p>NavigationController devuelve steering_speed (rad/s)</p></li>
+<li><p>Robots Ackermann usan steering_angle (rad) para las ruedas directrices</p></li>
+</ul>
+</dd>
+</dl>
+<p>Esta clase maneja la conversión entre steering_speed y steering_angle,
+y proporciona métodos específicos para robots Ackermann.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.IAckermannRobot.set_drive_command">
+<span class="sig-name descname"><span class="pre">set_drive_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steering_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/iackermann_robot.html#IAckermannRobot.set_drive_command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.IAckermannRobot.set_drive_command" title="Link to this definition">¶</a></dt>
+<dd><p>Interfaz unificada que convierte steering_speed a steering_angle internamente.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>forward_speed</strong> – Velocidad lineal (m/s)</p></li>
+<li><p><strong>steering_speed</strong> – Velocidad de dirección (rad/s) - se convierte a ángulo</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.IAckermannRobot.set_motor_velocities">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_motor_velocities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steering_angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/iackermann_robot.html#IAckermannRobot.set_motor_velocities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.IAckermannRobot.set_motor_velocities" title="Link to this definition">¶</a></dt>
+<dd><p>Método abstracto: debe ser implementado por cada robot concreto para aplicar físicamente las velocidades a los motores.
+:param forward_speed: Velocidad de avance (m/s)
+:param steering_angle: Ángulo de dirección (rad)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.IDifferentialRobot">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robot_simur_uo.interfaces.</span></span><span class="sig-name descname"><span class="pre">IDifferentialRobot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wheel_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0205</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wheel_base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.117</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/idifferential_robot.html#IDifferentialRobot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.IDifferentialRobot" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robot_simur_uo.interfaces.irobot_base.IRobotBase" title="robot_simur_uo.interfaces.irobot_base.IRobotBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">IRobotBase</span></code></a></p>
+<p>Interfaz específica para robots de tracción diferencial.</p>
+<dl class="simple">
+<dt>Los robots diferenciales usan la interfaz estándar:</dt><dd><ul class="simple">
+<li><p>set_drive_command(drive_speed, steering_speed) - Comando unificado principal</p></li>
+<li><p>set_forward_speed() / get_forward_speed() - Velocidad lineal (mantiene velocidad de dirección)</p></li>
+<li><p>set_steering_speed() / get_steering_speed() - Velocidad de dirección (mantiene velocidad lineal)</p></li>
+</ul>
+</dd>
+</dl>
+<p>La implementación convierte internamente estas a velocidades de motores.</p>
+<p>Métodos adicionales para acceso directo a motores (opcional).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.IDifferentialRobot.set_drive_command">
+<span class="sig-name descname"><span class="pre">set_drive_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steering_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/idifferential_robot.html#IDifferentialRobot.set_drive_command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.IDifferentialRobot.set_drive_command" title="Link to this definition">¶</a></dt>
+<dd><p>Establece velocidad de avance y dirección simultáneamente (interfaz principal).
+Convierte a velocidades diferenciales optimizadas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>forward_speed</strong> – Velocidad lineal en m/s</p></li>
+<li><p><strong>steering_speed</strong> – Velocidad de dirección en rad/s</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.IDifferentialRobot.set_motor_velocities">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_motor_velocities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">left_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/idifferential_robot.html#IDifferentialRobot.set_motor_velocities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.IDifferentialRobot.set_motor_velocities" title="Link to this definition">¶</a></dt>
+<dd><p>Método abstracto: debe ser implementado por cada robot concreto para aplicar físicamente las velocidades a los motores.
+:param left_speed: Velocidad del motor izquierdo (rad/s)
+:param right_speed: Velocidad del motor derecho (rad/s)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.IDifferentialRobot.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/idifferential_robot.html#IDifferentialRobot.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.IDifferentialRobot.stop" title="Link to this definition">¶</a></dt>
+<dd><p>Detiene el robot (sobrescribe para incluir motores específicos).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.IRobotBase">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robot_simur_uo.interfaces.</span></span><span class="sig-name descname"><span class="pre">IRobotBase</span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/irobot_base.html#IRobotBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.IRobotBase" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Interfaz base para todos los robots.</p>
+<p>Define los métodos comunes que deben implementar todas las clases de robot
+independientemente de su tipo de locomoción.</p>
+<p>Implementa directamente la gestión de pose que es común para todos los robots.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.IRobotBase.cleanup">
+<span class="sig-name descname"><span class="pre">cleanup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/irobot_base.html#IRobotBase.cleanup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.IRobotBase.cleanup" title="Link to this definition">¶</a></dt>
+<dd><p>Limpieza del robot.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.IRobotBase.get_pose">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_pose</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="robot_simur_uo.utils.html#robot_simur_uo.utils.coordinates.RobotPose" title="robot_simur_uo.utils.coordinates.RobotPose"><span class="pre">RobotPose</span></a></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/irobot_base.html#IRobotBase.get_pose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.IRobotBase.get_pose" title="Link to this definition">¶</a></dt>
+<dd><p>Obtiene la pose actual del robot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Pose actual del robot</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.IRobotBase.log_devices">
+<span class="sig-name descname"><span class="pre">log_devices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to_terminal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/irobot_base.html#IRobotBase.log_devices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.IRobotBase.log_devices" title="Link to this definition">¶</a></dt>
+<dd><p>Registra información de dispositivos del robot.</p>
+<p>Las subclases deben sobrescribir este método para generar información específica
+y almacenarla en self.log_message, luego llamar a este método base para manejar
+la salida a terminal y archivo.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>to_terminal</strong> – Si True, imprime a la terminal</p></li>
+<li><p><strong>to_file</strong> – Si se especifica, escribe al archivo indicado</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.IRobotBase.set_drive_command">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_drive_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steering_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/irobot_base.html#IRobotBase.set_drive_command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.IRobotBase.set_drive_command" title="Link to this definition">¶</a></dt>
+<dd><p>Establece la velocidad de avance y dirección simultáneamente (interfaz principal).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>forward_speed</strong> – Velocidad lineal (m/s)</p></li>
+<li><p><strong>steering_speed</strong> – Velocidad de dirección (rad/s)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.IRobotBase.step">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/irobot_base.html#IRobotBase.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.IRobotBase.step" title="Link to this definition">¶</a></dt>
+<dd><p>Ejecuta un paso de simulación.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dt</strong> – Paso de tiempo en segundos</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.IRobotBase.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/irobot_base.html#IRobotBase.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.IRobotBase.stop" title="Link to this definition">¶</a></dt>
+<dd><p>Detiene el robot.</p>
+</dd></dl>
+
+</dd></dl>
+
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-robot_simur_uo.interfaces.iackermann_robot">
+<span id="robot-simur-uo-interfaces-iackermann-robot-module"></span><h2>robot_simur_uo.interfaces.iackermann_robot module<a class="headerlink" href="#module-robot_simur_uo.interfaces.iackermann_robot" title="Link to this heading">¶</a></h2>
+<p>Interfaz específica para robots con dirección tipo Ackermann.</p>
+<p>Maneja la conversión entre steering_speed (usado por controladores)
+y steering_angle (usado por la cinemática Ackermann).</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.iackermann_robot.IAckermannRobot">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robot_simur_uo.interfaces.iackermann_robot.</span></span><span class="sig-name descname"><span class="pre">IAckermannRobot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_steering_angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/iackermann_robot.html#IAckermannRobot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.iackermann_robot.IAckermannRobot" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robot_simur_uo.interfaces.irobot_base.IRobotBase" title="robot_simur_uo.interfaces.irobot_base.IRobotBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">IRobotBase</span></code></a></p>
+<p>Interfaz específica para robots con dirección tipo Ackermann.</p>
+<dl class="simple">
+<dt>Los robots Ackermann tienen una diferencia conceptual importante:</dt><dd><ul class="simple">
+<li><p>NavigationController devuelve steering_speed (rad/s)</p></li>
+<li><p>Robots Ackermann usan steering_angle (rad) para las ruedas directrices</p></li>
+</ul>
+</dd>
+</dl>
+<p>Esta clase maneja la conversión entre steering_speed y steering_angle,
+y proporciona métodos específicos para robots Ackermann.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.iackermann_robot.IAckermannRobot.set_drive_command">
+<span class="sig-name descname"><span class="pre">set_drive_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steering_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/iackermann_robot.html#IAckermannRobot.set_drive_command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.iackermann_robot.IAckermannRobot.set_drive_command" title="Link to this definition">¶</a></dt>
+<dd><p>Interfaz unificada que convierte steering_speed a steering_angle internamente.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>forward_speed</strong> – Velocidad lineal (m/s)</p></li>
+<li><p><strong>steering_speed</strong> – Velocidad de dirección (rad/s) - se convierte a ángulo</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.iackermann_robot.IAckermannRobot.set_motor_velocities">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_motor_velocities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steering_angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/iackermann_robot.html#IAckermannRobot.set_motor_velocities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.iackermann_robot.IAckermannRobot.set_motor_velocities" title="Link to this definition">¶</a></dt>
+<dd><p>Método abstracto: debe ser implementado por cada robot concreto para aplicar físicamente las velocidades a los motores.
+:param forward_speed: Velocidad de avance (m/s)
+:param steering_angle: Ángulo de dirección (rad)</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robot_simur_uo.interfaces.idifferential_robot">
+<span id="robot-simur-uo-interfaces-idifferential-robot-module"></span><h2>robot_simur_uo.interfaces.idifferential_robot module<a class="headerlink" href="#module-robot_simur_uo.interfaces.idifferential_robot" title="Link to this heading">¶</a></h2>
+<p>Interfaz específica para robots de tracción diferencial.</p>
+<p>Define la interfaz y métodos comunes para robots diferenciales.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.idifferential_robot.IDifferentialRobot">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robot_simur_uo.interfaces.idifferential_robot.</span></span><span class="sig-name descname"><span class="pre">IDifferentialRobot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wheel_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0205</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wheel_base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.117</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/idifferential_robot.html#IDifferentialRobot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.idifferential_robot.IDifferentialRobot" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robot_simur_uo.interfaces.irobot_base.IRobotBase" title="robot_simur_uo.interfaces.irobot_base.IRobotBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">IRobotBase</span></code></a></p>
+<p>Interfaz específica para robots de tracción diferencial.</p>
+<dl class="simple">
+<dt>Los robots diferenciales usan la interfaz estándar:</dt><dd><ul class="simple">
+<li><p>set_drive_command(drive_speed, steering_speed) - Comando unificado principal</p></li>
+<li><p>set_forward_speed() / get_forward_speed() - Velocidad lineal (mantiene velocidad de dirección)</p></li>
+<li><p>set_steering_speed() / get_steering_speed() - Velocidad de dirección (mantiene velocidad lineal)</p></li>
+</ul>
+</dd>
+</dl>
+<p>La implementación convierte internamente estas a velocidades de motores.</p>
+<p>Métodos adicionales para acceso directo a motores (opcional).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.idifferential_robot.IDifferentialRobot.set_drive_command">
+<span class="sig-name descname"><span class="pre">set_drive_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steering_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/idifferential_robot.html#IDifferentialRobot.set_drive_command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.idifferential_robot.IDifferentialRobot.set_drive_command" title="Link to this definition">¶</a></dt>
+<dd><p>Establece velocidad de avance y dirección simultáneamente (interfaz principal).
+Convierte a velocidades diferenciales optimizadas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>forward_speed</strong> – Velocidad lineal en m/s</p></li>
+<li><p><strong>steering_speed</strong> – Velocidad de dirección en rad/s</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.idifferential_robot.IDifferentialRobot.set_motor_velocities">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_motor_velocities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">left_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/idifferential_robot.html#IDifferentialRobot.set_motor_velocities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.idifferential_robot.IDifferentialRobot.set_motor_velocities" title="Link to this definition">¶</a></dt>
+<dd><p>Método abstracto: debe ser implementado por cada robot concreto para aplicar físicamente las velocidades a los motores.
+:param left_speed: Velocidad del motor izquierdo (rad/s)
+:param right_speed: Velocidad del motor derecho (rad/s)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.idifferential_robot.IDifferentialRobot.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/idifferential_robot.html#IDifferentialRobot.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.idifferential_robot.IDifferentialRobot.stop" title="Link to this definition">¶</a></dt>
+<dd><p>Detiene el robot (sobrescribe para incluir motores específicos).</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robot_simur_uo.interfaces.irobot_base">
+<span id="robot-simur-uo-interfaces-irobot-base-module"></span><h2>robot_simur_uo.interfaces.irobot_base module<a class="headerlink" href="#module-robot_simur_uo.interfaces.irobot_base" title="Link to this heading">¶</a></h2>
+<p>Interfaz base para todos los tipos de robots.</p>
+<p>Define los métodos comunes que deben implementar todas las clases de robot.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.irobot_base.IRobotBase">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robot_simur_uo.interfaces.irobot_base.</span></span><span class="sig-name descname"><span class="pre">IRobotBase</span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/irobot_base.html#IRobotBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.irobot_base.IRobotBase" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Interfaz base para todos los robots.</p>
+<p>Define los métodos comunes que deben implementar todas las clases de robot
+independientemente de su tipo de locomoción.</p>
+<p>Implementa directamente la gestión de pose que es común para todos los robots.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.irobot_base.IRobotBase.cleanup">
+<span class="sig-name descname"><span class="pre">cleanup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/irobot_base.html#IRobotBase.cleanup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.irobot_base.IRobotBase.cleanup" title="Link to this definition">¶</a></dt>
+<dd><p>Limpieza del robot.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.irobot_base.IRobotBase.get_pose">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_pose</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="robot_simur_uo.utils.html#robot_simur_uo.utils.coordinates.RobotPose" title="robot_simur_uo.utils.coordinates.RobotPose"><span class="pre">RobotPose</span></a></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/irobot_base.html#IRobotBase.get_pose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.irobot_base.IRobotBase.get_pose" title="Link to this definition">¶</a></dt>
+<dd><p>Obtiene la pose actual del robot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Pose actual del robot</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.irobot_base.IRobotBase.log_devices">
+<span class="sig-name descname"><span class="pre">log_devices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to_terminal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/irobot_base.html#IRobotBase.log_devices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.irobot_base.IRobotBase.log_devices" title="Link to this definition">¶</a></dt>
+<dd><p>Registra información de dispositivos del robot.</p>
+<p>Las subclases deben sobrescribir este método para generar información específica
+y almacenarla en self.log_message, luego llamar a este método base para manejar
+la salida a terminal y archivo.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>to_terminal</strong> – Si True, imprime a la terminal</p></li>
+<li><p><strong>to_file</strong> – Si se especifica, escribe al archivo indicado</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.irobot_base.IRobotBase.set_drive_command">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_drive_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steering_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/irobot_base.html#IRobotBase.set_drive_command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.irobot_base.IRobotBase.set_drive_command" title="Link to this definition">¶</a></dt>
+<dd><p>Establece la velocidad de avance y dirección simultáneamente (interfaz principal).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>forward_speed</strong> – Velocidad lineal (m/s)</p></li>
+<li><p><strong>steering_speed</strong> – Velocidad de dirección (rad/s)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.irobot_base.IRobotBase.step">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/irobot_base.html#IRobotBase.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.irobot_base.IRobotBase.step" title="Link to this definition">¶</a></dt>
+<dd><p>Ejecuta un paso de simulación.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dt</strong> – Paso de tiempo en segundos</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robot_simur_uo.interfaces.irobot_base.IRobotBase.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/robot_simur_uo/interfaces/irobot_base.html#IRobotBase.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robot_simur_uo.interfaces.irobot_base.IRobotBase.stop" title="Link to this definition">¶</a></dt>
+<dd><p>Detiene el robot.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">robot-simur-uo</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">robot_simur_uo</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="robot_simur_uo.html">robot_simur_uo package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">robot_simur_uo</a><ul>
+  <li><a href="robot_simur_uo.html">robot_simur_uo package</a><ul>
+      <li>Previous: <a href="robot_simur_uo.controllers.html" title="previous chapter">robot_simur_uo.controllers package</a></li>
+      <li>Next: <a href="robot_simur_uo.utils.html" title="next chapter">robot_simur_uo.utils package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, amlopez-uniovi.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/robot_simur_uo.interfaces.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

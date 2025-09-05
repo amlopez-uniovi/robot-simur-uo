@@ -1,6 +1,11 @@
 """
 Clase para gestión y generación de waypoints.
 Proporciona métodos para crear diferentes patrones de waypoints.
+
+Ejemplo:
+    >>> wps = Waypoints()
+    >>> wps.create_square_route(center_x=0, center_y=0, size=2)
+    >>> print(wps.get_waypoints())
 """
 
 import math
@@ -10,7 +15,7 @@ from typing import List, Tuple
 class Waypoints:
     """
     Clase para gestionar y generar listas de waypoints (puntos de ruta).
-    
+
     Permite crear patrones geométricos predefinidos o usar listas personalizadas
     de puntos para navegación de robots.
     """
@@ -22,15 +27,15 @@ class Waypoints:
     def set_waypoints(self, waypoints: List[Tuple[float, float]]) -> 'Waypoints':
         """
         Establece una lista personalizada de waypoints.
-        
+
         Args:
-            waypoints: Lista de tuplas (x, y) representando los puntos de ruta
-            
+            waypoints (List[Tuple[float, float]]): Lista de tuplas (x, y) representando los puntos de ruta.
+
         Returns:
-            Self para permitir method chaining
-            
+            Waypoints: Self para permitir method chaining.
+
         Raises:
-            ValueError: Si la lista está vacía
+            ValueError: Si la lista está vacía.
         """
         if not waypoints:
             raise ValueError("La lista de waypoints no puede estar vacía")
@@ -42,14 +47,14 @@ class Waypoints:
                           size: float = 2.0) -> 'Waypoints':
         """
         Crea una ruta cuadrada predefinida.
-        
+
         Args:
-            center_x: Centro X del cuadrado
-            center_y: Centro Y del cuadrado
-            size: Tamaño del lado del cuadrado en metros
-            
+            center_x (float): Centro X del cuadrado.
+            center_y (float): Centro Y del cuadrado.
+            size (float): Tamaño del lado del cuadrado en metros.
+
         Returns:
-            Self para permitir method chaining
+            Waypoints: Self para permitir method chaining.
         """
         half_size = size / 2
         self._waypoints = [

@@ -2,6 +2,11 @@ class ImuManager:
     """
     Manager para el sensor IMU de Webots (acelerómetro, giroscopio y brújula).
     Encapsula inicialización y acceso a los valores de los sensores.
+
+    Ejemplo:
+        >>> imu = ImuManager(robot)
+        >>> acc = imu.get_accelerometer()
+        >>> print(acc)
     """
     def __init__(self, robot, accel_name="imu accelerometer", gyro_name="imu gyro", compass_name="imu compass", time_step=32):
         self.accelerometer = robot.getDevice(accel_name)
@@ -12,13 +17,28 @@ class ImuManager:
         self.compass.enable(time_step)
 
     def get_accelerometer(self):
-        """Devuelve los valores del acelerómetro [x, y, z] en m/s²."""
+        """
+        Devuelve los valores del acelerómetro [x, y, z] en m/s².
+
+        Returns:
+            list: Valores del acelerómetro [x, y, z] en m/s².
+        """
         return self.accelerometer.getValues()
 
     def get_gyro(self):
-        """Devuelve los valores del giroscopio [x, y, z] en rad/s."""
+        """
+        Devuelve los valores del giroscopio [x, y, z] en rad/s.
+
+        Returns:
+            list: Valores del giroscopio [x, y, z] en rad/s.
+        """
         return self.gyro.getValues()
 
     def get_compass(self):
-        """Devuelve los valores de la brújula [x, y, z]."""
+        """
+        Devuelve los valores de la brújula [x, y, z].
+
+        Returns:
+            list: Valores de la brújula [x, y, z].
+        """
         return self.compass.getValues()

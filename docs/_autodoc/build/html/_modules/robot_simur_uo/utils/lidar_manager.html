@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>robot_simur_uo.utils.lidar_manager &#8212; robot-simur-uo 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for robot_simur_uo.utils.lidar_manager</h1><div class="highlight"><pre>
+<span></span>
+
+<span class="c1"># Clase para manejar dispositivos LiDAR en Webots</span>
+<span class="c1"># Proporciona una interfaz unificada para gestión de LiDAR y procesamiento de datos</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">controller</span><span class="w"> </span><span class="kn">import</span> <span class="n">Robot</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="c1"># Si no se encuentra el módulo `controller`, define un stub</span>
+<div class="viewcode-block" id="Robot">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.Robot">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Robot</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;El módulo `controller` solo está disponible en el entorno de Webots.&quot;</span><span class="p">)</span></div>
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_angle_in_range</span>
+
+<div class="viewcode-block" id="LidarManager">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.LidarManager">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LidarManager</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clase para manejar dispositivos LiDAR en Webots.</span>
+
+<span class="sd">    Proporciona funcionalidades para:</span>
+<span class="sd">        - Inicialización y configuración del LiDAR</span>
+<span class="sd">        - Obtención y procesamiento de datos</span>
+
+<span class="sd">    Ejemplo:</span>
+<span class="sd">        &gt;&gt;&gt; lidar = LidarManager(robot, device_name=&quot;laser&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; datos = lidar.get_raw_data_with_angles()</span>
+<span class="sd">        &gt;&gt;&gt; print(datos)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">:</span> <span class="n">Robot</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;lidar&quot;</span><span class="p">,</span> 
+                 <span class="n">sweep_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">),</span> 
+                 <span class="n">time_step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inicializa el gestor de LiDAR.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            robot (Robot): Instancia del robot de Webots.</span>
+<span class="sd">            device_name (str): Nombre del dispositivo LiDAR en Webots.</span>
+<span class="sd">            sweep_range (Tuple[float, float]): Rango de barrido (ángulo_inicio, ángulo_fin) en radianes.</span>
+<span class="sd">            time_step (int): Paso de tiempo para habilitar el dispositivo.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span> <span class="o">=</span> <span class="n">robot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device_name</span> <span class="o">=</span> <span class="n">device_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sweep_range</span> <span class="o">=</span> <span class="n">sweep_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="n">time_step</span>
+                
+        <span class="c1"># Inicializar dispositivo LiDAR</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lidar_device</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_lidar</span><span class="p">()</span>
+        
+        <span class="c1"># Configuración del LiDAR</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">range_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_range</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_range</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fov</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">angular_resolution</span> <span class="o">=</span> <span class="mf">0.0</span>
+        
+        <span class="c1"># Datos actuales</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1"># Obtener configuración si el LiDAR está disponible</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_device</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_configuration</span><span class="p">()</span>
+    
+<div class="viewcode-block" id="LidarManager.set_sweep_range">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.LidarManager.set_sweep_range">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_sweep_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sweep_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Establece el rango de barrido del LiDAR.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sweep_range (Tuple[float, float]): (ángulo_inicio, ángulo_fin) en radianes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sweep_range</span> <span class="o">=</span> <span class="n">sweep_range</span>
+        <span class="c1"># Recalcular ángulos si ya tenemos configuración</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;range_count&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">range_count</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sweep_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_range</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">range_count</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_lidar</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inicializa el dispositivo LiDAR.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True si se inicializó correctamente, False en caso contrario.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lidar_device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">getDevice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lidar_device</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lidar_device</span><span class="o">.</span><span class="n">enablePointCloud</span><span class="p">()</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ LiDAR &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">device_name</span><span class="si">}</span><span class="s2">&#39; inicializado correctamente&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Error: No se encontró el dispositivo LiDAR &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">device_name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Error inicializando LiDAR &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">device_name</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lidar_device</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Actualiza la configuración del LiDAR desde el dispositivo.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_device</span><span class="p">:</span>
+            <span class="k">return</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">range_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_device</span><span class="o">.</span><span class="n">getNumberOfPoints</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_device</span><span class="o">.</span><span class="n">getMinRange</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_device</span><span class="o">.</span><span class="n">getMaxRange</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fov</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_device</span><span class="o">.</span><span class="n">getFov</span><span class="p">()</span>
+            
+            <span class="c1"># Calcular resolución angular</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">range_count</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">angular_resolution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fov</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">range_count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sweep_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_range</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">range_count</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">angular_resolution</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">angles</span> <span class="o">=</span> <span class="p">[]</span>
+                
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️ Error obteniendo configuración del LiDAR: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="LidarManager.is_available">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.LidarManager.is_available">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_available</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Verifica si el LiDAR está disponible y funcionando.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True si está disponible, False en caso contrario.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+
+    
+<div class="viewcode-block" id="LidarManager.get_raw_data">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.LidarManager.get_raw_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_raw_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Obtiene datos crudos del LiDAR.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[float]: Lista de distancias en metros, lista vacía si hay error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_device</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">range_image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_device</span><span class="o">.</span><span class="n">getRangeImage</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">range_image</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">current_data</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">range_image</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_data</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️ Error obteniendo datos del LiDAR: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span></div>
+
+    
+<div class="viewcode-block" id="LidarManager.get_raw_data_with_angles">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.LidarManager.get_raw_data_with_angles">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_raw_data_with_angles</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Obtiene datos crudos del LiDAR con sus ángulos correspondientes.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Tuple[float, float]]: Lista de (distancia, ángulo) en metros y radianes.</span>
+
+<span class="sd">        Ejemplo:</span>
+<span class="sd">            &gt;&gt;&gt; datos = lidar.get_raw_data_with_angles()</span>
+<span class="sd">            &gt;&gt;&gt; for distancia, angulo in datos:</span>
+<span class="sd">            ...     print(distancia, angulo)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">raw_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_raw_data</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">raw_data</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;angles&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        
+        <span class="c1"># crear pares (distancia, ángulo) </span>
+        <span class="n">min_length</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_data</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">))</span>
+        <span class="n">data_with_angles</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[:</span><span class="n">min_length</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">[:</span><span class="n">min_length</span><span class="p">]))</span>
+        
+        <span class="k">return</span> <span class="n">data_with_angles</span></div>
+
+    
+<div class="viewcode-block" id="LidarManager.get_angle_for_index">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.LidarManager.get_angle_for_index">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_angle_for_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Obtiene el ángulo correspondiente a un índice específico.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            index (int): Índice del punto LiDAR.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: Ángulo en radianes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">range_count</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;angles&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+            
+        <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">):</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+        
+        <span class="c1"># Usar ángulos pre-calculados</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">[</span><span class="n">index</span><span class="p">]</span></div>
+
+    
+<div class="viewcode-block" id="LidarManager.get_configuration_info">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.LidarManager.get_configuration_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_configuration_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Obtiene información de configuración del LiDAR.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict[str, Any]: Información de configuración.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;device_name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_name</span><span class="p">,</span>
+            <span class="s1">&#39;range_count&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">range_count</span><span class="p">,</span>
+            <span class="s1">&#39;min_range&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_range</span><span class="p">,</span>
+            <span class="s1">&#39;max_range&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_range</span><span class="p">,</span>
+            <span class="s1">&#39;fov&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fov</span><span class="p">,</span>
+            <span class="s1">&#39;angular_resolution&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">angular_resolution</span><span class="p">,</span>
+            <span class="s1">&#39;sweep_range&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_range</span><span class="p">,</span>
+            <span class="s1">&#39;time_step&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">,</span>
+            <span class="s1">&#39;is_available&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span>
+        <span class="p">}</span></div>
+
+    
+<div class="viewcode-block" id="LidarManager.print_summary">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.LidarManager.print_summary">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Genera un resumen del estado actual del LiDAR.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: String con el resumen del LiDAR.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;❌ LiDAR &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">device_name</span><span class="si">}</span><span class="s2">&#39; no está disponible&quot;</span>
+        
+        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_configuration_info</span><span class="p">()</span>
+        
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">📡 === LiDAR Manager: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">device_name</span><span class="si">}</span><span class="s2"> ===&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔧 Configuración:&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Puntos de medición: </span><span class="si">{</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;range_count&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Rango: </span><span class="si">{</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;min_range&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">m - </span><span class="si">{</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;max_range&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">m&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Campo de visión: </span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;fov&#39;</span><span class="p">])</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">°&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Resolución angular: </span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;angular_resolution&#39;</span><span class="p">])</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">°&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Agregar datos LiDAR usando la función existente</span>
+        <span class="n">lidar_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">print_all_lidar_data</span><span class="p">()</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lidar_data</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="LidarManager.print_all_lidar_data">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.LidarManager.print_all_lidar_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_all_lidar_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Genera un string con todos los datos LiDAR y sus ángulos correspondientes.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: String con todos los datos LiDAR formateados.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;❌ LiDAR &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">device_name</span><span class="si">}</span><span class="s2">&#39; no está disponible&quot;</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">raw_data_with_angles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_raw_data_with_angles</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">raw_data_with_angles</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;📊 No hay datos LiDAR disponibles&quot;</span>
+            
+            <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">📊 === Datos LiDAR Completos: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">device_name</span><span class="si">}</span><span class="s2"> ===&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total de puntos: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_data_with_angles</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Formato: [índice]: (ángulo°, distancia)&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">40</span><span class="p">)</span>
+            
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="n">angle</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">raw_data_with_angles</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">distance</span><span class="p">):</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">3d</span><span class="si">}</span><span class="s2">]: (</span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span><span class="si">:</span><span class="s2">6.1f</span><span class="si">}</span><span class="s2">°, inf)&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">3d</span><span class="si">}</span><span class="s2">]: (</span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span><span class="si">:</span><span class="s2">6.1f</span><span class="si">}</span><span class="s2">°, </span><span class="si">{</span><span class="n">distance</span><span class="si">:</span><span class="s2">6.3f</span><span class="si">}</span><span class="s2">m)&quot;</span><span class="p">)</span>
+            
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">50</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;⚠️ Error al generar datos LiDAR: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+    
+<div class="viewcode-block" id="LidarManager.get_point_cloud">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.LidarManager.get_point_cloud">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_point_cloud</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Obtiene la nube de puntos del LiDAR.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List: Nube de puntos, lista vacía si hay error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_device</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_device</span><span class="o">.</span><span class="n">getPointCloud</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️ Error obteniendo nube de puntos: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span></div>
+
+    
+<div class="viewcode-block" id="LidarManager.get_range_count">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.LidarManager.get_range_count">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_range_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Obtiene el número de puntos del LiDAR.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: Número de puntos del LiDAR.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">range_count</span></div>
+
+    
+<div class="viewcode-block" id="LidarManager.get_max_range">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.LidarManager.get_max_range">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_max_range</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Obtiene el rango máximo del LiDAR.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: Rango máximo en metros.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_range</span></div>
+
+    
+<div class="viewcode-block" id="LidarManager.get_min_range">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.LidarManager.get_min_range">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_min_range</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Obtiene el rango mínimo del LiDAR.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: Rango mínimo en metros.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_range</span></div>
+
+    
+<div class="viewcode-block" id="LidarManager.get_fov">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.LidarManager.get_fov">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_fov</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Obtiene el campo de visión del LiDAR.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: Campo de visión en radianes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fov</span></div>
+
+    
+    
+<div class="viewcode-block" id="LidarManager.get_closest_obstacle_in_angle_range">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.LidarManager.get_closest_obstacle_in_angle_range">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_closest_obstacle_in_angle_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">angle_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Obtiene información de obstáculos en un rango de ángulos.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            angle_min (float): Ángulo mínimo en radianes (inicio del sector).</span>
+<span class="sd">            angle_max (float): Ángulo máximo en radianes (fin del sector).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[List[float], List[float], float, float]:</span>
+<span class="sd">                - Lista de ángulos dentro del rango</span>
+<span class="sd">                - Lista de distancias correspondientes</span>
+<span class="sd">                - Ángulo del obstáculo más cercano</span>
+<span class="sd">                - Distancia del obstáculo más cercano</span>
+<span class="sd">                Si no hay datos válidos, listas vacías y float(&#39;inf&#39;).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data_with_angles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_raw_data_with_angles</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">data_with_angles</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[],</span> <span class="p">[],</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+            <span class="c1"># Filtrar puntos dentro del rango de ángulos (soporta rangos que cruzan el cero)</span>
+            <span class="c1">#print(f&quot;Filtrando datos en rango [{math.degrees(angle_min):.1f}°, {math.degrees(angle_max):.1f}°]&quot;)</span>
+            <span class="c1">#print(f&quot;Datos originales: {data_with_angles}&quot;)</span>
+            <span class="n">filtered</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">data_with_angles</span>
+                <span class="k">if</span> <span class="n">is_angle_in_range</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">angle_min</span><span class="p">,</span> <span class="n">angle_max</span><span class="p">)</span> <span class="ow">and</span> <span class="n">d</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="c1">#print(f&quot;Datos filtrados: {len(filtered)} puntos válidos&quot;)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">filtered</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[],</span> <span class="p">[],</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+            <span class="n">angles</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">filtered</span><span class="p">]</span>
+            <span class="n">distances</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">filtered</span><span class="p">]</span>
+            <span class="n">min_idx</span> <span class="o">=</span> <span class="n">distances</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">distances</span><span class="p">))</span>
+            <span class="n">min_angle</span> <span class="o">=</span> <span class="n">angles</span><span class="p">[</span><span class="n">min_idx</span><span class="p">]</span>
+            <span class="n">min_distance</span> <span class="o">=</span> <span class="n">distances</span><span class="p">[</span><span class="n">min_idx</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">angles</span><span class="p">,</span> <span class="n">distances</span><span class="p">,</span> <span class="n">min_angle</span><span class="p">,</span> <span class="n">min_distance</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️ Error calculando obstáculo en rango [</span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">angle_min</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">°, </span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">angle_max</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">°]: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[],</span> <span class="p">[],</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="LidarManager.get_obstacle_points_xy">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.LidarManager.get_obstacle_points_xy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_obstacle_points_xy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Devuelve dos listas de coordenadas (x, y) en coordenadas locales del robot:</span>
+<span class="sd">            - Obstáculos detectados (rango finito)</span>
+<span class="sd">            - Puntos libres máximos (rango infinito)</span>
+
+<span class="sd">        Las coordenadas están en el sistema local del robot (x hacia delante, y hacia la izquierda).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[List[Tuple[float, float]], List[Tuple[float, float]]]:</span>
+<span class="sd">                - Obstáculos: lista de (x, y) de obstáculos detectados</span>
+<span class="sd">                - Libres: lista de (x, y) de puntos libres máximos</span>
+
+<span class="sd">        Ejemplo:</span>
+<span class="sd">            &gt;&gt;&gt; obstaculos, libres = lidar.get_obstacle_points_xy()</span>
+<span class="sd">            &gt;&gt;&gt; print(obstaculos)</span>
+<span class="sd">            &gt;&gt;&gt; print(libres)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data_with_angles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_raw_data_with_angles</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">data_with_angles</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="n">max_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_max_range</span><span class="p">()</span>
+        <span class="n">obstacles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">free_points</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dist</span><span class="p">,</span> <span class="n">angle</span> <span class="ow">in</span> <span class="n">data_with_angles</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dist</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">dist</span><span class="p">):</span>
+                <span class="c1"># Obstáculo detectado</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">dist</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">dist</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+                <span class="n">obstacles</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">math</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">dist</span><span class="p">):</span>
+                <span class="c1"># Punto libre máximo</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">max_range</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">max_range</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+                <span class="n">free_points</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">obstacles</span><span class="p">,</span> <span class="n">free_points</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">robot-simur-uo</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">robot_simur_uo</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, amlopez-uniovi.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

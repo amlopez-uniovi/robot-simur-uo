@@ -15,7 +15,13 @@ from ..utils.gps_manager import GpsManager
 from ..utils.compass_manager import CompassManager
 
 class WebotsBaseDifferentialRobot(IDifferentialRobot):
-    """Clase base para robots diferenciales en Webots con funcionalidades comunes"""
+    """
+    Clase base para robots diferenciales en Webots con funcionalidades comunes.
+
+    Ejemplo:
+        >>> robot = WebotsBaseDifferentialRobot()
+        >>> # Métodos de inicialización y sensores disponibles
+    """
     
     def __init__(self, time_step=64):
         """Inicializar el robot base y sus componentes comunes"""

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>robot_simur_uo.controllers.random_navigation &#8212; robot-simur-uo 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for robot_simur_uo.controllers.random_navigation</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Controlador de navegación aleatoria para robots.</span>
+<span class="sd">Genera objetivos aleatorios y navega entre ellos mostrando información detallada de sensores.</span>
+
+<span class="sd">Ejemplo:</span>
+<span class="sd">    &gt;&gt;&gt; ctrl = RandomNavigationController()</span>
+<span class="sd">    &gt;&gt;&gt; ctrl.set_target(1.0, 2.0)</span>
+<span class="sd">    &gt;&gt;&gt; print(ctrl.current_goal)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.navigation</span><span class="w"> </span><span class="kn">import</span> <span class="n">NavigationController</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">..interfaces.irobot_base</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRobotBase</span>
+
+
+<div class="viewcode-block" id="RandomNavigationController">
+<a class="viewcode-back" href="../../../robot_simur_uo.controllers.html#robot_simur_uo.controllers.RandomNavigationController">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RandomNavigationController</span><span class="p">(</span><span class="n">NavigationController</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Controlador para navegación aleatoria con monitoreo de sensores.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                 <span class="n">workspace_bounds</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">),</span>
+                 <span class="n">linear_gain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> 
+                 <span class="n">steering_gain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
+                 <span class="n">goal_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.15</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inicializa el controlador de navegación aleatoria.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            workspace_bounds: Límites del espacio de trabajo (min_x, max_x, min_y, max_y)</span>
+<span class="sd">            linear_gain: Ganancia lineal para velocidad</span>
+<span class="sd">            steering_gain: Ganancia angular para velocidad  </span>
+<span class="sd">            goal_tolerance: Tolerancia para considerar alcanzado el objetivo</span>
+<span class="sd">            sensor_report_interval: Intervalo en iteraciones para reportar sensores</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Inicializar la clase padre</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">linear_gain</span><span class="p">,</span> <span class="n">steering_gain</span><span class="p">)</span>
+        
+        <span class="c1"># Configuración específica de navegación aleatoria</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workspace_bounds</span> <span class="o">=</span> <span class="n">workspace_bounds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_y</span> <span class="o">=</span> <span class="n">workspace_bounds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="n">goal_tolerance</span>  <span class="c1"># Usar el atributo heredado</span>
+        
+        <span class="c1"># Estado del controlador aleatorio</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iteration_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">goals_reached</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="c1"># Historial de objetivos para evitar repetición inmediata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recent_goals</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_recent_goals</span> <span class="o">=</span> <span class="mi">5</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">current_goal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Obtiene el objetivo actual como tupla (x, y).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    
+    <span class="nd">@current_goal</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">current_goal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Establece el objetivo actual desde una tupla (x, y).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_x</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_y</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_y</span> <span class="o">=</span> <span class="n">value</span>
+    
+<div class="viewcode-block" id="RandomNavigationController.generate_random_goal">
+<a class="viewcode-back" href="../../../robot_simur_uo.controllers.html#robot_simur_uo.controllers.RandomNavigationController.generate_random_goal">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_random_goal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Genera un objetivo aleatorio dentro del espacio de trabajo.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Tupla (x, y) con las coordenadas del objetivo</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">attempts</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">max_attempts</span> <span class="o">=</span> <span class="mi">50</span>
+        
+        <span class="k">while</span> <span class="n">attempts</span> <span class="o">&lt;</span> <span class="n">max_attempts</span><span class="p">:</span>
+            <span class="c1"># Generar coordenadas aleatorias</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_x</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_y</span><span class="p">)</span>
+            <span class="n">goal</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            
+            <span class="c1"># Verificar si está muy cerca de objetivos recientes</span>
+            <span class="n">too_close</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">recent_goal</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">recent_goals</span><span class="p">:</span>
+                <span class="n">distance</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">recent_goal</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">recent_goal</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">distance</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>  <span class="c1"># Mínimo 0.5m de separación</span>
+                    <span class="n">too_close</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">break</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">too_close</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">goal</span>
+                
+            <span class="n">attempts</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+        <span class="c1"># Si no se pudo generar después de muchos intentos, usar coordenadas básicas</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_x</span><span class="p">),</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_y</span><span class="p">))</span></div>
+
+    
+<div class="viewcode-block" id="RandomNavigationController.set_new_random_goal">
+<a class="viewcode-back" href="../../../robot_simur_uo.controllers.html#robot_simur_uo.controllers.RandomNavigationController.set_new_random_goal">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_new_random_goal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Establece un nuevo objetivo aleatorio.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_goal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_random_goal</span><span class="p">()</span>
+        <span class="c1"># Usar el método heredado en lugar de nav_controller</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_target</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_goal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_goal</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        
+        <span class="c1"># Agregar a historial de objetivos recientes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recent_goals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_goal</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">recent_goals</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_recent_goals</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">recent_goals</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">🎯 NUEVO OBJETIVO #</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">goals_reached</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">: (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_goal</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_goal</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="RandomNavigationController.update">
+<a class="viewcode-back" href="../../../robot_simur_uo.controllers.html#robot_simur_uo.controllers.RandomNavigationController.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">:</span> <span class="s2">&quot;IRobotBase&quot;</span><span class="p">,</span> <span class="n">current_x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">current_y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">current_angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Actualiza el controlador y retorna comandos de velocidad.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            robot: Instancia del robot para obtener datos de sensores</span>
+<span class="sd">            current_x: Posición X actual</span>
+<span class="sd">            current_y: Posición Y actual  </span>
+<span class="sd">            current_angle: Ángulo actual del robot</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Tupla (velocidad_lineal, velocidad_angular)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iteration_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+        <span class="c1"># Si no hay objetivo o se alcanzó el actual, generar uno nuevo</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_goal</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_target_reached</span><span class="p">(</span><span class="n">current_x</span><span class="p">,</span> <span class="n">current_y</span><span class="p">)):</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_goal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">goals_reached</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Objetivo alcanzado! Total: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">goals_reached</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_new_random_goal</span><span class="p">()</span>
+        
+        <span class="c1"># Calcular comandos de control usando método heredado</span>
+        <span class="n">drive_speed</span><span class="p">,</span> <span class="n">steering_speed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_control_commands</span><span class="p">(</span>
+            <span class="n">current_x</span><span class="p">,</span> <span class="n">current_y</span><span class="p">,</span> <span class="n">current_angle</span>
+        <span class="p">)</span>
+     
+        <span class="k">return</span> <span class="n">drive_speed</span><span class="p">,</span> <span class="n">steering_speed</span></div>
+
+    
+<div class="viewcode-block" id="RandomNavigationController.get_statistics">
+<a class="viewcode-back" href="../../../robot_simur_uo.controllers.html#robot_simur_uo.controllers.RandomNavigationController.get_statistics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Obtiene estadísticas del controlador.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Diccionario con estadísticas del controlador</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;iteration_count&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">iteration_count</span><span class="p">,</span>
+            <span class="s1">&#39;goals_reached&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">goals_reached</span><span class="p">,</span>
+            <span class="s1">&#39;current_goal&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_goal</span><span class="p">,</span>
+            <span class="s1">&#39;recent_goals&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">recent_goals</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="p">}</span></div>
+
+    
+<div class="viewcode-block" id="RandomNavigationController.get_robot_state">
+<a class="viewcode-back" href="../../../robot_simur_uo.controllers.html#robot_simur_uo.controllers.RandomNavigationController.get_robot_state">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_robot_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">:</span> <span class="s2">&quot;IRobotBase&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Obtiene el estado actual del robot (posición y orientación).</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            robot: Instancia del robot</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Tupla (x, y, angle) con la pose actual del robot</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pose</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">get_pose</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">pose</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">pose</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">pose</span><span class="o">.</span><span class="n">theta</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">robot-simur-uo</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">robot_simur_uo</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, amlopez-uniovi.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

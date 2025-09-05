@@ -1,5 +1,7 @@
 """
 Interfaz base para todos los tipos de robots.
+
+Define los métodos comunes que deben implementar todas las clases de robot.
 """
 
 from abc import ABC, abstractmethod

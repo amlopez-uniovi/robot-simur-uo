@@ -7,6 +7,13 @@ from robot_simur_uo.utils.coordinates import transform_points
 def bresenham(start, end):
     """
     Algoritmo de Bresenham para trazar una línea entre dos puntos.
+
+    Args:
+        start (tuple): Coordenadas iniciales (x, y).
+        end (tuple): Coordenadas finales (x, y).
+
+    Returns:
+        list: Lista de tuplas (x, y) que representan los puntos de la línea.
     """
     points = []
     x1, y1 = start
@@ -42,10 +49,12 @@ class GridMap:
     def __init__(self, bottom_left, top_right, resolution, empty_value=0.0):
         """
         Inicializa el mapa de rejilla.
+
         Args:
-            bottom_left (tuple): (x, y) esquina inferior izquierda (metros)
-            top_right (tuple): (x, y) esquina superior derecha (metros)
-            resolution (float): tamaño de celda en metros
+            bottom_left (tuple): (x, y) esquina inferior izquierda (metros).
+            top_right (tuple): (x, y) esquina superior derecha (metros).
+            resolution (float): Tamaño de celda en metros.
+            empty_value (float, opcional): Valor inicial de las celdas. Por defecto 0.0.
         """
         self.bottom_left = bottom_left
         self.top_right = top_right
@@ -61,12 +70,23 @@ class GridMap:
 
 
     def reset(self):
+        """
+        Restaura el mapa a su valor vacío.
+        """
         self.grid[:, :] = self.empty_value
 
     def world_to_map(self, x, y):
         """
         Convierte coordenadas físicas (x, y) a índices de celda (fila, columna).
+
         La columna crece hacia la derecha, la fila crece hacia arriba (fila 0 = parte inferior).
+
+        Args:
+            x (float): Coordenada X en metros.
+            y (float): Coordenada Y en metros.
+
+        Returns:
+            tuple: (fila, columna) de la celda correspondiente.
         """
         col = int(np.floor((x - self.bottom_left[0]) / self.resolution))
         # Fila invertida: la fila 0 es la parte inferior (mínimo y)
@@ -78,6 +98,13 @@ class GridMap:
     def map_to_world(self, row, col):
         """
         Convierte índices de celda (fila, columna) a coordenadas físicas (x, y) del centro de la celda.
+
+        Args:
+            row (int): Índice de fila.
+            col (int): Índice de columna.
+
+        Returns:
+            tuple: Coordenadas (x, y) del centro de la celda.
         """
         x = self.bottom_left[0] + (col + 0.5) * self.resolution
         y = self.bottom_left[1] + ((self.rows - 1 - row) + 0.5) * self.resolution
@@ -85,7 +112,13 @@ class GridMap:
 
     def set_cell(self, x, y, value, world_coordinates=True):
         """
-        Marca una celda en el mapa usando coordenadas físicas.
+        Marca una celda en el mapa.
+
+        Args:
+            x (float|int): Coordenada X o índice de fila.
+            y (float|int): Coordenada Y o índice de columna.
+            value (float|int): Valor a asignar a la celda.
+            world_coordinates (bool): Si True, usa coordenadas físicas; si False, índices de celda.
         """
         if world_coordinates:
             row, col = self.world_to_map(x, y)
@@ -98,7 +131,15 @@ class GridMap:
 
     def get_cell(self, x, y, world_coordinates=True):
         """
-        Obtiene el valor de una celda usando coordenadas físicas.
+        Obtiene el valor de una celda.
+
+        Args:
+            x (float|int): Coordenada X o índice de fila.
+            y (float|int): Coordenada Y o índice de columna.
+            world_coordinates (bool): Si True, usa coordenadas físicas; si False, índices de celda.
+
+        Returns:
+            float|int: Valor de la celda.
         """
         if world_coordinates:
             row, col = self.world_to_map(x, y)
@@ -110,15 +151,22 @@ class GridMap:
         return self.grid[row, col]
 
     def __repr__(self):
+        """
+        Representación en string del objeto GridMap.
+        """
         return f"GridMap({self.rows}x{self.cols}, res={self.resolution}, bottom_left={self.bottom_left}, top_right={self.top_right})"
 
     def visualize(self, cmap='gray', fig=None, block=False):
         """
         Visualiza la matriz como un mapa de grises, con correspondencia física correcta.
-        Requiere matplotlib.
-        Si se proporciona una figura, dibuja sobre ella. Si no, la crea.
-        Devuelve la figura.
-        El parámetro 'block' controla si plt.show() es bloqueante.
+
+        Args:
+            cmap (str): Mapa de colores de matplotlib.
+            fig (matplotlib.figure.Figure, opcional): Figura sobre la que dibujar.
+            block (bool): Si True, plt.show() es bloqueante.
+
+        Returns:
+            matplotlib.figure.Figure: Figura utilizada para la visualización.
         """
         import matplotlib.pyplot as plt
         if fig is None:
@@ -136,10 +184,16 @@ class GridMap:
     
     def get_occupied_free_cells_from_pose_obstacles(self, pose, obstacle_points, free_points, points_in_robot_frame=False):
         """
-        Devuelve dos listas:
-        - occupied: celdas ocupadas por obstáculos
-        - free: celdas libres recorridas por los rayos del LiDAR
-        Si los puntos están en el marco del robot, se transforman al marco global usando la pose.
+        Calcula celdas ocupadas y libres a partir de la pose y los puntos detectados.
+
+        Args:
+            pose (tuple): Pose del robot (x, y, theta).
+            obstacle_points (list): Lista de puntos (x, y) de obstáculos.
+            free_points (list): Lista de puntos (x, y) libres.
+            points_in_robot_frame (bool): Si True, transforma los puntos al marco global.
+
+        Returns:
+            tuple: (occupied, free) listas de celdas ocupadas y libres.
         """
         # Transformar puntos si es necesario
         if points_in_robot_frame:

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>robot_simur_uo.controllers.navigation_potential_field &#8212; robot-simur-uo 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for robot_simur_uo.controllers.navigation_potential_field</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.navigation</span><span class="w"> </span><span class="kn">import</span> <span class="n">NavigationController</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span>
+
+<div class="viewcode-block" id="NavigationPotentialFieldController">
+<a class="viewcode-back" href="../../../robot_simur_uo.controllers.html#robot_simur_uo.controllers.navigation_potential_field.NavigationPotentialFieldController">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NavigationPotentialFieldController</span><span class="p">(</span><span class="n">NavigationController</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Controlador de navegación usando campos potenciales.</span>
+
+<span class="sd">    Ejemplo:</span>
+<span class="sd">        &gt;&gt;&gt; ctrl = NavigationPotentialFieldController()</span>
+<span class="sd">        &gt;&gt;&gt; ctrl.set_target(1.0, 2.0)</span>
+<span class="sd">        &gt;&gt;&gt; v, w = ctrl.calculate_control_commands(0, 0, 0, 0.5, 0.5)</span>
+<span class="sd">        &gt;&gt;&gt; print(v, w)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linear_gain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">steering_gain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
+                 <span class="n">attraction_gain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">repulsion_gain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">repulsion_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">linear_gain</span><span class="p">,</span> <span class="n">steering_gain</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attraction_gain</span> <span class="o">=</span> <span class="n">attraction_gain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repulsion_gain</span> <span class="o">=</span> <span class="n">repulsion_gain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repulsion_threshold</span> <span class="o">=</span> <span class="n">repulsion_threshold</span>
+
+<div class="viewcode-block" id="NavigationPotentialFieldController.calculate_control_commands">
+<a class="viewcode-back" href="../../../robot_simur_uo.controllers.html#robot_simur_uo.controllers.navigation_potential_field.NavigationPotentialFieldController.calculate_control_commands">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_control_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">current_y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">current_angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                                  <span class="n">obstacle_x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">obstacle_y</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calcula comandos de control considerando el objetivo y el obstáculo más cercano (todo en global).</span>
+<span class="sd">        Args:</span>
+<span class="sd">            current_x, current_y, current_angle: Pose actual del robot</span>
+<span class="sd">            obstacle_x, obstacle_y: Posición global del obstáculo más cercano</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple con (velocidad_lineal, velocidad_de_dirección)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[PF] Pose actual: x=</span><span class="si">{</span><span class="n">current_x</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, y=</span><span class="si">{</span><span class="n">current_y</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, theta=</span><span class="si">{</span><span class="n">current_angle</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[PF] Obstáculo global: x=</span><span class="si">{</span><span class="n">obstacle_x</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, y=</span><span class="si">{</span><span class="n">obstacle_y</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># Fuerza atractiva hacia el objetivo</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_x</span> <span class="o">-</span> <span class="n">current_x</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_y</span> <span class="o">-</span> <span class="n">current_y</span>
+        <span class="n">attractive_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attraction_gain</span> <span class="o">*</span> <span class="n">dx</span>
+        <span class="n">attractive_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attraction_gain</span> <span class="o">*</span> <span class="n">dy</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">[PF] Fuerza atractiva: ax=</span><span class="si">{</span><span class="n">attractive_x</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, ay=</span><span class="si">{</span><span class="n">attractive_y</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Fuerza repulsiva por obstáculo</span>
+        <span class="n">obs_dx</span> <span class="o">=</span> <span class="n">obstacle_x</span> <span class="o">-</span> <span class="n">current_x</span>
+        <span class="n">obs_dy</span> <span class="o">=</span> <span class="n">obstacle_y</span> <span class="o">-</span> <span class="n">current_y</span>
+        <span class="n">obs_dist</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">obs_dx</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">obs_dy</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        
+        <span class="n">repulsive_x</span><span class="p">,</span> <span class="n">repulsive_y</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+        
+        <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">obs_dist</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">repulsion_threshold</span><span class="p">:</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">repulsion_threshold</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">obs_dist</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">obs_dist</span><span class="p">)</span><span class="o">**</span><span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">repulsive_x</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">obs_dx</span>
+            <span class="n">repulsive_y</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">obs_dy</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[PF] </span><span class="se">\t</span><span class="s2">Fuerza repulsiva: rx=</span><span class="si">{</span><span class="n">repulsive_x</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, ry=</span><span class="si">{</span><span class="n">repulsive_y</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, factor=</span><span class="si">{</span><span class="n">factor</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[PF] </span><span class="se">\t</span><span class="s2">Sin fuerza repulsiva (distancia=</span><span class="si">{</span><span class="n">obs_dist</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Suma de fuerzas</span>
+        <span class="n">total_x</span> <span class="o">=</span> <span class="n">attractive_x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">repulsion_gain</span> <span class="o">*</span> <span class="n">repulsive_x</span>
+        <span class="n">total_y</span> <span class="o">=</span> <span class="n">attractive_y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">repulsion_gain</span> <span class="o">*</span> <span class="n">repulsive_y</span>
+        <span class="n">goal_x</span> <span class="o">=</span> <span class="n">current_x</span> <span class="o">+</span> <span class="n">total_x</span>
+        <span class="n">goal_y</span> <span class="o">=</span> <span class="n">current_y</span> <span class="o">+</span> <span class="n">total_y</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">[PF] Goal virtual: x=</span><span class="si">{</span><span class="n">goal_x</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, y=</span><span class="si">{</span><span class="n">goal_y</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Dirección y distancia al &quot;goal&quot; virtual</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">goal_x</span> <span class="o">-</span> <span class="n">current_x</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">goal_y</span> <span class="o">-</span> <span class="n">current_y</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">theta_goal</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">goal_y</span> <span class="o">-</span> <span class="n">current_y</span><span class="p">,</span> <span class="n">goal_x</span> <span class="o">-</span> <span class="n">current_x</span><span class="p">)</span>
+        <span class="n">angle_diff</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta_goal</span> <span class="o">-</span> <span class="n">current_angle</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta_goal</span> <span class="o">-</span> <span class="n">current_angle</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">[PF] Distancia a goal: </span><span class="si">{</span><span class="n">distance</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, theta_goal=</span><span class="si">{</span><span class="n">theta_goal</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, angle_diff=</span><span class="si">{</span><span class="n">angle_diff</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">drive_speed</span> <span class="o">=</span> <span class="n">distance</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear_gain</span>
+        <span class="n">steering_speed</span> <span class="o">=</span> <span class="n">angle_diff</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">steering_gain</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">[PF] Comandos finales: drive_speed=</span><span class="si">{</span><span class="n">drive_speed</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, steering_speed=</span><span class="si">{</span><span class="n">steering_speed</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">drive_speed</span><span class="p">,</span> <span class="n">steering_speed</span></div>
+</div>
+
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">robot-simur-uo</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">robot_simur_uo</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, amlopez-uniovi.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

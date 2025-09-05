@@ -1,23 +1,12 @@
 """
-This is a skeleton file that can serve as a starting point for a Python
-console script. To run this script uncomment the following lines in the
-``[options.entry_points]`` section in ``setup.cfg``::
+Módulo de ejemplo para robot-simur-uo.
 
-    console_scripts =
-         fibonacci = robot_simur_uo.skeleton:run
+Este archivo sirve como plantilla para scripts de consola o módulos Python.
 
-Then run ``pip install .`` (or ``pip install -e .`` for editable mode)
-which will install the command ``fibonacci`` inside your current environment.
-
-Besides console scripts, the header (i.e. until ``_logger``...) of this file can
-also be used as template for Python modules.
-
-Note:
-    This file can be renamed depending on your needs or safely removed if not needed.
-
-References:
-    - https://setuptools.pypa.io/en/latest/userguide/entry_point.html
-    - https://pip.pypa.io/en/stable/reference/pip_install
+Ejemplo:
+    >>> from robot_simur_uo.skeleton import fib
+    >>> fib(5)
+    5
 """
 
 import argparse
@@ -41,13 +30,18 @@ _logger = logging.getLogger(__name__)
 
 
 def fib(n):
-    """Fibonacci example function
+    """
+    Calcula el n-ésimo número de Fibonacci.
 
     Args:
-      n (int): integer
+        n (int): Índice del número de Fibonacci (n > 0).
 
     Returns:
-      int: n-th Fibonacci number
+        int: n-ésimo número de Fibonacci.
+
+    Ejemplo:
+        >>> fib(5)
+        5
     """
     assert n > 0
     a, b = 1, 1

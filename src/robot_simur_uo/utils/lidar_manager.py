@@ -17,26 +17,30 @@ except ImportError:
 from .coordinates import is_angle_in_range
 
 class LidarManager:
-
     """
     Clase para manejar dispositivos LiDAR en Webots.
-    
+
     Proporciona funcionalidades para:
-    - Inicialización y configuración del LiDAR
-    - Obtención y procesamiento de datos
+        - Inicialización y configuración del LiDAR
+        - Obtención y procesamiento de datos
+
+    Ejemplo:
+        >>> lidar = LidarManager(robot, device_name="laser")
+        >>> datos = lidar.get_raw_data_with_angles()
+        >>> print(datos)
     """
     
     def __init__(self, robot: Robot, device_name: str = "lidar", 
                  sweep_range: Tuple[float, float] = (0.0, -2*math.pi), 
                  time_step: int = 32):
         """
-        Inicializar el gestor de LiDAR.
-        
+        Inicializa el gestor de LiDAR.
+
         Args:
-            robot: Instancia del robot de Webots
-            device_name: Nombre del dispositivo LiDAR en Webots
-            sweep_range: Rango de barrido (ángulo_inicio, ángulo_fin) en radianes
-            time_step: Paso de tiempo para habilitar el dispositivo
+            robot (Robot): Instancia del robot de Webots.
+            device_name (str): Nombre del dispositivo LiDAR en Webots.
+            sweep_range (Tuple[float, float]): Rango de barrido (ángulo_inicio, ángulo_fin) en radianes.
+            time_step (int): Paso de tiempo para habilitar el dispositivo.
         """
         self.robot = robot
         self.device_name = device_name
@@ -62,7 +66,12 @@ class LidarManager:
             self._update_configuration()
     
     def set_sweep_range(self, sweep_range: Tuple[float, float]) -> None:
-        """Establecer el rango de barrido del LiDAR."""
+        """
+        Establece el rango de barrido del LiDAR.
+
+        Args:
+            sweep_range (Tuple[float, float]): (ángulo_inicio, ángulo_fin) en radianes.
+        """
         self.sweep_range = sweep_range
         # Recalcular ángulos si ya tenemos configuración
         if hasattr(self, 'range_count') and self.range_count > 1:
@@ -70,10 +79,10 @@ class LidarManager:
 
     def _initialize_lidar(self) -> bool:
         """
-        Inicializar el dispositivo LiDAR.
-        
+        Inicializa el dispositivo LiDAR.
+
         Returns:
-            bool: True si se inicializó correctamente, False en caso contrario
+            bool: True si se inicializó correctamente, False en caso contrario.
         """
         try:
             self.lidar_device = self.robot.getDevice(self.device_name)
@@ -91,7 +100,9 @@ class LidarManager:
             return False
     
     def _update_configuration(self) -> None:
-        """Actualizar la configuración del LiDAR desde el dispositivo."""
+        """
+        Actualiza la configuración del LiDAR desde el dispositivo.
+        """
         if not self.lidar_device:
             return
         
@@ -114,19 +125,19 @@ class LidarManager:
     
     def is_available(self) -> bool:
         """
-        Verificar si el LiDAR está disponible y funcionando.
-        
+        Verifica si el LiDAR está disponible y funcionando.
+
         Returns:
-            bool: True si está disponible, False en caso contrario
+            bool: True si está disponible, False en caso contrario.
         """
         return self.lidar_device is not None
     
     def get_raw_data(self) -> List[float]:
         """
-        Obtener datos crudos del LiDAR.
-        
+        Obtiene datos crudos del LiDAR.
+
         Returns:
-            List[float]: Lista de distancias en metros, lista vacía si hay error
+            List[float]: Lista de distancias en metros, lista vacía si hay error.
         """
         if not self.lidar_device:
             return []
@@ -144,10 +155,15 @@ class LidarManager:
     
     def get_raw_data_with_angles(self) -> List[Tuple[float, float]]:
         """
-        Obtener datos crudos del LiDAR con sus ángulos correspondientes.
-        
+        Obtiene datos crudos del LiDAR con sus ángulos correspondientes.
+
         Returns:
-            List[Tuple[float, float]]: Lista de (distancia, ángulo) en metros y radianes
+            List[Tuple[float, float]]: Lista de (distancia, ángulo) en metros y radianes.
+
+        Ejemplo:
+            >>> datos = lidar.get_raw_data_with_angles()
+            >>> for distancia, angulo in datos:
+            ...     print(distancia, angulo)
         """
         raw_data = self.get_raw_data()
         if not raw_data or not hasattr(self, 'angles') or len(self.angles) == 0:
@@ -161,13 +177,13 @@ class LidarManager:
     
     def get_angle_for_index(self, index: int) -> float:
         """
-        Obtener el ángulo correspondiente a un índice específico.
-        
+        Obtiene el ángulo correspondiente a un índice específico.
+
         Args:
-            index: Índice del punto LiDAR
-            
+            index (int): Índice del punto LiDAR.
+
         Returns:
-            float: Ángulo en radianes
+            float: Ángulo en radianes.
         """
         if self.range_count <= 1:
             return 0.0
@@ -183,10 +199,10 @@ class LidarManager:
     
     def get_configuration_info(self) -> Dict[str, Any]:
         """
-        Obtener información de configuración del LiDAR.
-        
+        Obtiene información de configuración del LiDAR.
+
         Returns:
-            Dict[str, Any]: Información de configuración
+            Dict[str, Any]: Información de configuración.
         """
         return {
             'device_name': self.device_name,
@@ -202,10 +218,10 @@ class LidarManager:
     
     def print_summary(self) -> str:
         """
-        Generar un resumen del estado actual del LiDAR.
-        
+        Genera un resumen del estado actual del LiDAR.
+
         Returns:
-            str: String con el resumen del LiDAR
+            str: String con el resumen del LiDAR.
         """
         if not self.is_available():
             return f"❌ LiDAR '{self.device_name}' no está disponible"
@@ -228,10 +244,10 @@ class LidarManager:
     
     def print_all_lidar_data(self) -> str:
         """
-        Generar string con todos los datos LiDAR y sus ángulos correspondientes.
-        
+        Genera un string con todos los datos LiDAR y sus ángulos correspondientes.
+
         Returns:
-            str: String con todos los datos LiDAR formateados
+            str: String con todos los datos LiDAR formateados.
         """
         if not self.is_available():
             return f"❌ LiDAR '{self.device_name}' no está disponible"
@@ -262,10 +278,10 @@ class LidarManager:
     
     def get_point_cloud(self) -> List:
         """
-        Obtener nube de puntos del LiDAR.
-        
+        Obtiene la nube de puntos del LiDAR.
+
         Returns:
-            List: Nube de puntos, lista vacía si hay error
+            List: Nube de puntos, lista vacía si hay error.
         """
         if not self.lidar_device:
             return []
@@ -278,54 +294,56 @@ class LidarManager:
     
     def get_range_count(self) -> int:
         """
-        Obtener número de puntos del LiDAR.
-        
+        Obtiene el número de puntos del LiDAR.
+
         Returns:
-            int: Número de puntos del LiDAR
+            int: Número de puntos del LiDAR.
         """
         return self.range_count
     
     def get_max_range(self) -> float:
         """
-        Obtener rango máximo del LiDAR.
-        
+        Obtiene el rango máximo del LiDAR.
+
         Returns:
-            float: Rango máximo en metros
+            float: Rango máximo en metros.
         """
         return self.max_range
     
     def get_min_range(self) -> float:
         """
-        Obtener rango mínimo del LiDAR.
-        
+        Obtiene el rango mínimo del LiDAR.
+
         Returns:
-            float: Rango mínimo en metros
+            float: Rango mínimo en metros.
         """
         return self.min_range
     
     def get_fov(self) -> float:
         """
-        Obtener campo de visión del LiDAR.
-        
+        Obtiene el campo de visión del LiDAR.
+
         Returns:
-            float: Campo de visión en radianes
+            float: Campo de visión en radianes.
         """
         return self.fov
     
     
     def get_closest_obstacle_in_angle_range(self, angle_min: float, angle_max: float):
         """
-        Obtener información de obstáculos en un rango de ángulos.
+        Obtiene información de obstáculos en un rango de ángulos.
+
         Args:
-            angle_min (float): Ángulo mínimo en radianes (inicio del sector)
-            angle_max (float): Ángulo máximo en radianes (fin del sector)
+            angle_min (float): Ángulo mínimo en radianes (inicio del sector).
+            angle_max (float): Ángulo máximo en radianes (fin del sector).
+
         Returns:
             Tuple[List[float], List[float], float, float]:
                 - Lista de ángulos dentro del rango
                 - Lista de distancias correspondientes
                 - Ángulo del obstáculo más cercano
                 - Distancia del obstáculo más cercano
-                Si no hay datos válidos, listas vacías y float('inf')
+                Si no hay datos válidos, listas vacías y float('inf').
         """
 
         try:
@@ -356,11 +374,20 @@ class LidarManager:
     def get_obstacle_points_xy(self) -> Tuple[List[Tuple[float, float]], List[Tuple[float, float]]]:
         """
         Devuelve dos listas de coordenadas (x, y) en coordenadas locales del robot:
-        - Obstáculos detectados (rango finito)
-        - Puntos libres máximos (rango infinito)
+            - Obstáculos detectados (rango finito)
+            - Puntos libres máximos (rango infinito)
+
         Las coordenadas están en el sistema local del robot (x hacia delante, y hacia la izquierda).
+
         Returns:
-            Tuple[List[Tuple[float, float]], List[Tuple[float, float]]]
+            Tuple[List[Tuple[float, float]], List[Tuple[float, float]]]:
+                - Obstáculos: lista de (x, y) de obstáculos detectados
+                - Libres: lista de (x, y) de puntos libres máximos
+
+        Ejemplo:
+            >>> obstaculos, libres = lidar.get_obstacle_points_xy()
+            >>> print(obstaculos)
+            >>> print(libres)
         """
         data_with_angles = self.get_raw_data_with_angles()
         if not data_with_angles:

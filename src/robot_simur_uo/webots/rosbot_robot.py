@@ -23,7 +23,13 @@ from ..utils.imu_manager import ImuManager
 
 
 class RosBot(WebotsBaseDifferentialRobot):
-    """Clase para encapsular la configuración y control del robot RosBot"""
+    """
+    Clase para encapsular la configuración y control del robot RosBot.
+
+    Ejemplo:
+        >>> robot = RosBot()
+        >>> # Métodos de sensores y motores disponibles
+    """
     
     def __init__(self, time_step=64):
         """Inicializar el robot RosBot y sus componentes específicos"""

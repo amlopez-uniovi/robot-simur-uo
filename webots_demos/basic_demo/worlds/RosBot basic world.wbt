@@ -1,0 +1,58 @@
+#VRML_SIM R2023b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/devices/slamtec/protos/RpLidarA2.proto"
+EXTERNPROTO "../../_protos/Rosbot.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation -0.34115181249990534 0.33860422468561135 0.8769051373170791 1.7092126673923598
+  position -0.18876648465963108 -11.202883823500178 10.391625923149421
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 8 8
+  wallHeight 0.4
+}
+DEF OBS Solid {
+  translation -0.224161 -0.348261 1.15463e-14
+  rotation 0 0 1 0.2617996938995747
+  children [
+    DEF OBSTACULO Shape {
+      geometry Box {
+        size 0.3 0.3 0.6
+      }
+    }
+  ]
+  boundingObject USE OBSTACULO
+}
+Rosbot {
+  hidden position_0_0 3.774523312345339
+  hidden position_0_1 3.774523234552855
+  hidden position_0_2 3.774523311668085
+  hidden position_0_3 3.774523312397501
+  hidden linearVelocity_0 0.010300974523453167 0.08537652243178465 -1.0240140616738003e-09
+  hidden angularVelocity_0 6.167537015129848e-09 1.2569170092761e-07 1.2021694990811966e-07
+  hidden rotation_2 0 1 0 3.774523312345339
+  hidden linearVelocity_2 0.010300953826742702 0.0853765092274434 1.0657022642237935e-08
+  hidden angularVelocity_2 -1.9855005356241129 0.23955726600190225 -1.2575148003968727e-07
+  hidden rotation_3 0 1 0 3.774523234552855
+  hidden linearVelocity_3 0.010300957384255518 0.08537653847686366 -1.3597252007103568e-08
+  hidden angularVelocity_3 -1.9855005327457096 0.23955731093609178 1.4740586726268088e-08
+  hidden rotation_4 0 0.9999999999999999 0 3.774523311668085
+  hidden linearVelocity_4 0.01030096942295966 0.08537650746233282 1.156022921122308e-08
+  hidden angularVelocity_4 -1.9855005355820974 0.2395572664351764 -1.2394937371604922e-07
+  hidden rotation_5 0 1 0 3.774523312397501
+  hidden linearVelocity_5 0.010300972982127569 0.08537653671259016 -1.26972847736838e-08
+  hidden angularVelocity_5 -1.98550053280821 0.23955731049805307 1.380658330849143e-08
+  translation 0.05790567712993736 -1.7236571989906515 -0.0005625852434034961
+  rotation -1.5967340726606063e-05 1.7912313901708202e-05 0.9999999997120965 1.45072344045886
+  controller "rosbot_basic_controller"
+  # lidarSlot eliminado para usar la configuración por defecto del PROTO
+}

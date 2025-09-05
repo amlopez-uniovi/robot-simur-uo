@@ -1,7 +1,15 @@
 def is_angle_in_range(angle, angle_min, angle_max):
     """
-    Devuelve True si angle está dentro del rango [angle_min, angle_max] en el círculo trigonométrico. Supone giro antihorario. 
+    Devuelve True si angle está dentro del rango [angle_min, angle_max] en el círculo trigonométrico.
     Soporta rangos que cruzan el cero y normaliza todo a [0, 2π).
+
+    Args:
+        angle (float): Ángulo a comprobar (radianes).
+        angle_min (float): Límite inferior del rango (radianes).
+        angle_max (float): Límite superior del rango (radianes).
+
+    Returns:
+        bool: True si el ángulo está en el rango, False en caso contrario.
     """
     # Normaliza todos los ángulos al rango [0, 2π)
     angle = angle % (2 * math.pi)
@@ -33,11 +41,13 @@ def is_angle_in_range(angle, angle_min, angle_max):
 def transform_points(points, pose):
     """
     Transforma una lista de puntos (x, y) locales a coordenadas globales usando la pose del robot.
+
     Args:
-        points (list of tuple): Lista de tuplas (x, y) en el marco local del robot
-        pose (tuple): Pose del robot (x, y, theta) en el mundo
+        points (list of tuple): Lista de tuplas (x, y) en el marco local del robot.
+        pose (tuple): Pose del robot (x, y, theta) en el mundo.
+
     Returns:
-        list of tuple: Lista de tuplas (x, y) en el marco global
+        list of tuple: Lista de tuplas (x, y) en el marco global.
     """
     x_r, y_r, theta = pose
     cos_t = math.cos(theta)
@@ -53,10 +63,12 @@ def polar_to_cartesian(points):
     """
     Convierte una lista de puntos en coordenadas polares (ángulo, distancia)
     a coordenadas cartesianas (x, y).
+
     Args:
-        points (list of tuple): Lista de tuplas (ángulo_rad, distancia_m)
+        points (list of tuple): Lista de tuplas (ángulo_rad, distancia_m).
+
     Returns:
-        list of tuple: Lista de tuplas (x, y)
+        list of tuple: Lista de tuplas (x, y).
     """
     cartesian = []
     for angle, distance in points:

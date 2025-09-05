@@ -1,0 +1,37 @@
+#VRML_SIM R2023b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "../../_protos/E-puck.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation -0.40451431852048747 0.3925585038366477 0.8259939389471561 1.7901913387323032
+  position 0.01797643568213421 -3.305880325349009 4.219438643976002
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 4 4
+}
+Solid {
+  children [
+    Shape {
+      geometry DEF BOX_CILINDRO Cylinder {
+        height 0.2
+        radius 0.34
+      }
+    }
+  ]
+  boundingObject USE BOX_CILINDRO
+}
+E-puck {
+  translation -1.0000000002853129 -0.9999999999990674 -6.39619983832506e-05
+  rotation -2.7531938208737874e-05 -0.9999577006975193 0.009197611522711402 1.48711794530487e-05
+  controller "epuck_bug0_controller"
+  # turretSlot eliminado para evitar duplicidad de sensores; los sensores se definen en el PROTO
+}

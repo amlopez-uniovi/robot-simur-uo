@@ -3,7 +3,15 @@ from .navigation import NavigationController
 from typing import Tuple
 
 class NavigationPotentialFieldController(NavigationController):
-    """Controlador de navegación usando campos potenciales."""
+    """
+    Controlador de navegación usando campos potenciales.
+
+    Ejemplo:
+        >>> ctrl = NavigationPotentialFieldController()
+        >>> ctrl.set_target(1.0, 2.0)
+        >>> v, w = ctrl.calculate_control_commands(0, 0, 0, 0.5, 0.5)
+        >>> print(v, w)
+    """
     def __init__(self, linear_gain: float = 2.0, steering_gain: float = 2.0,
                  attraction_gain: float = 0.1, repulsion_gain: float = 0.1, repulsion_threshold: float = 2.0):
         super().__init__(linear_gain, steering_gain)

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>robot_simur_uo.webots.webots_base_differential_robot &#8212; robot-simur-uo 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for robot_simur_uo.webots.webots_base_differential_robot</h1><div class="highlight"><pre>
+<span></span><span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">controller</span><span class="w"> </span><span class="kn">import</span> <span class="n">Robot</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="c1"># Si no se encuentra el módulo `controller`, define un stub o lanza una advertencia</span>
+<div class="viewcode-block" id="Robot">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.Robot">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Robot</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;El módulo `controller` solo está disponible en el entorno de Webots.&quot;</span><span class="p">)</span></div>
+
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..interfaces.idifferential_robot</span><span class="w"> </span><span class="kn">import</span> <span class="n">IDifferentialRobot</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils.coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">RobotPose</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils.lidar_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">LidarManager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils.gps_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">GpsManager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils.compass_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">CompassManager</span>
+
+<div class="viewcode-block" id="WebotsBaseDifferentialRobot">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.WebotsBaseDifferentialRobot">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">WebotsBaseDifferentialRobot</span><span class="p">(</span><span class="n">IDifferentialRobot</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clase base para robots diferenciales en Webots con funcionalidades comunes.</span>
+
+<span class="sd">    Ejemplo:</span>
+<span class="sd">        &gt;&gt;&gt; robot = WebotsBaseDifferentialRobot()</span>
+<span class="sd">        &gt;&gt;&gt; # Métodos de inicialización y sensores disponibles</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_step</span><span class="o">=</span><span class="mi">64</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Inicializar el robot base y sus componentes comunes&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span> <span class="o">=</span> <span class="n">Robot</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="n">time_step</span>
+        
+        <span class="c1"># Inicializar componentes comunes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_common_components</span><span class="p">()</span>
+        
+        <span class="c1"># Inicializar componentes específicos del robot (implementado en subclases)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_specific_components</span><span class="p">()</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_common_components</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Inicializar componentes comunes a todos los robots&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gps_manager</span> <span class="o">=</span> <span class="n">GpsManager</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> <span class="n">time_step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compass_manager</span> <span class="o">=</span> <span class="n">CompassManager</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> <span class="n">time_step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">)</span>
+        <span class="c1"># Inicializar LidarManager</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lidar_manager</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_lidar_manager</span><span class="p">()</span>
+        
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_specific_components</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Inicializar componentes específicos del robot (debe ser implementado por subclases)&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclases deben implementar _init_specific_components&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Eliminado: _init_navigation_sensors (ahora gestionado por managers)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_lidar_manager</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Inicializar LidarManager con auto-detección del dispositivo&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Lista de nombres posibles para dispositivos LiDAR</span>
+            <span class="n">possible_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lidar&quot;</span><span class="p">,</span> <span class="s2">&quot;laser&quot;</span><span class="p">,</span> <span class="s2">&quot;Lidar&quot;</span><span class="p">,</span> <span class="s2">&quot;LIDAR&quot;</span><span class="p">]</span>
+            <span class="n">device_name</span> <span class="o">=</span> <span class="kc">None</span>
+            
+            <span class="c1"># Buscar el primer dispositivo disponible</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">possible_names</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">test_device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">getDevice</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">test_device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">device_name</span> <span class="o">=</span> <span class="n">name</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔍 Dispositivo LiDAR encontrado: &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                        <span class="k">break</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">continue</span>
+            
+            <span class="k">if</span> <span class="n">device_name</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lidar_manager</span> <span class="o">=</span> <span class="n">LidarManager</span><span class="p">(</span>
+                    <span class="n">robot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="p">,</span> 
+                    <span class="n">device_name</span><span class="o">=</span><span class="n">device_name</span><span class="p">,</span> 
+                    <span class="n">time_step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span>
+                <span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ LidarManager inicializado con dispositivo &#39;</span><span class="si">{</span><span class="n">device_name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;⚠️ No se encontró ningún dispositivo LiDAR en el robot&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lidar_manager</span> <span class="o">=</span> <span class="kc">None</span>
+                
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️ Error inicializando LidarManager: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lidar_manager</span> <span class="o">=</span> <span class="kc">None</span>
+    
+<div class="viewcode-block" id="WebotsBaseDifferentialRobot.step">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.WebotsBaseDifferentialRobot.step">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_step</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ejecutar un paso de simulación</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            time_step (int, optional): Duración del paso en milisegundos. </span>
+<span class="sd">                                      Si no se especifica, usa self.time_step</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            int: 0 si la simulación continúa, -1 si debe terminar</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">time_step</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">time_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">time_step</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="WebotsBaseDifferentialRobot.get_gps_position">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.WebotsBaseDifferentialRobot.get_gps_position">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_gps_position</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Obtener posición GPS usando GpsManager&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gps_manager</span><span class="o">.</span><span class="n">get_position</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="WebotsBaseDifferentialRobot.get_compass_orientation">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.WebotsBaseDifferentialRobot.get_compass_orientation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_compass_orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Obtener orientación de la brújula usando CompassManager&quot;&quot;&quot;</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compass_manager</span><span class="o">.</span><span class="n">get_direction</span><span class="p">()</span>
+        <span class="n">angle</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">direction</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">direction</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">direction</span><span class="p">,</span> <span class="n">angle</span></div>
+
+    
+<div class="viewcode-block" id="WebotsBaseDifferentialRobot.get_lidar_data">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.WebotsBaseDifferentialRobot.get_lidar_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_lidar_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Obtener datos del lidar/laser&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_lidar_manager</span><span class="p">():</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_manager</span><span class="o">.</span><span class="n">get_raw_data</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+    
+    
+<div class="viewcode-block" id="WebotsBaseDifferentialRobot.get_lidar_manager">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.WebotsBaseDifferentialRobot.get_lidar_manager">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_lidar_manager</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Obtener el LidarManager configurado&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_manager</span></div>
+
+    
+<div class="viewcode-block" id="WebotsBaseDifferentialRobot.has_lidar_manager">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.WebotsBaseDifferentialRobot.has_lidar_manager">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_lidar_manager</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Verificar si el LidarManager está disponible&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_manager</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span></div>
+
+    
+    
+<div class="viewcode-block" id="WebotsBaseDifferentialRobot.cleanup">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.WebotsBaseDifferentialRobot.cleanup">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Limpiar recursos al finalizar&quot;&quot;&quot;</span>
+        <span class="c1"># Llamar al método de la interfaz base que detiene el robot</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span></div>
+
+    
+    <span class="c1"># Implementación de la interfaz IRobot</span>
+<div class="viewcode-block" id="WebotsBaseDifferentialRobot.set_motor_speeds">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.WebotsBaseDifferentialRobot.set_motor_speeds">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_motor_speeds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left_speed</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">right_speed</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Establece las velocidades de los motores.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            left_speed: Velocidad del motor izquierdo (rad/s)</span>
+<span class="sd">            right_speed: Velocidad del motor derecho (rad/s)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Debe ser implementado por subclases específicas</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclases deben implementar set_motor_speeds&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="WebotsBaseDifferentialRobot.get_pose">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.WebotsBaseDifferentialRobot.get_pose">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_pose</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RobotPose</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Obtiene la pose actual del robot.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Pose actual del robot</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">gps_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_gps_position</span><span class="p">()</span>
+        <span class="n">compass_direction</span><span class="p">,</span> <span class="n">angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_compass_orientation</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="n">RobotPose</span><span class="p">(</span><span class="n">gps_position</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">gps_position</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">angle</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="WebotsBaseDifferentialRobot.set_pose">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.WebotsBaseDifferentialRobot.set_pose">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_pose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Establece la pose del robot.</span>
+<span class="sd">        </span>
+<span class="sd">        Nota: En Webots esto normalmente no es posible durante la simulación.</span>
+<span class="sd">        Este método existe para compatibilidad con la interfaz.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Advertencia: set_pose no está soportado en robots de Webots durante la simulación&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="WebotsBaseDifferentialRobot.get_motor_speeds">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.WebotsBaseDifferentialRobot.get_motor_speeds">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_motor_speeds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Obtiene las velocidades actuales de los motores.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Tupla (velocidad_izquierda, velocidad_derecha) en rad/s</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Debe ser implementado por subclases específicas</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclases deben implementar get_motor_speeds&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="WebotsBaseDifferentialRobot.log_lidar_data">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.WebotsBaseDifferentialRobot.log_lidar_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log_lidar_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Genera el logging de datos del LiDAR utilizando LidarManager.</span>
+<span class="sd">        Método común que pueden usar todas las subclases.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Lista de strings con la información del LiDAR para logging</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log_lines</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Verificar si el LiDAR está disponible</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_lidar_manager</span><span class="p">():</span>
+                <span class="n">log_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Lidar: No disponible&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">log_lines</span>
+                
+            <span class="c1"># Usar LidarManager para obtener información del LiDAR</span>
+            <span class="n">lidar_manager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lidar_manager</span><span class="p">()</span>
+            
+            <span class="c1"># Agregar el resumen del LiDAR usando las funciones del LidarManager</span>
+            <span class="n">lidar_summary</span> <span class="o">=</span> <span class="n">lidar_manager</span><span class="o">.</span><span class="n">print_summary</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">lidar_summary</span><span class="p">:</span>
+                <span class="n">log_lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">lidar_summary</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Lidar: Sin datos disponibles&quot;</span><span class="p">)</span>
+                
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">log_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lidar: Error - </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+        <span class="k">return</span> <span class="n">log_lines</span></div>
+
+    
+<div class="viewcode-block" id="WebotsBaseDifferentialRobot.log_devices">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.WebotsBaseDifferentialRobot.log_devices">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">to_terminal</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">to_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Método base para logging de dispositivos.</span>
+<span class="sd">        Añade automáticamente información del LiDAR y maneja la salida a terminal y archivo.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            to_terminal: Si True, imprime a la terminal</span>
+<span class="sd">            to_file: Si se especifica, escribe al archivo indicado</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Las subclases deben establecer self.log_message antes de llamar a este método</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;log_message&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_message</span><span class="p">:</span>
+            <span class="c1"># Convertir el mensaje a lista de líneas para poder agregar LiDAR</span>
+            <span class="n">log_lines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_message</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            
+            <span class="c1"># Buscar dónde insertar la información del LiDAR (antes de la línea de separación final)</span>
+            <span class="n">insert_index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">log_lines</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># Por defecto al final</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">log_lines</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">10</span><span class="p">):</span>  <span class="c1"># Buscar línea de separación final</span>
+                    <span class="n">insert_index</span> <span class="o">=</span> <span class="n">i</span>
+                    <span class="k">break</span>
+            
+            <span class="c1"># Agregar información del LiDAR</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">lidar_log_lines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_lidar_data</span><span class="p">()</span>
+                <span class="c1"># Insertar las líneas del LiDAR antes de la separación final</span>
+                <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">lidar_line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lidar_log_lines</span><span class="p">):</span>
+                    <span class="n">log_lines</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">insert_index</span> <span class="o">+</span> <span class="n">j</span><span class="p">,</span> <span class="n">lidar_line</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">log_lines</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">insert_index</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Lidar: Error - </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Reconstruir el mensaje final</span>
+            <span class="n">final_message</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log_lines</span><span class="p">)</span>
+            
+            <span class="c1"># Salida a terminal</span>
+            <span class="k">if</span> <span class="n">to_terminal</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">final_message</span><span class="p">)</span>
+            
+            <span class="c1"># Salida a archivo</span>
+            <span class="k">if</span> <span class="n">to_file</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">to_file</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">final_message</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error escribiendo a archivo </span><span class="si">{</span><span class="n">to_file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: No log message available. Subclases should set self.log_message before calling super().log_devices()&quot;</span><span class="p">)</span></div>
+
+    
+    <span class="c1"># Métodos abstractos que deben ser implementados por subclases</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_motors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Inicializar motores específicos del robot (debe ser implementado por subclases)&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclases deben implementar _init_motors&quot;</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="WebotsBaseDifferentialRobot.move_forward">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.WebotsBaseDifferentialRobot.move_forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">move_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">speed</span><span class="o">=</span><span class="mf">2.0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Mover el robot hacia adelante (debe ser implementado por subclases)&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclases deben implementar move_forward&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="WebotsBaseDifferentialRobot.move_backward">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.WebotsBaseDifferentialRobot.move_backward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">move_backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">speed</span><span class="o">=</span><span class="mf">2.0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Mover el robot hacia atrás (debe ser implementado por subclases)&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclases deben implementar move_backward&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="WebotsBaseDifferentialRobot.turn_left">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.WebotsBaseDifferentialRobot.turn_left">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">turn_left</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">speed</span><span class="o">=</span><span class="mf">2.0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Girar el robot a la izquierda (debe ser implementado por subclases)&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclases deben implementar turn_left&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="WebotsBaseDifferentialRobot.turn_right">
+<a class="viewcode-back" href="../../../robot_simur_uo.webots.html#robot_simur_uo.webots.WebotsBaseDifferentialRobot.turn_right">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">turn_right</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">speed</span><span class="o">=</span><span class="mf">2.0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Girar el robot a la derecha (debe ser implementado por subclases)&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclases deben implementar turn_right&quot;</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">robot-simur-uo</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">robot_simur_uo</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, amlopez-uniovi.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

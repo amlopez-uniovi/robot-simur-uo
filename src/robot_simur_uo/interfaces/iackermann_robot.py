@@ -1,7 +1,7 @@
 """
 Interfaz específica para robots con dirección tipo Ackermann.
 
-Maneja la conversión entre steering_speed (usado por controladores) 
+Maneja la conversión entre steering_speed (usado por controladores)
 y steering_angle (usado por la cinemática Ackermann).
 """
 
@@ -12,11 +12,11 @@ from .irobot_base import IRobotBase
 class IAckermannRobot(IRobotBase):
     """
     Interfaz específica para robots con dirección tipo Ackermann.
-    
+
     Los robots Ackermann tienen una diferencia conceptual importante:
-    - NavigationController devuelve steering_speed (rad/s)
-    - Robots Ackermann usan steering_angle (rad) para las ruedas directrices
-    
+        - NavigationController devuelve steering_speed (rad/s)
+        - Robots Ackermann usan steering_angle (rad) para las ruedas directrices
+
     Esta clase maneja la conversión entre steering_speed y steering_angle,
     y proporciona métodos específicos para robots Ackermann.
     """

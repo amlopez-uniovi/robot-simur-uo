@@ -1,6 +1,12 @@
 """
 Controlador de navegación por waypoints (puntos de ruta).
 Navega siguiendo una lista predefinida de puntos en orden secuencial.
+
+Ejemplo:
+    >>> from robot_simur_uo.utils.waypoints import Waypoints
+    >>> wps = Waypoints().create_square_route()
+    >>> ctrl = WaypointNavigationController(wps)
+    >>> print(ctrl)
 """
 
 import math

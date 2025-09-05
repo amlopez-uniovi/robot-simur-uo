@@ -1,5 +1,11 @@
 """
 Controlador de navegación básica para robots.
+
+Ejemplo:
+    >>> ctrl = NavigationController()
+    >>> ctrl.set_target(1.0, 2.0)
+    >>> v, w = ctrl.calculate_control_commands(0, 0, 0)
+    >>> print(v, w)
 """
 
 import math

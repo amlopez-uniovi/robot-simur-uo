@@ -2,9 +2,15 @@
 Controlador de navegación Bug0 simple.
 
 Algoritmo simple:
-1. Ir hacia el objetivo
-2. Si hay obstáculo frontal, girar a la izquierda
-3. Cuando no hay obstáculo, volver a ir al objetivo
+    1. Ir hacia el objetivo
+    2. Si hay obstáculo frontal, girar a la izquierda
+    3. Cuando no hay obstáculo, volver a ir al objetivo
+
+Ejemplo:
+    >>> ctrl = Bug0NavigationController()
+    >>> ctrl.set_target(1.0, 2.0)
+    >>> v, w = ctrl.calculate_control_commands(0, 0, 0, front_distance=0.6)
+    >>> print(v, w)
 """
 
 import math

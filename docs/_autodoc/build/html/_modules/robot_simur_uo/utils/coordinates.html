@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>robot_simur_uo.utils.coordinates &#8212; robot-simur-uo 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for robot_simur_uo.utils.coordinates</h1><div class="highlight"><pre>
+<div class="viewcode-block" id="is_angle_in_range">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.is_angle_in_range">[docs]</a>
+<span></span><span class="k">def</span><span class="w"> </span><span class="nf">is_angle_in_range</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">angle_min</span><span class="p">,</span> <span class="n">angle_max</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Devuelve True si angle está dentro del rango [angle_min, angle_max] en el círculo trigonométrico.</span>
+<span class="sd">    Soporta rangos que cruzan el cero y normaliza todo a [0, 2π).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        angle (float): Ángulo a comprobar (radianes).</span>
+<span class="sd">        angle_min (float): Límite inferior del rango (radianes).</span>
+<span class="sd">        angle_max (float): Límite superior del rango (radianes).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True si el ángulo está en el rango, False en caso contrario.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Normaliza todos los ángulos al rango [0, 2π)</span>
+    <span class="n">angle</span> <span class="o">=</span> <span class="n">angle</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+    <span class="n">angle_min</span> <span class="o">=</span> <span class="n">angle_min</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+    <span class="n">angle_max</span> <span class="o">=</span> <span class="n">angle_max</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+    <span class="c1">#print(f&quot;angulo {math.degrees(angle):.1f}°, angulo minimo {math.degrees(angle_min):.1f}°, angulo maximo {math.degrees(angle_max):.1f}°&quot;)</span>
+
+    <span class="c1"># Log de entrada</span>
+    <span class="c1">#print(f&quot;[is_angle_in_range] angle={math.degrees(angle):.1f}°, min={math.degrees(angle_min):.1f}°, max={math.degrees(angle_max):.1f}°&quot;)</span>
+
+    <span class="c1"># Si el rango cubre todo el círculo</span>
+    <span class="k">if</span> <span class="n">angle_min</span> <span class="o">==</span> <span class="n">angle_max</span><span class="p">:</span>
+        <span class="c1">#print(&quot;[is_angle_in_range] Rango cubre todo el círculo (min == max), devuelve True&quot;)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="c1"># Rango normal (no cruza el cero)</span>
+    <span class="k">if</span> <span class="n">angle_min</span> <span class="o">&lt;</span> <span class="n">angle_max</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">angle_min</span> <span class="o">&lt;=</span> <span class="n">angle</span> <span class="o">&lt;=</span> <span class="n">angle_max</span>
+        <span class="c1">#print(f&quot;[is_angle_in_range] Rango directo: {result}&quot;)</span>
+        <span class="k">return</span> <span class="n">result</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Rango circular (cruza el cero)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">angle</span> <span class="o">&gt;=</span> <span class="n">angle_min</span> <span class="ow">or</span> <span class="n">angle</span> <span class="o">&lt;=</span> <span class="n">angle_max</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[is_angle_in_range] Rango circular: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="transform_points">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.transform_points">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">transform_points</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">pose</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transforma una lista de puntos (x, y) locales a coordenadas globales usando la pose del robot.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        points (list of tuple): Lista de tuplas (x, y) en el marco local del robot.</span>
+<span class="sd">        pose (tuple): Pose del robot (x, y, theta) en el mundo.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list of tuple: Lista de tuplas (x, y) en el marco global.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x_r</span><span class="p">,</span> <span class="n">y_r</span><span class="p">,</span> <span class="n">theta</span> <span class="o">=</span> <span class="n">pose</span>
+    <span class="n">cos_t</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">sin_t</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">transformed</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">points</span><span class="p">:</span>
+        <span class="n">x_w</span> <span class="o">=</span> <span class="n">x_r</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">cos_t</span> <span class="o">-</span> <span class="n">y</span> <span class="o">*</span> <span class="n">sin_t</span>
+        <span class="n">y_w</span> <span class="o">=</span> <span class="n">y_r</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">sin_t</span> <span class="o">+</span> <span class="n">y</span> <span class="o">*</span> <span class="n">cos_t</span>
+        <span class="n">transformed</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x_w</span><span class="p">,</span> <span class="n">y_w</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">transformed</span></div>
+
+
+<div class="viewcode-block" id="polar_to_cartesian">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.polar_to_cartesian">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">polar_to_cartesian</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convierte una lista de puntos en coordenadas polares (ángulo, distancia)</span>
+<span class="sd">    a coordenadas cartesianas (x, y).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        points (list of tuple): Lista de tuplas (ángulo_rad, distancia_m).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list of tuple: Lista de tuplas (x, y).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cartesian</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">angle</span><span class="p">,</span> <span class="n">distance</span> <span class="ow">in</span> <span class="n">points</span><span class="p">:</span>
+        <span class="c1"># Validar ángulo y distancia</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span> <span class="ow">or</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">distance</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span> <span class="ow">or</span> <span class="n">math</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">distance</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">distance</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">distance</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">distance</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+        <span class="n">cartesian</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">cartesian</span></div>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Sistema de coordenadas básico para robots.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+
+
+<div class="viewcode-block" id="RobotPose">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.RobotPose">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RobotPose</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Representa la posición y orientación de un robot en el espacio 2D.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            x (float): Posición en el eje X</span>
+<span class="sd">            y (float): Posición en el eje Y</span>
+<span class="sd">            theta (float): Orientación en radianes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">theta</span>
+    
+<div class="viewcode-block" id="RobotPose.distance_to">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.RobotPose.distance_to">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">distance_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calcula la distancia euclidiana a otra posición.&quot;&quot;&quot;</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dx</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">dy</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="RobotPose.angle_to">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.RobotPose.angle_to">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">angle_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calcula el ángulo hacia otra posición.&quot;&quot;&quot;</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">dy</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="RobotPose.copy">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.RobotPose.copy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Crea una copia de la pose.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">RobotPose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="RobotPose.to_tuple">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.RobotPose.to_tuple">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convierte la pose a una tupla (x, y, theta).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="RobotPose.update">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.RobotPose.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dtheta</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Actualiza la pose con cambios incrementales.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">+=</span> <span class="n">dx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">+=</span> <span class="n">dy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">+=</span> <span class="n">dtheta</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;RobotPose(x=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, y=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, theta=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+    
+<div class="viewcode-block" id="RobotPose.get_pose">
+<a class="viewcode-back" href="../../../robot_simur_uo.utils.html#robot_simur_uo.utils.RobotPose.get_pose">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_pose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Devuelve la pose como una tupla (x, y, theta).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">robot-simur-uo</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">robot_simur_uo</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, amlopez-uniovi.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

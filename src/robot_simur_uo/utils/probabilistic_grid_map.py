@@ -16,11 +16,12 @@ class ProbabilisticGridMap(GridMap):
     def update(self, obstacle_points, free_points, pose, points_in_robot_frame=True):
         """
         Actualiza el mapa probabilístico usando los puntos de obstáculos y libres.
-        - obstacle_points, free_points: listas de (x, y) en el marco del robot o global
-        - pose: (x, y, theta) del robot en el marco global
-        - points_in_robot_frame: si True, transforma los puntos al marco global
-        - p_occ: probabilidad de ocupación para celdas de obstáculo
-        - p_free: probabilidad de libre para celdas libres
+
+        Args:
+            obstacle_points (list): Lista de (x, y) de obstáculos.
+            free_points (list): Lista de (x, y) de puntos libres.
+            pose (tuple): Pose (x, y, theta) del robot en el marco global.
+            points_in_robot_frame (bool): Si True, transforma los puntos al marco global.
         """
 
         celdas_ocupadas, celdas_libres = self.get_occupied_free_cells_from_pose_obstacles(
@@ -38,6 +39,11 @@ class ProbabilisticGridMap(GridMap):
     def _update_cell_probability(self, cell, p, alpha=0.6):
         """
         Actualiza la probabilidad de una celda usando un promedio ponderado (fusión simple).
+
+        Args:
+            cell (tuple): Índice de la celda (row, col).
+            p (float): Probabilidad a fusionar.
+            alpha (float): Peso de la actualización.
         """
         row, col = cell
         self.grid[row, col] = (1 - alpha) * self.grid[row, col] + alpha * p
