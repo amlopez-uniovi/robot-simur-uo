@@ -1,5 +1,40 @@
+
 import math
 import numpy as np
+
+from robot_simur_uo.utils.coordinates import transform_points
+
+def bresenham(start, end):
+    """
+    Algoritmo de Bresenham para trazar una línea entre dos puntos.
+    """
+    points = []
+    x1, y1 = start
+    x2, y2 = end
+    dx = abs(x2 - x1)
+    dy = abs(y2 - y1)
+    sx = 1 if x1 < x2 else -1
+    sy = 1 if y1 < y2 else -1
+    if dx > dy:
+        err = dx / 2
+        while x1 != x2:
+            points.append((x1, y1))
+            err -= dy
+            if err < 0:
+                y1 += sy
+                err += dx
+            x1 += sx
+    else:
+        err = dy / 2
+        while y1 != y2:
+            points.append((x1, y1))
+            err -= dx
+            if err < 0:
+                x1 += sx
+                err += dy
+            y1 += sy
+    points.append((x2, y2))
+    return points
 
 class GridMap:
 
@@ -48,18 +83,30 @@ class GridMap:
         y = self.bottom_left[1] + ((self.rows - 1 - row) + 0.5) * self.resolution
         return x, y
 
-    def set_cell(self, x, y, value):
+    def set_cell(self, x, y, value, world_coordinates=True):
         """
         Marca una celda en el mapa usando coordenadas físicas.
         """
-        row, col = self.world_to_map(x, y)
+        if world_coordinates:
+            row, col = self.world_to_map(x, y)
+        else:
+            row, col = x, y
+            col = min(max(col, 0), self.cols - 1)
+            row = min(max(row, 0), self.rows - 1)
+        
         self.grid[row, col] = value
 
-    def get_cell(self, x, y):
+    def get_cell(self, x, y, world_coordinates=True):
         """
         Obtiene el valor de una celda usando coordenadas físicas.
         """
-        row, col = self.world_to_map(x, y)
+        if world_coordinates:
+            row, col = self.world_to_map(x, y)
+        else:
+            row, col = x, y
+            col = min(max(col, 0), self.cols - 1)
+            row = min(max(row, 0), self.rows - 1)
+            
         return self.grid[row, col]
 
     def __repr__(self):
@@ -86,6 +133,43 @@ class GridMap:
         plt.show(block=block)
         plt.pause(0.001)  # Pequeña pausa para actualizar la figura
         return fig
+    
+    def get_occupied_free_cells_from_pose_obstacles(self, pose, obstacle_points, free_points, points_in_robot_frame=False):
+        """
+        Devuelve dos listas:
+        - occupied: celdas ocupadas por obstáculos
+        - free: celdas libres recorridas por los rayos del LiDAR
+        Si los puntos están en el marco del robot, se transforman al marco global usando la pose.
+        """
+        # Transformar puntos si es necesario
+        if points_in_robot_frame:
+            obstacle_points = transform_points(obstacle_points, pose)
+            free_points = transform_points(free_points, pose)
+
+        # Obtener celda del robot
+        pose_row, pose_col = self.world_to_map(pose[0], pose[1])
+
+        occupied_set = set()
+        free_set = set()
+
+        # Marcar celdas ocupadas y los rayos hasta ellas
+        for point in obstacle_points:
+            cell = self.world_to_map(point[0], point[1])
+            occupied_set.add(cell)
+            for c in bresenham((pose_row, pose_col), cell):
+                free_set.add(c)
+
+        # Marcar celdas libres recorridas por rayos sin obstáculo
+        for point in free_points:
+            cell = self.world_to_map(point[0], point[1])
+            for c in bresenham((pose_row, pose_col), cell):
+                free_set.add(c)
+
+        # Las celdas ocupadas no son libres
+        free = list(free_set - occupied_set)
+        occupied = list(occupied_set)
+        
+        return occupied, free
 
 if __name__ == "__main__":
     # Ejemplo de uso

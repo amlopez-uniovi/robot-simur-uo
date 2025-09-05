@@ -4,12 +4,16 @@ Estructura unificada: inicialización, bucle principal, sensores, control y logg
 """
 from robot_simur_uo.controllers.random_navigation import RandomNavigationController
 from robot_simur_uo.utils.grid_map import GridMap
+from robot_simur_uo.utils.probabilistic_grid_map import ProbabilisticGridMap
+from robot_simur_uo.utils.probabilistic_logodds_grid_map import ProbabilisticLogOddsGridMap
 from robot_simur_uo.utils.coordinates import transform_points
 import math
 
 def run_random_navigation_mapping_demo(RobotClass):
     robot = RobotClass()
-    grid_map = GridMap((-2.2, -2.2), (2.2, 2.2), resolution=0.1, empty_value=0.0)  # Mapa de 4x4 metros con resolución de 10cm
+    #prob_grid_map = ProbabilisticGridMap((-2.2, -2.2), (2.2, 2.2), resolution=0.1, empty_value=0.5, occupancy_factor=0.7, free_factor=0.3)  # Mapa de 4.4x4.4 metros con resolución de 10cm
+    prob_grid_map = ProbabilisticLogOddsGridMap((-2.2, -2.2), (2.2, 2.2), resolution=0.1, empty_value=0.0, occupancy_factor=1.95, free_factor=-1.1)  # Mapa de 4.4x4.4 metros con resolución de 10cm
+
 
     # Crear controlador de navegación aleatoria
     # Espacio de trabajo más pequeño para el robot (robot más lento)
@@ -27,27 +31,54 @@ def run_random_navigation_mapping_demo(RobotClass):
         iteration_count += 1
         
         # Obtener medidas del lidar del robot
-        lidar_data = robot.get_lidar_manager().get_raw_data_with_angles()
+        #lidar_data = robot.get_lidar_manager().get_raw_data_with_angles()
         #print(f"Medidas LIDAR: {lidar_data}")
 
         # Actualizar mapa de ocupación usando puntos XY de obstáculos detectados
         obstacle_points, free_points = robot.get_lidar_manager().get_obstacle_points_xy()
+        prob_grid_map.update(obstacle_points, free_points, robot.get_pose().to_tuple())
 
         pose = robot.get_pose().to_tuple()
-                
-        obstacle_points_tf = transform_points(obstacle_points, pose)
-        free_points_tf = transform_points(free_points, pose)
+        
+#        celdas_ocupadas, celdas_libres = grid_map.get_occupied_free_cells_from_pose_obstacles(
+#            pose, obstacle_points, free_points, points_in_robot_frame=True
+#        )
+        
+#        grid_map.reset()  # Limpiar el mapa antes de actualizarlo
 
-        grid_map.reset()  # Limpiar el mapa antes de actualizarlo
+        # Actualizar el mapa de ocupación con las celdas ocupadas y libres
+    #    for cell in celdas_ocupadas:
+    #        grid_map.set_cell(*cell, -1.0)  # Marcar celda como ocupada
+    #    for cell in celdas_libres:
+    #        grid_map.set_cell(*cell, 1)  # Marcar celda como libre
+
+    #    print(f"Iteración {iteration_count}")
+    #    print(f"Pose actual del robot: {pose}")
+    #    print(f"Puntos de obstáculos detectados (robot frame): {obstacle_points}")
+    #    print(f"Puntos libres detectados (robot frame): {free_points}")
+    #    print(f"Celdas ocupadas detectadas: {sorted(celdas_ocupadas, key=lambda x: x[0])}")
+    #    print(f"Celdas libres detectadas: {sorted(celdas_libres, key=lambda x: x[0])}")
+    #    print("-" * 40)
+    
+    
+#        obstacle_points_tf = transform_points(obstacle_points, pose)
+#        free_points_tf = transform_points(free_points, pose)
+
+#        grid_map.reset()  # Limpiar el mapa antes de actualizarlo
         
         # Actualizar el mapa de ocupación con los puntos transformados
-        for x, y in obstacle_points_tf:
-            grid_map.set_cell(x, y, 1.0)  # Marcar celda como ocupada
-        for x, y in free_points_tf:
-            grid_map.set_cell(x, y, 0.5)  # Marcar celda como libre
+#        obstacle_points_map = [grid_map.world_to_map(x, y) for x, y in obstacle_points_tf]
+        
+        #for x, y in obstacle_points_map:
+#       for x, y in celdas_ocupadas:
+#           grid_map.set_cell(x, y, 1.0, world_coordinates=False)  # Marcar celda como ocupada
 
-    # Pintar el mapa de ocupación (visualización simple en consola)
-        fig_visualizacion = grid_map.visualize(fig=fig_visualizacion)
+        #for x, y in obstacle_points_map:
+#        for x, y in celdas_libres:
+#            grid_map.set_cell(x, y, -1.0, world_coordinates=False)  # Marcar celda como ocupada
+
+        # Pintar el mapa de ocupación (visualización simple en consola)
+        fig_visualizacion = prob_grid_map.visualize(fig=fig_visualizacion)
 
         # Obtener posición y orientación actuales usando el controlador de navegación
         current_x, current_y, current_angle = controller.get_robot_state(robot)
