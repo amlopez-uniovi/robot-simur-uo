@@ -1,7 +1,8 @@
-robot\_simur\_uo.webots package
+# Archivo vacío para evitar duplicidad de documentación.
 ===============================
 
 .. automodule:: robot_simur_uo.webots
+   :no-index:
    :members:
    :show-inheritance:
    :undoc-members:

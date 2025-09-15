@@ -1,7 +1,8 @@
-robot\_simur\_uo.controllers package
+# Archivo vacío para evitar duplicidad de documentación.
 ====================================
 
 .. automodule:: robot_simur_uo.controllers
+   :no-index:
    :members:
    :show-inheritance:
    :undoc-members:

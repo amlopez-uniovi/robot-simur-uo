@@ -1,4 +1,4 @@
-# Configuration file for the Sphinx documentation builder.
+# Archivo vacío para evitar duplicidad de documentación.
 #
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
@@ -18,6 +18,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',  # Para docstrings estilo Google/Numpy
+    'myst_parser',         # Para soporte de Markdown
 ]
 import os
 import sys
@@ -25,7 +26,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join('..', '..', '..', 'src')))
 
 templates_path = ['_templates']
-exclude_patterns = []
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'api', '**/api', '**/_build', '**/api/*', '**/_build/*']
 
 
 

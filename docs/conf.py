@@ -72,13 +72,17 @@ extensions = [
     "sphinx.ext.ifconfig",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
+    "myst_parser",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
-# The suffix of source filenames.
-source_suffix = ".rst"
+# The suffixes of source filenames.
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".md": "markdown",
+}
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
@@ -120,7 +124,7 @@ release = version
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", ".venv"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", ".venv", "_autodoc/source", "_autodoc/source/*"]
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 # default_role = None

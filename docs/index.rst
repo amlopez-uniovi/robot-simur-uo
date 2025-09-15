@@ -27,15 +27,15 @@ Contents
 ========
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
 
-   Overview <readme>
-   Contributions & Help <contributing>
-   License <license>
-   Authors <authors>
-   Changelog <changelog>
-   Module Reference <api/modules>
-   guia_estudiantes
+    Overview <readme>
+    Contributions & Help <contributing>
+    License <license>
+    Authors <authors>
+    Changelog <changelog>
+    Module Reference <api/modules>
+    guia_estudiantes.md
 
 
 Indices and tables

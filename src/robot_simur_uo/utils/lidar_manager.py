@@ -339,11 +339,15 @@ class LidarManager:
 
         Returns:
             Tuple[List[float], List[float], float, float]:
+
                 - Lista de ángulos dentro del rango
                 - Lista de distancias correspondientes
                 - Ángulo del obstáculo más cercano
                 - Distancia del obstáculo más cercano
-                Si no hay datos válidos, listas vacías y float('inf').
+
+            
+            Si no hay datos válidos, listas vacías y float('inf').
+
         """
 
         try:

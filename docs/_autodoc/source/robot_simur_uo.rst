@@ -1,7 +1,8 @@
-robot\_simur\_uo package
+# Archivo vacío para evitar duplicidad de documentación.
 ========================
 
 .. automodule:: robot_simur_uo
+   :no-index:
    :members:
    :show-inheritance:
    :undoc-members:
