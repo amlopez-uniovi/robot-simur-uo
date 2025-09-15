@@ -117,7 +117,7 @@ class RandomNavigationController(NavigationController):
         Actualiza el controlador y retorna comandos de velocidad.
         
         Args:
-            robot: Instancia del robot para obtener datos de sensores
+            robot (:class:`robot_simur_uo.interfaces.irobot_base.IRobotBase`): Instancia del robot para obtener datos de sensores
             current_x: Posición X actual
             current_y: Posición Y actual  
             current_angle: Ángulo actual del robot
@@ -163,8 +163,8 @@ class RandomNavigationController(NavigationController):
         Obtiene el estado actual del robot (posición y orientación).
         
         Args:
-            robot: Instancia del robot
-            
+            robot (:class:`robot_simur_uo.interfaces.irobot_base.IRobotBase`): Instancia del robot
+        
         Returns:
             Tupla (x, y, angle) con la pose actual del robot
         """

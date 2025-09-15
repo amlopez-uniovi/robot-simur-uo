@@ -95,11 +95,11 @@ class WaypointNavigationController(NavigationLookAhead):
         Actualiza el controlador y devuelve comandos de velocidad.
         
         Args:
-            robot: Instancia del robot
+            robot (:class:`robot_simur_uo.interfaces.irobot_base.IRobotBase`): Instancia del robot
             current_x: Posición X actual
             current_y: Posición Y actual
             current_angle: Ángulo actual del robot (radianes)
-            
+        
         Returns:
             Tupla (velocidad_avance, velocidad_giro)
         """

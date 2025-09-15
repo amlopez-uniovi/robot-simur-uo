@@ -159,7 +159,7 @@
 <span class="sd">        Actualiza el controlador y retorna comandos de velocidad.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            robot: Instancia del robot para obtener datos de sensores</span>
+<span class="sd">            robot (:class:`robot_simur_uo.interfaces.irobot_base.IRobotBase`): Instancia del robot para obtener datos de sensores</span>
 <span class="sd">            current_x: Posición X actual</span>
 <span class="sd">            current_y: Posición Y actual  </span>
 <span class="sd">            current_angle: Ángulo actual del robot</span>
@@ -211,8 +211,8 @@
 <span class="sd">        Obtiene el estado actual del robot (posición y orientación).</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            robot: Instancia del robot</span>
-<span class="sd">            </span>
+<span class="sd">            robot (:class:`robot_simur_uo.interfaces.irobot_base.IRobotBase`): Instancia del robot</span>
+<span class="sd">        </span>
 <span class="sd">        Returns:</span>
 <span class="sd">            Tupla (x, y, angle) con la pose actual del robot</span>
 <span class="sd">        &quot;&quot;&quot;</span>

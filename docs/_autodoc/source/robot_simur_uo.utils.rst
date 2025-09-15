@@ -81,14 +81,6 @@ robot\_simur\_uo.utils.test\_coordinates module
    :show-inheritance:
    :undoc-members:
 
-robot\_simur\_uo.utils.visualization module
--------------------------------------------
-
-.. automodule:: robot_simur_uo.utils.visualization
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 robot\_simur\_uo.utils.waypoints module
 ---------------------------------------
 
