@@ -25,7 +25,7 @@ class WebotsBaseDifferentialRobot(IDifferentialRobot):
     
     def __init__(self, time_step=64):
         """Inicializar el robot base y sus componentes comunes"""
-        self.robot = Robot()
+        self.robot = Robot() #inicializa robot de webots mediante la api
         self.time_step = time_step
         
         # Inicializar componentes comunes
@@ -84,19 +84,24 @@ class WebotsBaseDifferentialRobot(IDifferentialRobot):
             self.lidar_manager = None
     
     def step(self, time_step=None):
-        """Ejecutar un paso de simulación
-        
+        """
+        Ejecuta un paso de simulación en Webots de forma uniforme para cualquier robot.
+
         Args:
-            time_step (int, optional): Duración del paso en milisegundos. 
-                                      Si no se especifica, usa self.time_step
-        
+            time_step (int, optional): Duración del paso en milisegundos. Si no se especifica, se usa self.time_step.
+
         Returns:
-            int: 0 si la simulación continúa, -1 si debe terminar
+            int: 0 si la simulación continúa, -1 si debe terminar.
+
+        Ejemplo de uso:
+            >>> robot = EPuck()
+            >>> while robot.step() != -1:
+            ...     # lógica de control
         """
         if time_step is None:
             time_step = self.time_step
         return self.robot.step(time_step)
-    
+
     def get_gps_position(self):
         """Obtener posición GPS usando GpsManager"""
         return self.gps_manager.get_position()

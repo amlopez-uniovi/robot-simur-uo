@@ -147,17 +147,7 @@ class RosBot(WebotsBaseDifferentialRobot):
         self.set_motor_velocities(speed, -speed)
     
     
-    def step(self, dt: float = None) -> int:
-        """
-        Ejecuta un paso de simulación de Webots.
-        
-        Args:
-            dt: Paso de tiempo (ignorado en Webots, usa time_step interno)
-            
-        Returns:
-            int: -1 si la simulación termina, 0 en caso contrario
-        """
-        return self.robot.step(self.time_step)
+    # El método step se hereda de WebotsBaseDifferentialRobot
     
     
     # Métodos específicos del RosBot
