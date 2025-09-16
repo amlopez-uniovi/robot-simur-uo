@@ -54,6 +54,7 @@ class EPuck(WebotsDifferentialRobotLGC):
         self._init_distance_sensors()
         self.gps_manager = GpsManager(self.robot, time_step=self.time_step)
         self.compass_manager = CompassManager(self.robot, time_step=self.time_step)
+    
     def get_gps_position(self):
         """Obtener posición GPS usando GpsManager"""
         return self.gps_manager.get_position()
@@ -107,13 +108,14 @@ class EPuck(WebotsDifferentialRobotLGC):
         else:
             raise IndexError(f"Índice de sensor {index} fuera de rango (0-7)")
     
-    def set_motor_velocities(self, left_velocity, right_velocity):
+    def set_differential_motor_velocities(self, left_velocity, right_velocity):
         """Establecer velocidades de los motores (izquierdo y derecho)
         
         Args:
             left_velocity (float): Velocidad del motor izquierdo
             right_velocity (float): Velocidad del motor derecho
         """
+        
         # Calcular la velocidad máxima solicitada
         max_requested = max(abs(left_velocity), abs(right_velocity))
         
@@ -123,6 +125,8 @@ class EPuck(WebotsDifferentialRobotLGC):
             left_velocity = left_velocity * scale_ratio
             right_velocity = right_velocity * scale_ratio
                
+        super().set_differential_motor_velocities(left_velocity, right_velocity)  # Llama a la implementación base
+        
         # Aplicar velocidades a los motores físicos
         self.left_motor.setVelocity(left_velocity)
         self.right_motor.setVelocity(right_velocity)
@@ -130,20 +134,20 @@ class EPuck(WebotsDifferentialRobotLGC):
     # Implementación de métodos de movimiento para robot diferencial
     def move_forward(self, speed=2.0):
         """Mover el robot hacia adelante"""
-        self.set_motor_velocities(speed, speed)
+        self.set_drive_command(speed, 0.0)
     
     def move_backward(self, speed=2.0):
         """Mover el robot hacia atrás"""
-        self.set_motor_velocities(-speed, -speed)
-    
+        self.set_drive_command(-speed, 0.0)
+
     def turn_left(self, speed=2.0):
         """Girar el robot a la izquierda"""
-        self.set_motor_velocities(-speed, speed)
+        self.set_drive_command(0.0, speed)
     
     def turn_right(self, speed=2.0):
         """Girar el robot a la derecha"""
-        self.set_motor_velocities(speed, -speed)
-    
+        self.set_drive_command(0.0, -speed)
+
     # El método step se hereda de WebotsDifferentialRobotLGC
     
 

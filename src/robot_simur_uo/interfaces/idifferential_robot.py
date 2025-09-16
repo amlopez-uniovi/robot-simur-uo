@@ -32,14 +32,16 @@ class IDifferentialRobot(IRobotBase):
         
     # Métodos auxiliares para acceso directo a motores
     @abstractmethod
-    def set_motor_velocities(self, left_speed: float, right_speed: float) -> None:
+    def set_differential_motor_velocities(self, left_speed: float, right_speed: float) -> None:
         """
         Método abstracto: debe ser implementado por cada robot concreto para aplicar físicamente las velocidades a los motores.
         Args:
             left_speed: Velocidad del motor izquierdo (rad/s)
             right_speed: Velocidad del motor derecho (rad/s)
         """
-        pass
+        
+        self.left_motor_speed = left_speed  # Velocidad actual del motor izquierdo (rad/s)
+        self.right_motor_speed = right_speed  # Velocidad actual del motor derecho (rad/s
 
     
     # Métodos de la interfaz (sobrescriben IRobotBase con conversiones)
@@ -52,6 +54,9 @@ class IDifferentialRobot(IRobotBase):
             forward_speed: Velocidad lineal en m/s
             steering_speed: Velocidad de dirección en rad/s
         """
+        
+        super().set_drive_command(forward_speed, steering_speed)  # Llama a IRobotBase.set_drive_command()
+        
         # Convertir velocidad lineal a velocidad angular de ruedas
         angular_speed = forward_speed / self.wheel_radius
         # Calcular diferencia de velocidades basada en la velocidad de dirección
@@ -62,12 +67,9 @@ class IDifferentialRobot(IRobotBase):
         # Calcular velocidades de cada rueda
         left_speed = angular_speed - differential_velocity
         right_speed = angular_speed + differential_velocity
-        self.set_motor_velocities(left_speed, right_speed)
+        self.set_differential_motor_velocities(left_speed, right_speed)
 
-
-    
-    
     def stop(self) -> None:
         """Detiene el robot (sobrescribe para incluir motores específicos)."""
         super().stop()  # Llama a IRobotBase.stop()
-        self.set_motor_velocities(0.0, 0.0)
+        self.set_differential_motor_velocities(0.0, 0.0)

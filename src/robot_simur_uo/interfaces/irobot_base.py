@@ -20,6 +20,8 @@ class IRobotBase(ABC):
     
     def __init__(self):
         """Inicializa el robot con pose y estado básico."""
+        
+        self.pose = RobotPose(0.0, 0.0, 0.0)
     
     # Métodos implementados (comunes para todos los robots)
     @abstractmethod
@@ -30,8 +32,17 @@ class IRobotBase(ABC):
         Returns:
             Pose actual del robot
         """
-        return RobotPose(0.0, 0.0, 0.0)  # Valor por defecto, puede ser sobrescrito por subclases
-    
+        return self.pose  # Valor por defecto, puede ser sobrescrito por subclases
+
+    @abstractmethod
+    def set_pose(self, pose: RobotPose) -> None:
+        """
+        Establece la pose actual del robot.
+
+        Args:
+            pose: Nueva pose del robot
+        """
+        self.pose = pose
 
     
     @abstractmethod
@@ -44,7 +55,8 @@ class IRobotBase(ABC):
             steering_speed: Velocidad de dirección (rad/s)
         """
         pass
-    
+        self.forward_speed = forward_speed  # Velocidad lineal actual (m/s)
+        self.steering_speed = steering_speed  # Velocidad de dirección actual (rad/s)
 
     
     def stop(self) -> None:
@@ -71,6 +83,7 @@ class IRobotBase(ABC):
         """
         import time
         import os
+        import math
         
         # Si no hay mensaje generado por la subclase, crear uno básico
         if not hasattr(self, 'log_message') or not self.log_message:
@@ -127,4 +140,17 @@ class IRobotBase(ABC):
         Args:
             dt: Paso de tiempo en segundos
         """
-        pass
+        # Actualiza la pose del robot usando velocidades actuales y el paso de tiempo dt
+
+        # Extraer la pose actual
+        x, y, theta = self.pose.x, self.pose.y, self.pose.theta
+
+        # Actualizar orientación
+        theta_new = theta + self.steering_speed * dt
+
+        # Actualizar posición
+        x_new = x + self.forward_speed * math.cos(theta) * dt
+        y_new = y + self.forward_speed * math.sin(theta) * dt
+
+        # Actualizar la pose
+        self.pose = RobotPose(x_new, y_new, theta_new)
