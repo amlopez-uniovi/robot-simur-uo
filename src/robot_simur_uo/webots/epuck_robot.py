@@ -131,25 +131,6 @@ class EPuck(WebotsDifferentialRobotLGC):
         self.left_motor.setVelocity(left_velocity)
         self.right_motor.setVelocity(right_velocity)
     
-    # Implementación de métodos de movimiento para robot diferencial
-    def move_forward(self, speed=2.0):
-        """Mover el robot hacia adelante"""
-        self.set_drive_command(speed, 0.0)
-    
-    def move_backward(self, speed=2.0):
-        """Mover el robot hacia atrás"""
-        self.set_drive_command(-speed, 0.0)
-
-    def turn_left(self, speed=2.0):
-        """Girar el robot a la izquierda"""
-        self.set_drive_command(0.0, speed)
-    
-    def turn_right(self, speed=2.0):
-        """Girar el robot a la derecha"""
-        self.set_drive_command(0.0, -speed)
-
-    # El método step se hereda de WebotsDifferentialRobotLGC
-    
 
 
     def log_devices(self, to_terminal: bool = True, to_file: str = None) -> None:

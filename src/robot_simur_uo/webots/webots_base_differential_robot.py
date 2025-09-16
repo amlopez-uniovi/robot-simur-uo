@@ -244,18 +244,19 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
         """Inicializar motores específicos del robot (debe ser implementado por subclases)"""
         raise NotImplementedError("Subclases deben implementar _init_motors")
     
+    # Implementación de métodos de movimiento para robot diferencial
     def move_forward(self, speed=2.0):
-        """Mover el robot hacia adelante (debe ser implementado por subclases)"""
-        raise NotImplementedError("Subclases deben implementar move_forward")
+        """Mover el robot hacia adelante"""
+        self.set_drive_command(speed, 0.0)
     
     def move_backward(self, speed=2.0):
-        """Mover el robot hacia atrás (debe ser implementado por subclases)"""
-        raise NotImplementedError("Subclases deben implementar move_backward")
-    
+        """Mover el robot hacia atrás"""
+        self.set_drive_command(-speed, 0.0)
+
     def turn_left(self, speed=2.0):
-        """Girar el robot a la izquierda (debe ser implementado por subclases)"""
-        raise NotImplementedError("Subclases deben implementar turn_left")
+        """Girar el robot a la izquierda"""
+        self.set_drive_command(0.0, speed)
     
     def turn_right(self, speed=2.0):
-        """Girar el robot a la derecha (debe ser implementado por subclases)"""
-        raise NotImplementedError("Subclases deben implementar turn_right")
+        """Girar el robot a la derecha"""
+        self.set_drive_command(0.0, -speed)

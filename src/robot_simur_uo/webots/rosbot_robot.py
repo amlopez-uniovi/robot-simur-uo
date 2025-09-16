@@ -108,8 +108,8 @@ class RosBot(WebotsDifferentialRobotLGC):
         for i in range(4):
             self.distance_sensors_value[i] = self.distance_sensors[i].getValue()
         return self.distance_sensors_value
-    
-    def set_motor_velocities(self, left_velocity, right_velocity):
+
+    def set_differential_motor_velocities(self, left_velocity, right_velocity):
         """Establecer velocidades de los motores (izquierdo y derecho)"""
         # Calcular la velocidad máxima solicitada
         max_requested = max(abs(left_velocity), abs(right_velocity))
@@ -120,29 +120,12 @@ class RosBot(WebotsDifferentialRobotLGC):
             left_velocity = left_velocity * scale_ratio
             right_velocity = right_velocity * scale_ratio
                 
+        super().set_differential_motor_velocities(left_velocity, right_velocity)  # Llama a la implementación base
         # Aplicar velocidades a los motores físicos (4 ruedas)
         self.front_left_motor.setVelocity(left_velocity)
         self.rear_left_motor.setVelocity(left_velocity)
         self.front_right_motor.setVelocity(right_velocity)
         self.rear_right_motor.setVelocity(right_velocity)
-    
-    # Implementación de métodos de movimiento para robot diferencial 4x4
-    def move_forward(self, speed=2.0):
-        """Mover el robot hacia adelante"""
-        self.set_motor_velocities(speed, speed)
-    
-    def move_backward(self, speed=2.0):
-        """Mover el robot hacia atrás"""
-        self.set_motor_velocities(-speed, -speed)
-    
-    def turn_left(self, speed=2.0):
-        """Girar el robot a la izquierda"""
-        self.set_motor_velocities(-speed, speed)
-    
-    def turn_right(self, speed=2.0):
-        """Girar el robot a la derecha"""
-        self.set_motor_velocities(speed, -speed)
-    
     
     # El método step se hereda de WebotsDifferentialRobotLGC
     
