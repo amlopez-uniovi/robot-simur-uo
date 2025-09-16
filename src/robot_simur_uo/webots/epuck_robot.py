@@ -17,12 +17,10 @@ except ImportError:
         def __init__(self, *args, **kwargs):
             raise RuntimeError("El módulo `controller` solo está disponible en el entorno de Webots.")
 
-# Importar WebotsBaseDifferentialRobot del mismo paquete
-from .webots_base_differential_robot import WebotsBaseDifferentialRobot
-from ..interfaces.idifferential_robot import IDifferentialRobot
+from .webots_base_differential_robot import WebotsDifferentialRobotLGC
+from .webots_base_differential_robot import WebotsDifferentialRobotLGC
 
-
-class EPuck(WebotsBaseDifferentialRobot):
+class EPuck(WebotsDifferentialRobotLGC):
     """
     Clase para encapsular la configuración y control del robot e-puck.
 
@@ -33,20 +31,16 @@ class EPuck(WebotsBaseDifferentialRobot):
     """
     
     def __init__(self, time_step=64):
-        """Inicializar el robot e-puck y sus componentes específicos"""
         # Nombres de los sensores de distancia del e-puck
         self.distance_sensors_names = ["ps0", "ps1", "ps2", "ps3", "ps4", "ps5", "ps6", "ps7"]
-        
+
         # Parámetros físicos del e-puck
         wheel_radius = 0.0205  # metros
         wheel_base = 0.052     # metros
 
-        
-        # Inicializar primero la interfaz diferencial con parámetros
-        IDifferentialRobot.__init__(self, wheel_radius, wheel_base)
-            
-        super().__init__(time_step)
-        self.MAX_VELOCITY = 6.28*0.99  # Velocidad máxima  para motores e-puck
+        # Inicializar la jerarquía correctamente
+        super().__init__(wheel_radius, wheel_base, time_step)
+        self.MAX_VELOCITY = 6.28*0.99  # Velocidad máxima para motores e-puck
     
     def _init_lidar_manager(self):
         """Inicializar LidarManager con auto-detección del dispositivo"""
@@ -150,7 +144,7 @@ class EPuck(WebotsBaseDifferentialRobot):
         """Girar el robot a la derecha"""
         self.set_motor_velocities(speed, -speed)
     
-    # El método step se hereda de WebotsBaseDifferentialRobot
+    # El método step se hereda de WebotsDifferentialRobotLGC
     
 
 

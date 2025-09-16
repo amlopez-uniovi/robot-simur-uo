@@ -14,26 +14,22 @@ from ..utils.lidar_manager import LidarManager
 from ..utils.gps_manager import GpsManager
 from ..utils.compass_manager import CompassManager
 
-class WebotsBaseDifferentialRobot(IDifferentialRobot):
+class WebotsDifferentialRobotLGC(IDifferentialRobot):
     """
-    Clase base para robots diferenciales en Webots con funcionalidades comunes.
+    Clase base para robots diferenciales en Webots con sensores LiDAR, GPS y brújula (Compass).
 
     Ejemplo:
-        >>> robot = WebotsBaseDifferentialRobot()
+        >>> robot = WebotsDifferentialRobotLGC()
         >>> # Métodos de inicialización y sensores disponibles
     """
     
-    def __init__(self, time_step=64):
-        """Inicializar el robot base y sus componentes comunes"""
-        self.robot = Robot() #inicializa robot de webots mediante la api
+    def __init__(self, wheel_radius: float, wheel_base: float, time_step=64):
+        super().__init__(wheel_radius, wheel_base)  # Llama al __init__ de IDifferentialRobot
+        self.robot = Robot() #Llamada a la API de Webots
         self.time_step = time_step
-        
-        # Inicializar componentes comunes
         self._init_common_components()
+        self._init_specific_components()    
         
-        # Inicializar componentes específicos del robot (implementado en subclases)
-        self._init_specific_components()
-    
     def _init_common_components(self):
         """Inicializar componentes comunes a todos los robots"""
         self.gps_manager = GpsManager(self.robot, time_step=self.time_step)
@@ -41,9 +37,8 @@ class WebotsBaseDifferentialRobot(IDifferentialRobot):
         # Inicializar LidarManager
         self.lidar_manager = None
         self._init_lidar_manager()
-        
-
     
+
     def _init_specific_components(self):
         """Inicializar componentes específicos del robot (debe ser implementado por subclases)"""
         raise NotImplementedError("Subclases deben implementar _init_specific_components")
@@ -54,7 +49,7 @@ class WebotsBaseDifferentialRobot(IDifferentialRobot):
         """Inicializar LidarManager con auto-detección del dispositivo"""
         try:
             # Lista de nombres posibles para dispositivos LiDAR
-            possible_names = ["lidar", "laser", "Lidar", "LIDAR"]
+            possible_names = ["laser", "lidar", "Lidar", "LIDAR"]
             device_name = None
             
             # Buscar el primer dispositivo disponible
@@ -134,16 +129,6 @@ class WebotsBaseDifferentialRobot(IDifferentialRobot):
         super().cleanup()
     
     # Implementación de la interfaz IRobot
-    def set_motor_speeds(self, left_speed: float, right_speed: float) -> None:
-        """
-        Establece las velocidades de los motores.
-        
-        Args:
-            left_speed: Velocidad del motor izquierdo (rad/s)
-            right_speed: Velocidad del motor derecho (rad/s)
-        """
-        # Debe ser implementado por subclases específicas
-        raise NotImplementedError("Subclases deben implementar set_motor_speeds")
     
     def get_pose(self) -> RobotPose:
         """
@@ -166,7 +151,7 @@ class WebotsBaseDifferentialRobot(IDifferentialRobot):
         """
         print(f"Advertencia: set_pose no está soportado en robots de Webots durante la simulación")
     
-    def get_motor_speeds(self) -> Tuple[float, float]:
+    def get_motor_velocities(self) -> Tuple[float, float]:
         """
         Obtiene las velocidades actuales de los motores.
         
@@ -174,7 +159,7 @@ class WebotsBaseDifferentialRobot(IDifferentialRobot):
             Tupla (velocidad_izquierda, velocidad_derecha) en rad/s
         """
         # Debe ser implementado por subclases específicas
-        raise NotImplementedError("Subclases deben implementar get_motor_speeds")
+        raise NotImplementedError("Subclases deben implementar get_motor_velocities")
     
     def log_lidar_data(self) -> list:
         """

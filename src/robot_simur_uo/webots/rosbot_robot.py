@@ -16,13 +16,12 @@ except ImportError:
         def __init__(self, *args, **kwargs):
             raise RuntimeError("El módulo `controller` solo está disponible en el entorno de Webots.")
 
-# Importar WebotsBaseDifferentialRobot del mismo paquete
-from .webots_base_differential_robot import WebotsBaseDifferentialRobot
+from .webots_base_differential_robot import WebotsDifferentialRobotLGC
 from ..interfaces.idifferential_robot import IDifferentialRobot
 from ..utils.imu_manager import ImuManager
 
 
-class RosBot(WebotsBaseDifferentialRobot):
+class RosBot(WebotsDifferentialRobotLGC):
     """
     Clase para encapsular la configuración y control del robot RosBot.
 
@@ -38,12 +37,10 @@ class RosBot(WebotsBaseDifferentialRobot):
         wheel_base = 0.22      # metros
         
         # Inicializar primero la interfaz diferencial con parámetros
-        IDifferentialRobot.__init__(self, wheel_radius, wheel_base)
+        super().__init__(wheel_radius, wheel_base, time_step)
         
         self.MAX_VELOCITY = 26*0.99
-        
-        super().__init__(time_step)
-    
+         
     def _init_specific_components(self):
         """Inicializar componentes específicos del RosBot"""
         self._init_motors()
@@ -147,7 +144,7 @@ class RosBot(WebotsBaseDifferentialRobot):
         self.set_motor_velocities(speed, -speed)
     
     
-    # El método step se hereda de WebotsBaseDifferentialRobot
+    # El método step se hereda de WebotsDifferentialRobotLGC
     
     
     # Métodos específicos del RosBot

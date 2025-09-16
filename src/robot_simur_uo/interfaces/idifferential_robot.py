@@ -23,19 +23,13 @@ class IDifferentialRobot(IRobotBase):
     Métodos adicionales para acceso directo a motores (opcional).
     """
     
-    def __init__(self, wheel_radius: float = 0.0205, wheel_base: float = 0.117):
-        """
-        Inicializa el robot diferencial con estado de motores y parámetros físicos.
-        
-        Args:
-            wheel_radius: Radio de la rueda (metros)
-            wheel_base: Distancia entre ruedas (metros)
-        """
-        super().__init__()  # Inicializar IRobotBase (pose y estado básico)
-        # Parámetros físicos comunes
+    def __init__(self, wheel_radius: float, wheel_base: float):
+        super().__init__()  # Inicializar IRobotBase
         self.wheel_radius = wheel_radius
         self.wheel_base = wheel_base
+        
     
+        
     # Métodos auxiliares para acceso directo a motores
     @abstractmethod
     def set_motor_velocities(self, left_speed: float, right_speed: float) -> None:
@@ -64,12 +58,11 @@ class IDifferentialRobot(IRobotBase):
         # Para robots diferenciales: omega = (v_derecha - v_izquierda) / wheel_base
         # Por lo tanto: v_diferencial = steering_speed * wheel_base / 2
         differential_velocity = steering_speed * self.wheel_base / (2.0 * self.wheel_radius)
+        
         # Calcular velocidades de cada rueda
         left_speed = angular_speed - differential_velocity
         right_speed = angular_speed + differential_velocity
         self.set_motor_velocities(left_speed, right_speed)
-        # NO almacenar forward_speed y steering_speed redundantemente
-        # Se calculan cuando se necesiten usando get_forward_speed() y get_steering_speed()
 
 
     
