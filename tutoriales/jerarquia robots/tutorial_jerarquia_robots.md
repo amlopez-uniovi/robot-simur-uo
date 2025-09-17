@@ -26,119 +26,30 @@
 
 ---
 
+
 ## 3) Inicio rápido (5 min)
 
-### 3.1. Elegir clase concreta
-- Webots → `EPuckRobot` (o tu subclase de la base Webots).
-- ROSbot → `RosbotRobot`.
+### La demo `_skeleton demo`: tu plantilla para nuevos proyectos
 
-### 3.2. Bucle mínimo de control
-```python
-robot = EPuckRobot()  # o RosbotRobot(), etc.
-for _ in range(1000):
-    robot.step()        # avanza la simulación / ciclo de control
-    robot.set_drive_command(0.1, 0.0)    # v=0.1 m/s, w=0 rad/s (avanzar recto)
-robot.stop()
-```
+La carpeta `webots_demos/_skeleton demo` es una **plantilla mínima y funcional** para crear tus propios experimentos o prácticas con robots diferenciales en Webots. Incluye:
 
-### 3.3. Obtener la pose/odometría
-```python
-pose = robot.get_pose()   # (x, y, yaw) o equivalente
-print(pose)
-```
+- Un mundo `.wbt` listo para usar (con EPuck y RosBot)
+- Controladores de ejemplo para ambos robots (`skeleton_controller.py`, `epuck_skeleton_controller.py`, `rosbot_skeleton_controller.py`)
+- Estructura de carpetas y archivos recomendada
 
----
+#### ¿Cómo se usa?
+1. **Copia la carpeta** `_skeleton demo` dentro de `webots_demos` y renómbrala según tu proyecto (por ejemplo, `mi_nueva_demo/`).
+2. Renombra los controladores y el mundo si lo deseas.
+3. Modifica el código del controlador para implementar tu lógica, usando la jerarquía de robots (por ejemplo, `from robot_simur_uo.webots.epuck_robot import EPuck`).
+4. Abre el mundo en Webots y selecciona el controlador correspondiente para cada robot.
 
-## 4) Dos formas de mandar movimiento
+#### ¿Por qué es útil?
+- Garantiza que **todas las demos** sigan la misma estructura y buenas prácticas.
+- Permite empezar desde una base funcional, sin errores de configuración.
+- Facilita la integración con la jerarquía de robots y la reutilización de código.
 
-Elige **una** y sé consistente:
-1) **Cinemática del chasis**: `set_drive_command(v, w)`  
-2) **Velocidades de ruedas**: `set_differential_motor_velocities(wl, wr)`
-
-La jerarquía asegura que ambas rutas están disponibles.
+#### Integración en `webots_demos`
+La carpeta `_skeleton demo` está pensada para **no ser modificada directamente**. Siempre crea una copia antes de trabajar. Así, si necesitas empezar otro proyecto, tendrás siempre una plantilla limpia y actualizada.
 
 ---
 
-## 5) Patrón de uso en prácticas
-
-1. Instancia el robot.
-2. En cada ciclo:
-   - `step`
-   - Lee sensores (si procede)
-   - Calcula `v, w` (o `wl, wr`)
-   - Envía el comando correspondiente
-3. Llama a `stop()` al finalizar.
-
----
-
-## 6) Extender la jerarquía: tu propio robot
-
-### 6.1. ¿De qué clase heredar?
-- Si es diferencial **y** tienes base de plataforma → hereda de la **base de plataforma**.
-- Si es diferencial sin base → hereda de `IDifferentialRobot`.
-- Si no es diferencial → hereda de `IRobotBase`.
-
-### 6.2. ¿Qué implementar?
-- Inicialización de **motores** y **sensores** (métodos tipo `_init_motors`, `_init_distance_sensors`, `_init_specific_components`).
-- Conversión de `(wl, wr)` a comandos de actuador: `set_differential_motor_velocities(wl, wr)`.
-- (Opcional) gestores de sensores (ej. LIDAR).
-
-### 6.3. Esqueleto de subclase
-```python
-class MyRobot(WebotsBaseDifferentialRobot):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def _init_specific_components(self):
-        pass
-
-    def _init_motors(self):
-        pass
-
-    def _init_distance_sensors(self):
-        pass
-
-    def set_differential_motor_velocities(self, wl, wr):
-        pass
-```
-
----
-
-## 7) Buenas prácticas y errores comunes
-- No mezcles `(v, w)` y `(wl, wr)` sin controlar la conversión.
-- Mantén `step()` en un **timestep** estable.
-- Verifica unidades (m/s vs rad/s).
-- Si no se mueve, revisa inicialización y que no se haya quedado en `stop()`.
-
----
-
-## 8) Mini–práctica (30–45 min): Seguir una pared (e-puck)
-
-1) Bucle de 2000 pasos.  
-2) Lee sensor lateral.  
-3) `e = d* - d`.  
-4) `w = k_p * e`, `v` constante.  
-5) Envía `set_drive_command(v, w)`.  
-6) Ajusta `k_p` y analiza.
-
----
-
-## 9) Pruebas rápidas (pytest)
-```python
-def test_interfaces_basicas():
-    r = EPuckRobot()
-    r.set_drive_command(0.1, 0.0)
-    r.set_differential_motor_velocities(1.0, 1.0)
-    for _ in range(5):
-        r.step()
-    assert r.get_pose() is not None
-```
-
----
-
-## 10) Checklist para un robot nuevo
-- [ ] Herencia correcta (IDifferential o base de plataforma)  
-- [ ] Motores/sensores inicializados donde toca  
-- [ ] `set_differential_motor_velocities` implementado y con unidades correctas  
-- [ ] `step()` sincroniza entradas/salidas  
-- [ ] `stop()` detiene de forma segura  
