@@ -1,0 +1,6 @@
+# Requisitos principales para robot-simur-uo
+numpy
+matplotlib
+sphinx
+setuptools
+# Nota: El paquete 'controller' de Webots debe instalarse desde Webots o su pip específico.
