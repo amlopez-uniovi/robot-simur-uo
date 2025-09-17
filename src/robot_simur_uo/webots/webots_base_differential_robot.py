@@ -190,9 +190,9 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
         """
         gps_position = self.get_gps_position()
         compass_direction, angle = self.get_compass_orientation()
-        
+
         self.pose = RobotPose(gps_position[0], gps_position[1], angle)
-        
+
         return self.pose
     
     def set_pose(self, pose: RobotPose) -> None:
