@@ -30,7 +30,7 @@ class LidarManager:
         >>> print(datos)
     """
     
-    def __init__(self, robot: Robot, device_name: str = "lidar", 
+    def __init__(self, robot: Robot, device_name: str = "laser", 
                  sweep_range: Tuple[float, float] = (0.0, -2*math.pi), 
                  time_step: int = 32):
         """

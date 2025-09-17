@@ -46,6 +46,7 @@ class EPuck(WebotsDifferentialRobotLGC):
         """Inicializar LidarManager con auto-detección del dispositivo"""
         super()._init_lidar_manager()
         
+        print("Configurando LidarManager para e-puck...")
         self.lidar_manager.set_sweep_range((math.pi, -math.pi))  # Rango completo de 360 grados
         
     def _init_specific_components(self  ):
@@ -54,16 +55,6 @@ class EPuck(WebotsDifferentialRobotLGC):
         self._init_distance_sensors()
         self.gps_manager = GpsManager(self.robot, time_step=self.time_step)
         self.compass_manager = CompassManager(self.robot, time_step=self.time_step)
-    
-    def get_gps_position(self):
-        """Obtener posición GPS usando GpsManager"""
-        return self.gps_manager.get_position()
-
-    def get_compass_orientation(self):
-        """Obtener orientación de la brújula usando CompassManager"""
-        direction = self.compass_manager.get_direction()
-        angle = math.pi / 2 - math.atan2(direction[1], direction[0])
-        return direction, angle
     
     def _init_motors(self):
         """Inicializar y configurar los motores del robot"""

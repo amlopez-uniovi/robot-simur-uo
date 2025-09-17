@@ -6,6 +6,7 @@ Define los métodos comunes que deben implementar todas las clases de robot.
 
 from abc import ABC, abstractmethod
 from ..utils.coordinates import RobotPose
+import math
 
 
 class IRobotBase(ABC):
@@ -130,10 +131,27 @@ class IRobotBase(ABC):
                     
         # Limpiar el mensaje después de usarlo (opcional)
         self.log_message = ""
-            
+        
+    # Implementación de métodos de movimiento 
+    def move_forward(self, speed=2.0):
+        """Mover el robot hacia adelante"""
+        self.set_drive_command(speed, 0.0)
+    
+    def move_backward(self, speed=2.0):
+        """Mover el robot hacia atrás"""
+        self.set_drive_command(-speed, 0.0)
+
+    def turn_left(self, speed=2.0):
+        """Girar el robot a la izquierda"""
+        self.set_drive_command(0.0, speed)
+    
+    def turn_right(self, speed=2.0):
+        """Girar el robot a la derecha"""
+        self.set_drive_command(0.0, -speed)
+                    
     # Métodos abstractos (deben ser implementados por las subclases)
     @abstractmethod
-    def step(self, dt: float) -> None:
+    def step(self, time_step=None) -> None:
         """
         Ejecuta un paso de simulación.
         
@@ -146,11 +164,11 @@ class IRobotBase(ABC):
         x, y, theta = self.pose.x, self.pose.y, self.pose.theta
 
         # Actualizar orientación
-        theta_new = theta + self.steering_speed * dt
+        theta_new = theta + self.steering_speed * time_step
 
         # Actualizar posición
-        x_new = x + self.forward_speed * math.cos(theta) * dt
-        y_new = y + self.forward_speed * math.sin(theta) * dt
+        x_new = x + self.forward_speed * math.cos(theta) * time_step
+        y_new = y + self.forward_speed * math.sin(theta) * time_step
 
         # Actualizar la pose
         self.pose = RobotPose(x_new, y_new, theta_new)

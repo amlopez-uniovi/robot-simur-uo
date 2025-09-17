@@ -31,20 +31,71 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
         self._init_specific_components()    
         
     def _init_common_components(self):
-        """Inicializar componentes comunes a todos los robots"""
-        self.gps_manager = GpsManager(self.robot, time_step=self.time_step)
-        self.compass_manager = CompassManager(self.robot, time_step=self.time_step)
-        # Inicializar LidarManager
-        self.lidar_manager = None
+        """Inicializar componentes comunes a todos los robots que usamos, algunos añadidos por nosotros
+        Asumimos que todos tienen GPS, Compass y Lidar
+        """
+        self._init_gps_manager()
+        self._init_compass_manager()
         self._init_lidar_manager()
-    
 
     def _init_specific_components(self):
         """Inicializar componentes específicos del robot (debe ser implementado por subclases)"""
         raise NotImplementedError("Subclases deben implementar _init_specific_components")
-    
-    # Eliminado: _init_navigation_sensors (ahora gestionado por managers)
-    
+
+    def _init_gps_manager(self):
+        """Inicializar GpsManager con auto-detección del dispositivo"""
+        try:
+            possible_names = ["gps", "GPS", "Gps"]
+            device_name = None
+            
+            for name in possible_names:
+                try:
+                    test_device = self.robot.getDevice(name)
+                    if test_device is not None:
+                        device_name = name
+                        print(f"🔍 Dispositivo GPS encontrado: '{name}'")
+                        break
+                except:
+                    continue
+            
+            if device_name:
+                self.gps_manager = GpsManager(self.robot, device_name=device_name, time_step=self.time_step)
+                print(f"✅ GpsManager inicializado con dispositivo '{device_name}'")
+            else:
+                print("⚠️ No se encontró ningún dispositivo GPS en el robot")
+                self.gps_manager = None
+            
+        except Exception as e:
+            print(f"⚠️ Error inicializando GpsManager: {e}")
+            self.gps_manager = None
+            
+    def _init_compass_manager(self):
+        """Inicializar CompassManager con auto-detección del dispositivo"""
+        try:
+            possible_names = ["compass", "Compass", "COMPASS"]
+            device_name = None
+            
+            for name in possible_names:
+                try:
+                    test_device = self.robot.getDevice(name)
+                    if test_device is not None:
+                        device_name = name
+                        print(f"🔍 Dispositivo Compass encontrado: '{name}'")
+                        break
+                except:
+                    continue
+
+            if device_name:
+                self.compass_manager = CompassManager(self.robot, device_name=device_name, time_step=self.time_step)
+                print(f"✅ CompassManager inicializado con dispositivo '{device_name}'")
+            else:
+                print("⚠️ No se encontró ningún dispositivo Compass en el robot")
+                self.compass_manager = None
+
+        except Exception as e:
+            print(f"⚠️ Error inicializando CompassManager: {e}")
+            self.compass_manager = None
+
     def _init_lidar_manager(self):
         """Inicializar LidarManager con auto-detección del dispositivo"""
         try:
@@ -73,11 +124,23 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
             else:
                 print("⚠️ No se encontró ningún dispositivo LiDAR en el robot")
                 self.lidar_manager = None
-                
+            
         except Exception as e:
             print(f"⚠️ Error inicializando LidarManager: {e}")
             self.lidar_manager = None
+            
+    def get_lidar_manager(self):
+        """Obtener el LidarManager configurado"""
+        return self.lidar_manager
     
+    def get_compass_manager(self):
+        """Obtener el CompassManager configurado"""
+        return self.compass_manager
+    
+    def get_gps_manager(self):
+        """Obtener el GpsManager configurado"""
+        return self.gps_manager
+        
     def step(self, time_step=None):
         """
         Ejecuta un paso de simulación en Webots de forma uniforme para cualquier robot.
@@ -109,20 +172,8 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
     
     def get_lidar_data(self):
         """Obtener datos del lidar/laser"""
-        if self.has_lidar_manager():
-            return self.lidar_manager.get_raw_data()
-        return []
-    
-    
-    def get_lidar_manager(self):
-        """Obtener el LidarManager configurado"""
-        return self.lidar_manager
-    
-    def has_lidar_manager(self):
-        """Verificar si el LidarManager está disponible"""
-        return self.lidar_manager is not None and self.lidar_manager.is_available()
-    
-    
+        return self.lidar_manager.get_raw_data()
+
     def cleanup(self):
         """Limpiar recursos al finalizar"""
         # Llamar al método de la interfaz base que detiene el robot
@@ -140,9 +191,11 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
         gps_position = self.get_gps_position()
         compass_direction, angle = self.get_compass_orientation()
         
-        return RobotPose(gps_position[0], gps_position[1], angle)
+        self.pose = RobotPose(gps_position[0], gps_position[1], angle)
+        
+        return self.pose
     
-    def set_pose(self, x: float, y: float, theta: float) -> None:
+    def set_pose(self, pose: RobotPose) -> None:
         """
         Establece la pose del robot.
         
@@ -172,10 +225,7 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
         log_lines = []
         
         try:
-            # Verificar si el LiDAR está disponible
-            if not self.has_lidar_manager():
-                log_lines.append("Lidar: No disponible")
-                return log_lines
+
                 
             # Usar LidarManager para obtener información del LiDAR
             lidar_manager = self.get_lidar_manager()
@@ -244,19 +294,3 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
         """Inicializar motores específicos del robot (debe ser implementado por subclases)"""
         raise NotImplementedError("Subclases deben implementar _init_motors")
     
-    # Implementación de métodos de movimiento para robot diferencial
-    def move_forward(self, speed=2.0):
-        """Mover el robot hacia adelante"""
-        self.set_drive_command(speed, 0.0)
-    
-    def move_backward(self, speed=2.0):
-        """Mover el robot hacia atrás"""
-        self.set_drive_command(-speed, 0.0)
-
-    def turn_left(self, speed=2.0):
-        """Girar el robot a la izquierda"""
-        self.set_drive_command(0.0, speed)
-    
-    def turn_right(self, speed=2.0):
-        """Girar el robot a la derecha"""
-        self.set_drive_command(0.0, -speed)

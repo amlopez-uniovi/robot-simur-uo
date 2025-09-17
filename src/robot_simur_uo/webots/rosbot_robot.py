@@ -40,7 +40,14 @@ class RosBot(WebotsDifferentialRobotLGC):
         super().__init__(wheel_radius, wheel_base, time_step)
         
         self.MAX_VELOCITY = 26*0.99
-         
+    
+    def _init_lidar_manager(self):
+        """Inicializar LidarManager con auto-detección del dispositivo"""
+        super()._init_lidar_manager()
+        
+        print("Configurando LidarManager para e-puck...")
+        self.lidar_manager.set_sweep_range((0.0, -2*math.pi))  # Rango completo de 360 grados
+     
     def _init_specific_components(self):
         """Inicializar componentes específicos del RosBot"""
         self._init_motors()
