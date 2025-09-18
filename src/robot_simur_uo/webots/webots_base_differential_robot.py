@@ -29,7 +29,11 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
         self.time_step = time_step
         self._init_common_components()
         self._init_specific_components()    
-        
+       
+    def _init_motors(self):
+        """Inicializar motores específicos del robot (debe ser implementado por subclases)"""
+        raise NotImplementedError("Subclases deben implementar _init_motors")
+
     def _init_common_components(self):
         """Inicializar componentes comunes a todos los robots que usamos, algunos añadidos por nosotros
         Asumimos que todos tienen GPS, Compass y Lidar
@@ -141,45 +145,11 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
         """Obtener el GpsManager configurado"""
         return self.gps_manager
         
-    def step(self, time_step=None):
-        """
-        Ejecuta un paso de simulación en Webots de forma uniforme para cualquier robot.
 
-        Args:
-            time_step (int, optional): Duración del paso en milisegundos. Si no se especifica, se usa self.time_step.
-
-        Returns:
-            int: 0 si la simulación continúa, -1 si debe terminar.
-
-        Ejemplo de uso:
-            >>> robot = EPuck()
-            >>> while robot.step() != -1:
-            ...     # lógica de control
-        """
-        if time_step is None:
-            time_step = self.time_step
-        return self.robot.step(time_step)
-
-    def get_gps_position(self):
-        """Obtener posición GPS usando GpsManager"""
-        return self.gps_manager.get_position()
-
-    def get_compass_orientation(self):
-        """Obtener orientación de la brújula usando CompassManager"""
-        direction = self.compass_manager.get_direction()
-        angle = math.pi / 2 - math.atan2(direction[1], direction[0])
-        return direction, angle
     
     def get_lidar_data(self):
         """Obtener datos del lidar/laser"""
         return self.lidar_manager.get_raw_data()
-
-    def cleanup(self):
-        """Limpiar recursos al finalizar"""
-        # Llamar al método de la interfaz base que detiene el robot
-        super().cleanup()
-    
-    # Implementación de la interfaz IRobot
     
     def get_pose(self) -> RobotPose:
         """
@@ -188,8 +158,10 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
         Returns:
             Pose actual del robot
         """
-        gps_position = self.get_gps_position()
-        compass_direction, angle = self.get_compass_orientation()
+        gps_position = self.gps_manager.get_position()
+
+        direction = self.compass_manager.get_direction()
+        angle = math.pi / 2 - math.atan2(direction[1], direction[0])
 
         self.pose = RobotPose(gps_position[0], gps_position[1], angle)
 
@@ -290,7 +262,28 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
             print("Warning: No log message available. Subclases should set self.log_message before calling super().log_devices()")
     
     # Métodos abstractos que deben ser implementados por subclases
-    def _init_motors(self):
-        """Inicializar motores específicos del robot (debe ser implementado por subclases)"""
-        raise NotImplementedError("Subclases deben implementar _init_motors")
+    
+    def step(self, time_step=None):
+        """
+        Ejecuta un paso de simulación en Webots de forma uniforme para cualquier robot.
+
+        Args:
+            time_step (int, optional): Duración del paso en milisegundos. Si no se especifica, se usa self.time_step.
+
+        Returns:
+            int: 0 si la simulación continúa, -1 si debe terminar.
+
+        Ejemplo de uso:
+            >>> robot = EPuck()
+            >>> while robot.step() != -1:
+            ...     # lógica de control
+        """
+        if time_step is None:
+            time_step = self.time_step
+        return self.robot.step(time_step)
+    
+    def cleanup(self):
+        """Limpiar recursos al finalizar"""
+        # Llamar al método de la interfaz base que detiene el robot
+        super().cleanup()
     
