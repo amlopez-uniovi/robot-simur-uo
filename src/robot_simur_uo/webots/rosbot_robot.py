@@ -16,9 +16,12 @@ except ImportError:
         def __init__(self, *args, **kwargs):
             raise RuntimeError("El módulo `controller` solo está disponible en el entorno de Webots.")
 
+
 from .webots_base_differential_robot import WebotsDifferentialRobotLGC
 from ..interfaces.idifferential_robot import IDifferentialRobot
 from ..utils.imu_manager import ImuManager
+from ..utils.rgb_camera_manager import RgbCameraManager
+from ..utils.depth_camera_manager import DepthCameraManager
 
 
 class RosBot(WebotsDifferentialRobotLGC):
@@ -87,13 +90,10 @@ class RosBot(WebotsDifferentialRobotLGC):
             sensor.enable(self.time_step)
     
     def _init_cameras(self):
-        """Inicializar cámaras RGB y de profundidad"""
-        self.camera_rgb = self.robot.getDevice("camera rgb")
-        self.camera_depth = self.robot.getDevice("camera depth")
-        
-        self.camera_rgb.enable(self.time_step)
-        self.camera_depth.enable(self.time_step)
-    
+        """Inicializar managers de cámaras RGB y de profundidad"""
+        self.rgb_camera_manager = RgbCameraManager(self.robot, device_name="camera rgb", time_step=self.time_step)
+        self.depth_camera_manager = DepthCameraManager(self.robot, device_name="camera depth", time_step=self.time_step)
+
     def _init_imu(self):
         """Inicializar IMU usando ImuManager"""
         self.imu_manager = ImuManager(self.robot, time_step=self.time_step)
@@ -109,12 +109,25 @@ class RosBot(WebotsDifferentialRobotLGC):
             self.distance_sensors.append(sensor)
             
         self.distance_sensors_value = [0] * 4
+
+    def get_rgb_camera_manager(self):
+        """Obtener el manager de la cámara RGB"""
+        return self.rgb_camera_manager
+
+    def get_depth_camera_manager(self):
+        """Obtener el manager de la cámara de profundidad"""
+        return self.depth_camera_manager
+    
+    def get_imu_manager(self) -> ImuManager:
+        """Obtener el gestor de IMU para acceder a acelerómetro, giroscopio y brújula"""
+        return self.imu_manager
     
     def get_distance_sensor_values(self):
         """Obtener valores de los sensores de distancia (específico del RosBot)"""
+        distance_sensors_values = [0] * 4
         for i in range(4):
-            self.distance_sensors_value[i] = self.distance_sensors[i].getValue()
-        return self.distance_sensors_value
+            distance_sensors_values[i] = self.distance_sensors[i].getValue()
+        return distance_sensors_values
 
     def set_differential_motor_velocities(self, left_velocity, right_velocity):
         """Establecer velocidades de los motores (izquierdo y derecho)"""
@@ -132,31 +145,7 @@ class RosBot(WebotsDifferentialRobotLGC):
         self.front_left_motor.setVelocity(left_velocity)
         self.rear_left_motor.setVelocity(left_velocity)
         self.front_right_motor.setVelocity(right_velocity)
-        self.rear_right_motor.setVelocity(right_velocity)
-    
-    # El método step se hereda de WebotsDifferentialRobotLGC
-    
-    
-    # Métodos específicos del RosBot
-    def get_accelerometer_values(self):
-        """Obtener valores del acelerómetro"""
-        return self.imu_manager.get_accelerometer()
-
-    def get_gyro_values(self):
-        """Obtener valores del giroscopio"""
-        return self.imu_manager.get_gyro()
-
-    def get_imu_compass_values(self):
-        """Obtener valores de la brújula del IMU"""
-        return self.imu_manager.get_compass()
-    
-    def get_camera_rgb_image(self):
-        """Obtener imagen RGB de la cámara"""
-        return self.camera_rgb.getImage()
-    
-    def get_camera_depth_image(self):
-        """Obtener imagen de profundidad de la cámara"""
-        return self.camera_depth.getRangeImage()
+        self.rear_right_motor.setVelocity(right_velocity)  
     
     def get_position_sensor_values(self):
         """Obtener valores de los sensores de posición de las ruedas"""

@@ -1,3 +1,4 @@
+from ..utils.rgb_camera_manager import RgbCameraManager
 from ..utils.gps_manager import GpsManager
 from ..utils.compass_manager import CompassManager
 # Archivo que contiene la clase EPuck para encapsular la configuración del robot e-puck
@@ -54,6 +55,11 @@ class EPuck(WebotsDifferentialRobotLGC):
         self._init_distance_sensors()
         self.gps_manager = GpsManager(self.robot, time_step=self.time_step)
         self.compass_manager = CompassManager(self.robot, time_step=self.time_step)
+        self.rgb_camera_manager = RgbCameraManager(self.robot, device_name="camera", time_step=self.time_step)
+
+    def get_rgb_camera_manager(self):
+        """Obtener el manager de la cámara RGB del e-puck"""
+        return self.rgb_camera_manager
     
     def _init_motors(self):
         """Inicializar y configurar los motores del robot"""
@@ -80,24 +86,12 @@ class EPuck(WebotsDifferentialRobotLGC):
     
     def get_distance_sensor_values(self):
         """Obtener valores de los sensores de distancia (específico del e-puck)"""
+        distance_sensors_values = [0] * 8
         for i in range(8):
-            self.distance_sensors_value[i] = self.distance_sensors[i].getValue()
-        return self.distance_sensors_value
-    
-    def get_distance_sensor_value(self, index):
-        """Obtener valor de un sensor de distancia específico
-        
-        Args:
-            index (int): Índice del sensor (0-7)
-        
-        Returns:
-            float: Valor del sensor de distancia
-        """
-        if 0 <= index < 8:
-            return self.distance_sensors[index].getValue()
-        else:
-            raise IndexError(f"Índice de sensor {index} fuera de rango (0-7)")
-    
+            distance_sensors_values[i] = self.distance_sensors[i].getValue()
+        return distance_sensors_values
+
+
     def set_differential_motor_velocities(self, left_velocity, right_velocity):
         """Establecer velocidades de los motores (izquierdo y derecho)
         
@@ -180,28 +174,23 @@ class EPuck(WebotsDifferentialRobotLGC):
         except Exception as e:
             log_lines.append(f"Distance Sensors: Error - {e}")
             
-        # 6. Cámara (propiedades directas)
+        # 6. Cámara (usando manager)
         try:
-            camera = self.robot.getDevice("camera")
-            if camera:
-                log_lines.append(f"Camera:")
-                log_lines.append(f"  Width: {camera.getWidth()}px")
-                log_lines.append(f"  Height: {camera.getHeight()}px")
-                log_lines.append(f"  FOV: {camera.getFov():.4f}rad")
-                log_lines.append(f"  Near: {camera.getNear():.4f}m")
-                log_lines.append(f"  Far: {camera.getFar():.4f}m")
-                
-                # Estado de imagen
-                try:
-                    image = camera.getImage()
-                    if image:
-                        log_lines.append(f"  Image data: {len(image)} bytes available")
-                    else:
-                        log_lines.append(f"  Image data: Not available")
-                except:
-                    log_lines.append(f"  Image data: Access error")
-            else:
-                log_lines.append("Camera: Device not found")
+            camera_manager = self.get_rgb_camera_manager()
+            log_lines.append(f"Camera:")
+            width, height = camera_manager.get_resolution()
+            log_lines.append(f"  Width: {width}px")
+            log_lines.append(f"  Height: {height}px")
+            # Si el manager expone FOV, Near, Far, puedes añadirlo aquí
+            # Estado de imagen
+            try:
+                image = camera_manager.get_image()
+                if image is not None:
+                    log_lines.append(f"  Image data: {image.shape} (numpy array)")
+                else:
+                    log_lines.append(f"  Image data: Not available")
+            except Exception as e:
+                log_lines.append(f"  Image data: Access error - {e}")
         except Exception as e:
             log_lines.append(f"Camera: Error - {e}")
                 
