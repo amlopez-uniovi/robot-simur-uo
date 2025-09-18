@@ -18,17 +18,19 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
     """
     Clase base para robots diferenciales en Webots con sensores LiDAR, GPS y brújula (Compass).
 
-    Ejemplo:
-        >>> robot = WebotsDifferentialRobotLGC()
-        >>> # Métodos de inicialización y sensores disponibles
     """
-    
+    #Inicializaciones ...
     def __init__(self, wheel_radius: float, wheel_base: float, time_step=64):
         super().__init__(wheel_radius, wheel_base)  # Llama al __init__ de IDifferentialRobot
         self.robot = Robot() #Llamada a la API de Webots
         self.time_step = time_step
         self._init_common_components()
         self._init_specific_components()    
+ 
+    def cleanup(self):
+        """Limpiar recursos al finalizar"""
+        # Llamar al método de la interfaz base que detiene el robot
+        super().cleanup()
        
     def _init_motors(self):
         """Inicializar motores específicos del robot (debe ser implementado por subclases)"""
@@ -132,6 +134,8 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
         except Exception as e:
             print(f"⚠️ Error inicializando LidarManager: {e}")
             self.lidar_manager = None
+
+    #Acceso a managers de dispositivos
             
     def get_lidar_manager(self):
         """Obtener el LidarManager configurado"""
@@ -144,13 +148,9 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
     def get_gps_manager(self):
         """Obtener el GpsManager configurado"""
         return self.gps_manager
-        
 
-    
-    def get_lidar_data(self):
-        """Obtener datos del lidar/laser"""
-        return self.lidar_manager.get_raw_data()
-    
+    #Gestión de la Pose
+                
     def get_pose(self) -> RobotPose:
         """
         Obtiene la pose actual del robot.
@@ -176,42 +176,28 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
         """
         print(f"Advertencia: set_pose no está soportado en robots de Webots durante la simulación")
     
-    def get_motor_velocities(self) -> Tuple[float, float]:
-        """
-        Obtiene las velocidades actuales de los motores.
-        
-        Returns:
-            Tupla (velocidad_izquierda, velocidad_derecha) en rad/s
-        """
-        # Debe ser implementado por subclases específicas
-        raise NotImplementedError("Subclases deben implementar get_motor_velocities")
+    #Funciones de log
     
-    def log_lidar_data(self) -> list:
+    def _log_lidar_data(self) -> list:
         """
         Genera el logging de datos del LiDAR utilizando LidarManager.
         Método común que pueden usar todas las subclases.
-        
+    
         Returns:
             list: Lista de strings con la información del LiDAR para logging
         """
         log_lines = []
-        
         try:
-
-                
             # Usar LidarManager para obtener información del LiDAR
             lidar_manager = self.get_lidar_manager()
-            
             # Agregar el resumen del LiDAR usando las funciones del LidarManager
             lidar_summary = lidar_manager.print_summary()
             if lidar_summary:
                 log_lines.extend(lidar_summary.split('\n'))
             else:
                 log_lines.append("Lidar: Sin datos disponibles")
-                
         except Exception as e:
             log_lines.append(f"Lidar: Error - {e}")
-            
         return log_lines
     
     def log_devices(self, to_terminal: bool = True, to_file: str = None) -> None:
@@ -237,7 +223,7 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
             
             # Agregar información del LiDAR
             try:
-                lidar_log_lines = self.log_lidar_data()
+                lidar_log_lines = self._log_lidar_data()
                 # Insertar las líneas del LiDAR antes de la separación final
                 for j, lidar_line in enumerate(lidar_log_lines):
                     log_lines.insert(insert_index + j, lidar_line)
@@ -261,8 +247,7 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
         else:
             print("Warning: No log message available. Subclases should set self.log_message before calling super().log_devices()")
     
-    # Métodos abstractos que deben ser implementados por subclases
-    
+    # Evolución de la simulación
     def step(self, time_step=None):
         """
         Ejecuta un paso de simulación en Webots de forma uniforme para cualquier robot.
@@ -281,9 +266,4 @@ class WebotsDifferentialRobotLGC(IDifferentialRobot):
         if time_step is None:
             time_step = self.time_step
         return self.robot.step(time_step)
-    
-    def cleanup(self):
-        """Limpiar recursos al finalizar"""
-        # Llamar al método de la interfaz base que detiene el robot
-        super().cleanup()
-    
+     
