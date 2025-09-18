@@ -24,12 +24,10 @@ def run_navigation_demo(RobotClass):
 
     while robot.step() != -1:
         iteration += 1
-        gps_position = robot.get_gps_position()
-        _, compass_angle = robot.get_compass_orientation()
-        current_x = gps_position[0]
-        current_y = gps_position[1]
-        current_angle = compass_angle
 
+        pose = robot.get_pose()
+        current_x, current_y, current_angle = pose.x, pose.y, pose.theta
+        
         if controller.is_target_reached(current_x, current_y):
             print("¡Objetivo alcanzado!")
             robot.set_drive_command(0.0, 0.0)

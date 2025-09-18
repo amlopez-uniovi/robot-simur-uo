@@ -18,7 +18,6 @@ except ImportError:
             raise RuntimeError("El módulo `controller` solo está disponible en el entorno de Webots.")
 
 from .webots_base_differential_robot import WebotsDifferentialRobotLGC
-from .webots_base_differential_robot import WebotsDifferentialRobotLGC
 
 class EPuck(WebotsDifferentialRobotLGC):
     """

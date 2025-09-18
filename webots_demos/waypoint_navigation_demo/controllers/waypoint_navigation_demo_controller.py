@@ -64,16 +64,9 @@ def run_waypoint_navigation_demo(RobotClass):
         while robot.step() != -1:
             iteration_count += 1
             
-            # Obtener posición GPS (método común)
-            gps_position = robot.get_gps_position()
-            
-            # Obtener orientación de la brújula (método común)
-            compass_direction, compass_angle = robot.get_compass_orientation()
-            
-            current_x = gps_position[0]
-            current_y = gps_position[1]
-            current_angle = compass_angle
-            
+            pose = robot.get_pose()
+            current_x, current_y, current_angle = pose.x, pose.y, pose.theta
+
             # Actualizar controlador y obtener comandos
             drive_speed, steering_speed = controller.update(
                 robot, current_x, current_y, current_angle

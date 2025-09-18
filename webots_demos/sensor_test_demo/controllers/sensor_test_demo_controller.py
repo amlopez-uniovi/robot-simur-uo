@@ -32,10 +32,10 @@ def run_sensor_test_demo(RobotClass):
         iteration += 1
         
         # Obtener posición y orientación actuales
-        pos = robot.get_gps_position()
-        current_x, current_y = pos[0], pos[1]
-        _, current_angle = robot.get_compass_orientation()
         
+        pose = robot.get_pose()
+        current_x, current_y, current_angle = pose.x, pose.y, pose.theta
+
         # Inicializar ángulo de referencia
         if start_angle is None:
             start_angle = current_angle
