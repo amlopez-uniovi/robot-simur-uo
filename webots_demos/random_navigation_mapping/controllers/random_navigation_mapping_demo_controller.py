@@ -36,8 +36,8 @@ def run_random_navigation_mapping_demo(RobotClass):
         iteration_count += 1
         # Actualizar mapa de ocupación usando puntos XY de obstáculos detectados
         obstacle_points, free_points = robot.get_lidar_manager().get_obstacle_points_xy()
-    prob_grid_map.update(obstacle_points, free_points, robot.get_pose())
-    pose = robot.get_pose()
+        prob_grid_map.update(obstacle_points, free_points, robot.get_pose().to_tuple())
+        pose = robot.get_pose().to_tuple()
         # Pintar el mapa de ocupación (visualización simple en consola)
         fig_visualizacion = prob_grid_map.visualize(fig=fig_visualizacion)
         # Obtener posición y orientación actuales usando el controlador de navegación
