@@ -56,11 +56,7 @@ class EPuck(WebotsDifferentialRobotLGC):
         self.gps_manager = GpsManager(self.robot, time_step=self.time_step)
         self.compass_manager = CompassManager(self.robot, time_step=self.time_step)
         self.rgb_camera_manager = RgbCameraManager(self.robot, device_name="camera", time_step=self.time_step)
-
-    def get_rgb_camera_manager(self):
-        """Obtener el manager de la cámara RGB del e-puck"""
-        return self.rgb_camera_manager
-    
+   
     def _init_motors(self):
         """Inicializar y configurar los motores del robot"""
         # Obtener dispositivos de motores (solo 2 motores en e-puck)
@@ -83,14 +79,17 @@ class EPuck(WebotsDifferentialRobotLGC):
             self.distance_sensors.append(sensor)
             
         self.distance_sensors_value = [0] * 8
-    
+
+    def get_rgb_camera_manager(self):
+        """Obtener el manager de la cámara RGB del e-puck"""
+        return self.rgb_camera_manager
+     
     def get_distance_sensor_values(self):
         """Obtener valores de los sensores de distancia (específico del e-puck)"""
         distance_sensors_values = [0] * 8
         for i in range(8):
             distance_sensors_values[i] = self.distance_sensors[i].getValue()
         return distance_sensors_values
-
 
     def set_differential_motor_velocities(self, left_velocity, right_velocity):
         """Establecer velocidades de los motores (izquierdo y derecho)
@@ -115,8 +114,6 @@ class EPuck(WebotsDifferentialRobotLGC):
         self.left_motor.setVelocity(left_velocity)
         self.right_motor.setVelocity(right_velocity)
     
-
-
     def log_devices(self, to_terminal: bool = True, to_file: str = None) -> None:
         """
         Log de dispositivos del EPuck - solo datos directos de sensores.

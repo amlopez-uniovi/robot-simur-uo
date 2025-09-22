@@ -1,16 +1,64 @@
+import math
+
 def is_angle_in_range(angle, angle_min, angle_max):
     """
-    Devuelve True si angle está dentro del rango [angle_min, angle_max] en el círculo trigonométrico.
+    Devuelve True si 'angle' está dentro del arco definido por [angle_min, angle_max] en el círculo trigonométrico.
+    El arco se recorre SIEMPRE en sentido antihorario (positivo), desde angle_min hasta angle_max.
     Soporta rangos que cruzan el cero y normaliza todo a [0, 2π).
 
     Args:
         angle (float): Ángulo a comprobar (radianes).
-        angle_min (float): Límite inferior del rango (radianes).
-        angle_max (float): Límite superior del rango (radianes).
+        angle_min (float): Límite inferior del rango (radianes, inicio del arco).
+        angle_max (float): Límite superior del rango (radianes, fin del arco).
 
     Returns:
-        bool: True si el ángulo está en el rango, False en caso contrario.
+        bool: True si el ángulo está en el arco, False en caso contrario.
+
+
+    - Si angle_min=0 y angle_max=π/2, el arco válido es el primer cuadrante (0° a 90°).
+    - Si angle_min=3π/2 y angle_max=π/2, el arco válido es desde 270° hasta 90°, pasando por 0° (cruza el eje X positivo).
+    - Si angle_min == angle_max, el arco cubre todo el círculo (siempre True).
+
+    ASCII:
+        [angle_min]---(antihorario)--->[angle_max]
+        ^--- ángulos válidos ---^
+
+    Ejemplo con cruce de cero:
+        angle_min = 5π/4 (225°)
+        angle_max = π/4  (45°)
+        El arco válido es desde 225° hasta 45° en sentido antihorario, pasando por 0°.
+
+    Ejemplos de uso:
+
+        >>> # Arco directo (no cruza el cero)
+        >>> is_angle_in_range(math.radians(45), math.radians(0), math.radians(90))
+        True
+        >>> is_angle_in_range(math.radians(120), math.radians(0), math.radians(90))
+        False
+
+        # Arco que cruza el cero
+        >>> is_angle_in_range(math.radians(350), math.radians(300), math.radians(60))
+        True
+        >>> is_angle_in_range(math.radians(100), math.radians(300), math.radians(60))
+        False
+
+        # Arco completo (min == max)
+        >>> is_angle_in_range(math.radians(180), math.radians(0), math.radians(0))
+        True
+
+        # Ejemplo con ángulo negativo
+        >>> is_angle_in_range(math.radians(-45), math.radians(0), math.radians(90))
+        False
+
+        # Ejemplo con un límite negativo
+        >>> is_angle_in_range(math.radians(30), math.radians(-90), math.radians(90))
+        True
+
+        # Ejemplo con ambos límites negativos
+        >>> is_angle_in_range(math.radians(-135), math.radians(-180), math.radians(-90))
+        True
     """
+
     # Normaliza todos los ángulos al rango [0, 2π)
     angle = angle % (2 * math.pi)
     angle_min = angle_min % (2 * math.pi)
@@ -85,17 +133,15 @@ def polar_to_cartesian(points):
         y = distance * math.sin(angle)
         cartesian.append((x, y))
     return cartesian
-"""
-Sistema de coordenadas básico para robots.
-"""
-import math
+
 
 
 class RobotPose:
     """Representa la posición y orientación de un robot en el espacio 2D."""
-    
     def __init__(self, x=0.0, y=0.0, theta=0.0):
         """
+        Inicializa una nueva pose.
+        
         Args:
             x (float): Posición en el eje X
             y (float): Posición en el eje Y
@@ -121,9 +167,6 @@ class RobotPose:
         """Crea una copia de la pose."""
         return RobotPose(self.x, self.y, self.theta)
     
-    def to_tuple(self):
-        """Convierte la pose a una tupla (x, y, theta)."""
-        return (self.x, self.y, self.theta)
     
     def update(self, dx, dy, dtheta):
         """Actualiza la pose con cambios incrementales."""
