@@ -17,6 +17,23 @@ except ImportError:
 from .coordinates import is_angle_in_range
 
 class LidarManager:
+    def print_summary(self):
+        """
+        Imprime y devuelve un resumen básico de la configuración y estado del LiDAR.
+        """
+        summary = []
+        summary.append("--- LidarManager Summary ---")
+        summary.append(f"Dispositivo: {self.device_name}")
+        summary.append(f"Disponible: {'Sí' if self.is_available() else 'No'}")
+        summary.append(f"Nº puntos: {self.range_count}")
+        summary.append(f"Rango: {self.min_range:.2f} m - {self.max_range:.2f} m")
+        summary.append(f"FOV: {math.degrees(self.fov):.1f} grados")
+        summary.append(f"Resolución angular: {math.degrees(self.angular_resolution):.2f} grados")
+        summary.append(f"Sweep range: {math.degrees(self.sweep_range[0]):.1f}° a {math.degrees(self.sweep_range[1]):.1f}°")
+        summary.append("---------------------------")
+        result = "\n".join(summary)
+        print("\n" + result + "\n")
+        return result
     """
     Clase para manejar dispositivos LiDAR en Webots.
 
