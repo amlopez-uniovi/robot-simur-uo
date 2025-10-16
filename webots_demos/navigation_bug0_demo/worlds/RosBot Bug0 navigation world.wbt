@@ -3,8 +3,7 @@
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/RectangleArena.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/devices/slamtec/protos/RpLidarA2.proto"
-EXTERNPROTO "../../_protos/Rosbot.proto"
+EXTERNPROTO "/Users/antoniolopez/desarrollo_codigo/robotica/robot-simur-uo/webots_demos/_protos/Rosbot.proto"
 
 WorldInfo {
 }
@@ -28,12 +27,11 @@ Solid {
 TexturedBackgroundLight {
 }
 RectangleArena {
-  floorSize 4 4
+  floorSize 8 8
   wallHeight 0.01
 }
 Rosbot {
-  translation -1 -1 -0.000562585
-  rotation -1.5967340726606063e-05 1.7912313901708202e-05 0.9999999997120965 1.45072344045886
+  translation 0 -2 -0.000562585
+  rotation -1.5967340726606063e-05 1.7912313901708202e-05 0.9999999997120965 1.57
   controller "rosbot_bug0_controller"
-  # lidarSlot eliminado para usar la configuración por defecto del PROTO
 }

@@ -3,7 +3,7 @@
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/RectangleArena.proto"
-EXTERNPROTO "../../_protos/E-puck.proto"
+EXTERNPROTO "/Users/antoniolopez/desarrollo_codigo/robotica/robot-simur-uo/webots_demos/_protos/E-puck.proto"
 
 WorldInfo {
 }
@@ -30,7 +30,7 @@ Solid {
   boundingObject USE BOX_CILINDRO
 }
 E-puck {
-  translation -1.5 0 -0.00547048
+  translation -1.49438 -0.0828108 -0.00547048
   rotation -0.8408959917722635 0.5411961388080286 0.0008187555327825341 0.0031607273612455035
   controller "epuck_navigation_potential_field_controller"
 }

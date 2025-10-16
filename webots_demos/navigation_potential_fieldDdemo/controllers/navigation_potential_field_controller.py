@@ -24,7 +24,7 @@ def run_navigation_potential_field(RobotClass):
     """
     robot = RobotClass()
     controller = NavigationPotentialFieldController(linear_gain=1.0, steering_gain=2.0 , 
-                                                   attraction_gain=1.0, repulsion_gain=4.0, repulsion_threshold=0.8)
+                                                   attraction_gain=1.0, repulsion_gain=2.0, repulsion_threshold=2)
     # Destino fijo (puedes parametrizarlo)
     target_x, target_y = 1.9, 0.0
     controller.set_target(target_x, target_y)
