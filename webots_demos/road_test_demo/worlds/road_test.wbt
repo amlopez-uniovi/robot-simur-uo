@@ -1,0 +1,34 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/road/protos/Road.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/husarion/rosbot/protos/Rosbot.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation -0.24110968035714278 0.22033265639303687 0.9451558826801345 1.7168054776078603
+  position 2.478589435558377 -19.948400698063747 16.337074746396148
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+Road {
+  width 2
+  wayPoints [
+    -8 0.8 0
+    10 0 0
+    13 24 0
+    -14 25 0
+    -42 6 0
+    -19 1 0
+    -8 0.8 0
+  ]
+  roadBoundingObject TRUE
+}
+Rosbot {
+  translation 5.19951 2.5 -0.0005622
+  rotation -1.9663273622649513e-05 8.34486122499045e-05 0.9999999963248424 0.5192882381891117
+}
