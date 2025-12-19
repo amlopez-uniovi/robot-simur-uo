@@ -64,25 +64,3 @@ class Bug0NavigationController(NavigationController):
             # No hay obstáculo: ir al objetivo
             return super().calculate_control_commands(current_x, current_y, current_angle)
 
-
-# Ejemplo de uso simple
-if __name__ == "__main__":
-    print("🧪 PRUEBA SIMPLE DEL CONTROLADOR BUG0")
-    
-    controller = Bug0NavigationController()
-    controller.set_target(2.0, 2.0)
-    
-    # Simular movimiento
-    x, y, angle = 0.0, 0.0, 0.0
-    
-    for i in range(10):
-        # Simular obstáculo en iteración 5
-        sensors = [0.2] if i == 5 else [1.0]  # obstáculo / sin obstáculo
-        
-        drive, steer = controller.calculate_control_commands(x, y, angle, sensors)
-        print(f"Paso {i+1}: pos=({x:.1f},{y:.1f}) -> vel={drive:.2f}, giro={steer:.2f}")
-        
-        # Simular movimiento
-        x += drive * 0.1
-        y += drive * 0.1
-        angle += steer * 0.1
