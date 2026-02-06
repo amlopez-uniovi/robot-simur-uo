@@ -49,7 +49,8 @@ class RosBot(WebotsDifferentialRobotLGC):
         super()._init_lidar_manager()
         
         print("Configurando LidarManager para e-puck...")
-        self.lidar_manager.set_sweep_range((0.0, -2*math.pi))  # Rango completo de 360 grados
+        #self.lidar_manager.set_sweep_range((0.0, -2*math.pi))  # Rango completo de 360 grados
+        self.lidar_manager.set_sweep_range((math.pi, -math.pi))  # Rango completo de 360 grados
      
     def _init_specific_components(self):
         """Inicializar componentes específicos del RosBot"""
