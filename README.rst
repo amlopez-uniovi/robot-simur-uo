@@ -1,27 +1,10 @@
-.. These are examples of badges you might want to add to your README:
-   please update the URLs accordingly
+.. image:: https://readthedocs.org/projects/robot-simur-uo/badge/?version=latest
+    :alt: ReadTheDocs
+    :target: https://robot-simur-uo.readthedocs.io/es/latest/
 
-    .. image:: https://api.cirrus-ci.com/github/<USER>/robot-simur-uo.svg?branch=main
-        :alt: Built Status
-        :target: https://cirrus-ci.com/github/<USER>/robot-simur-uo
-    .. image:: https://readthedocs.org/projects/robot-simur-uo/badge/?version=latest
-        :alt: ReadTheDocs
-        :target: https://robot-simur-uo.readthedocs.io/en/stable/
-    .. image:: https://img.shields.io/coveralls/github/<USER>/robot-simur-uo/main.svg
-        :alt: Coveralls
-        :target: https://coveralls.io/r/<USER>/robot-simur-uo
-    .. image:: https://img.shields.io/pypi/v/robot-simur-uo.svg
-        :alt: PyPI-Server
-        :target: https://pypi.org/project/robot-simur-uo/
-    .. image:: https://img.shields.io/conda/vn/conda-forge/robot-simur-uo.svg
-        :alt: Conda-Forge
-        :target: https://anaconda.org/conda-forge/robot-simur-uo
-    .. image:: https://pepy.tech/badge/robot-simur-uo/month
-        :alt: Monthly Downloads
-        :target: https://pepy.tech/project/robot-simur-uo
-    .. image:: https://img.shields.io/twitter/url/http/shields.io.svg?style=social&label=Twitter
-        :alt: Twitter
-        :target: https://twitter.com/robot-simur-uo
+.. image:: https://img.shields.io/pypi/v/robot-simur-uo.svg
+    :alt: PyPI-Server
+    :target: https://pypi.org/project/robot-simur-uo/
 
 .. image:: https://img.shields.io/badge/-PyScaffold-005CA0?logo=pyscaffold
     :alt: Project generated with PyScaffold
@@ -33,11 +16,32 @@
 robot-simur-uo
 ==============
 
+Librería Python para simulación y control de robots en contexto docente
 
-    Add a short description here!
+**Documentación:** https://robot-simur-uo.readthedocs.io/es/latest/
 
+Descripción
+===========
 
-A longer description of your project goes here...
+**robot-simur-uo** es una librería Python para **simulación y control de robots** en el contexto docente de la Universidad de Oviedo. 
+
+Proporciona:
+
+- **Controladores** de navegación (Bug0, lookahead, campos potenciales, random, waypoints)
+- **Interfaces de robot** (base, diferencial, Ackermann)
+- **Adaptadores Webots** (e-puck, RosBot)
+- **Utilidades**: sensores, mapas de ocupación, coordenadas, waypoints, visualización ASCII
+
+El objetivo es que el alumnado pueda **experimentar rápido** con robots simulados y luego **profundizar** en el código.
+
+Instalación rápida
+==================
+
+.. code-block:: bash
+
+    pip install -e .
+
+Para más información, consulta la `documentación completa <https://robot-simur-uo.readthedocs.io/es/latest/>`_.
 
 
 .. _pyscaffold-notes:
